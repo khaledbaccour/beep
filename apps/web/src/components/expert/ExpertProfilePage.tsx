@@ -14,6 +14,7 @@ import {
   type AvailableSlot,
   type BookingResponse,
 } from '@/lib/api';
+import { initiatePayment, settlePendingPayments } from '@/lib/gammal-tech';
 import { formatPrice, formatTime, formatDate, toDateString } from './utils';
 import { DatePicker } from './DatePicker';
 import { TimeSlotPicker } from './TimeSlotPicker';
@@ -29,29 +30,6 @@ interface ExpertProfilePageProps {
 type BookingStep = 'profile' | 'confirm' | 'success';
 
 const VISIBLE_DAYS = 7;
-
-function loadGammalTechSDK(): Promise<void> {
-  if (typeof window === 'undefined') return Promise.resolve();
-  if ((window as unknown as Record<string, unknown>).GammalTech) return Promise.resolve();
-
-  return new Promise<void>((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://api.gammal.tech/sdk-web.js';
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load payment SDK'));
-    document.head.appendChild(script);
-  });
-}
-
-interface GammalTechSDK {
-  payment: {
-    pay: (opts: { amount: number; currency: string; description: string }) => Promise<{ token: string }>;
-  };
-}
-
-function getGammalTechSDK(): GammalTechSDK | undefined {
-  return (window as unknown as Record<string, unknown>).GammalTech as GammalTechSDK | undefined;
-}
 
 function getAuthToken(): string | null {
   return typeof window !== 'undefined' ? localStorage.getItem('beep_token') : null;
@@ -79,6 +57,13 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [booking, setBooking] = useState<BookingResponse | null>(null);
+
+  // Settle any pending/undelivered payments from prior sessions
+  useEffect(() => {
+    settlePendingPayments().catch(() => {
+      /* best-effort — ignore errors */
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,17 +126,11 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     setBookingError(null);
 
     try {
-      await loadGammalTechSDK();
-
-      const gt = getGammalTechSDK();
-      if (gt?.payment?.pay) {
-        const amountTND = expert.sessionPriceMillimes / 1000;
-        await gt.payment.pay({
-          amount: amountTND,
-          currency: 'TND',
-          description: `Session with ${expert.firstName} ${expert.lastName}`,
-        });
-      }
+      const amountTND = expert.sessionPriceMillimes / 1000;
+      await initiatePayment(
+        amountTND,
+        `Session with ${expert.firstName} ${expert.lastName}`,
+      );
 
       const res = await createBooking(
         {
