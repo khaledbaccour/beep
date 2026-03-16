@@ -3,22 +3,29 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=cal-sans@400&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700,800&f[]=general-sans@400,400i,500,500i,600,600i,700,700i&f[]=cabinet-grotesk@400,500,700,800&display=swap');
 
 @layer base {
   body {
-    @apply bg-white text-ink-800 font-body antialiased;
+    @apply bg-white text-ink-900 font-body antialiased;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    @apply bg-brand-100 text-brand-700;
+    @apply bg-brand-200 text-brand-700;
   }
 
   h1, h2, h3, h4, h5 {
-    @apply font-display;
+    @apply font-display font-extrabold;
   }
+}
+
+/* Accent font utility — italic serif for highlight words */
+.font-accent {
+  font-family: 'General Sans', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
 }
 
 /* Animation stagger delays */
@@ -30,6 +37,24 @@
 .stagger-6 { animation-delay: 300ms; }
 .stagger-7 { animation-delay: 350ms; }
 .stagger-8 { animation-delay: 400ms; }
+
+/* Wavy section divider */
+.wavy-divider {
+  position: relative;
+  overflow: hidden;
+  height: 48px;
+}
+.wavy-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 200%;
+  height: 100%;
+  background: repeat-x url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 48' preserveAspectRatio='none'%3E%3Cpath d='M0 24c100 0 150-24 300-24s200 24 300 24 150-24 300-24 200 24 300 24' fill='none' stroke='%23E8E4DF' stroke-width='2'/%3E%3C/svg%3E");
+  background-size: 600px 48px;
+  animation: wave 12s linear infinite;
+}
 
 /* Scrollbar */
 html {
@@ -43,9 +68,23 @@ html {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d5dae3;
+  background: #35353F;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b0b8c7;
+  background: #4A4A56;
+}
+
+/* Retro button press effect */
+.retro-press {
+  transition: all 150ms ease;
+}
+.retro-press:active {
+  transform: translateY(2px) !important;
+  box-shadow: 1px 1px 0px 0px #141418 !important;
+}
+
+/* Hand-drawn border feel */
+.hand-drawn {
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
 }

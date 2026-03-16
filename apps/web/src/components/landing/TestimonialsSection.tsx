@@ -35,38 +35,49 @@ export function TestimonialsSection({ dict, lang }: Props) {
   ];
 
   return (
-    <section className="py-20 sm:py-28 bg-ink-50/40">
+    <section className="py-24 sm:py-32 bg-[#FFF9F2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="max-w-2xl mb-12">
-          <p className="text-sm font-mono font-medium text-brand-500 mb-2">{dict.testimonials.label}</p>
-          <h2 className="text-3xl sm:text-4xl font-display font-bold text-ink-900 tracking-tight">
-            {dict.testimonials.title}
+        {/* Centered header */}
+        <div className="text-center mb-16">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-ink-900 text-white text-xs font-bold uppercase tracking-wider mb-6">
+            {dict.testimonials.label}
+          </span>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-display font-black text-ink-900 tracking-tight">
+            What people{' '}
+            <em className="not-italic text-[#FFB088] italic">love</em>{' '}
+            about us
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4">
+        {/* Testimonial cards */}
+        <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="rounded-xl border border-ink-200/60 bg-white p-6 flex flex-col"
+              className="rounded-2xl border-2 border-ink-900 bg-white p-7 flex flex-col shadow-[4px_4px_0px_0px_rgba(15,15,15,1)] hover:shadow-[6px_6px_0px_0px_rgba(15,15,15,1)] hover:-translate-y-0.5 transition-all duration-200"
             >
-              <div className="flex gap-0.5 mb-4">
+              {/* Stars */}
+              <div className="flex gap-1 mb-5">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={14} fill="#F59E0B" stroke="none" />
+                  <Star key={i} size={18} fill="#FBBF24" stroke="#FBBF24" strokeWidth={1} />
                 ))}
               </div>
 
-              <p className="text-sm text-ink-600 leading-relaxed flex-1 mb-6">
+              {/* Quote */}
+              <p className="text-base text-ink-700 leading-relaxed flex-1 mb-7 font-medium">
                 &ldquo;{t.text}&rdquo;
               </p>
 
-              <div className="flex items-center gap-3 pt-4 border-t border-ink-100">
-                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-[10px] font-bold`}>
+              {/* Person */}
+              <div className="flex items-center gap-3 pt-5 border-t-2 border-ink-900/10">
+                <div
+                  className={`w-10 h-10 rounded-full border-2 border-ink-900 bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-xs font-black`}
+                >
                   {t.initials}
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-ink-900">{t.name}</div>
-                  <div className="text-xs text-ink-400">{t.role}</div>
+                  <div className="text-sm font-black text-ink-900">{t.name}</div>
+                  <div className="text-xs text-ink-500 font-medium">{t.role}</div>
                 </div>
               </div>
             </div>

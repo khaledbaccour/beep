@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
@@ -13,54 +12,57 @@ interface Props {
 
 export function CTASection({ dict, lang }: Props) {
   return (
-    <section className="py-20 sm:py-28">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="relative rounded-2xl overflow-hidden bg-ink-900 p-10 sm:p-16">
-          {/* Subtle pattern */}
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-          />
+    <section className="relative py-24 sm:py-32 bg-ink-900 overflow-hidden">
+      {/* Decorative blobs */}
+      <div className="absolute top-[-120px] left-[-80px] w-[400px] h-[400px] rounded-full bg-purple-500/20 blur-[120px]" />
+      <div className="absolute bottom-[-100px] right-[-60px] w-[350px] h-[350px] rounded-full bg-[#FFB088]/20 blur-[120px]" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[150px]" />
 
-          {/* Coral accent glow */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-brand-500/10 rounded-full blur-[100px]" />
+      {/* Watermark */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 select-none pointer-events-none">
+        <span className="text-[120px] sm:text-[180px] md:text-[220px] font-black text-white/[0.03] leading-none tracking-tighter uppercase">
+          BEEP.TN
+        </span>
+      </div>
 
-          <div className="relative max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
-              {dict.cta.title}
-            </h2>
-            <p className="text-base sm:text-lg text-ink-400 mb-8 leading-relaxed">
-              {dict.cta.subtitle}
-            </p>
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
+        {/* Pill badge */}
+        <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-white/70 text-xs font-black uppercase tracking-wider mb-8 border-2 border-white/20">
+          Get started today
+        </span>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button
-                size="lg"
-                className="bg-brand-500 text-white hover:bg-brand-600 shadow-warm hover:shadow-warm-lg"
-                asChild
-              >
-                <a href={localePath(lang, '/register')}>
-                  {dict.cta.primary}
-                  <ArrowRight size={16} />
-                </a>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-ink-600 text-ink-300 hover:text-white hover:bg-ink-800 hover:border-ink-500"
-                asChild
-              >
-                <a href={localePath(lang, '/marketplace')}>{dict.cta.secondary}</a>
-              </Button>
-            </div>
+        {/* Massive heading */}
+        <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-black text-white tracking-tight mb-6 leading-[1.1]">
+          {dict.cta.title.split(' ').slice(0, -1).join(' ')}{' '}
+          <em className="not-italic text-[#FFB088] italic">
+            {dict.cta.title.split(' ').slice(-1)[0]}
+          </em>
+        </h2>
 
-            <p className="mt-8 text-xs text-ink-500">
-              {dict.cta.finePrint}
-            </p>
-          </div>
+        <p className="text-lg sm:text-xl text-ink-400 mb-10 leading-relaxed max-w-2xl mx-auto">
+          {dict.cta.subtitle}
+        </p>
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href={localePath(lang, '/register')}
+            className="inline-flex items-center gap-2 rounded-full bg-[#FFB088] text-ink-900 font-black text-base px-8 py-4 border-[2.5px] border-ink-900 shadow-retro hover:-translate-y-0.5 hover:shadow-retro-md active:translate-y-0 active:shadow-retro-sm transition-all duration-200"
+          >
+            {dict.cta.primary}
+            <ArrowRight size={18} />
+          </a>
+          <a
+            href={localePath(lang, '/marketplace')}
+            className="inline-flex items-center gap-2 rounded-full bg-transparent text-white font-black text-base px-8 py-4 border-[2.5px] border-white/40 shadow-retro-white hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] hover:border-white/60 active:translate-y-0 active:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.2)] transition-all duration-200"
+          >
+            {dict.cta.secondary}
+          </a>
         </div>
+
+        <p className="mt-10 text-sm text-ink-500">
+          {dict.cta.finePrint}
+        </p>
       </div>
     </section>
   );
