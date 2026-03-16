@@ -14,5 +14,10 @@
     "lint": "npm run lint --workspaces",
     "test": "npm run test --workspace=apps/api",
     "test:e2e": "npm run test:e2e --workspace=apps/api"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1"
   }
 }
