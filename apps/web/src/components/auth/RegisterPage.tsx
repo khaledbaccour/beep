@@ -65,7 +65,26 @@ export function RegisterPage({ dict, lang }: Props) {
           <p className="text-sm text-ink-500">{dict.auth.registerSubtitle}</p>
         </div>
 
-        {/* Role is determined by URL: /register = CLIENT, /register?role=expert = EXPERT */}
+        <div className="flex gap-1 p-1 rounded-lg bg-ink-50 border border-ink-100 mb-6">
+          <button
+            type="button"
+            onClick={() => setRole('CLIENT')}
+            className={`flex-1 py-2.5 rounded-md text-sm font-medium transition-all ${
+              role === 'CLIENT' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
+            }`}
+          >
+            Client
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole('EXPERT')}
+            className={`flex-1 py-2.5 rounded-md text-sm font-medium transition-all ${
+              role === 'EXPERT' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
+            }`}
+          >
+            Professionnel
+          </button>
+        </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700" data-testid="register-error">
