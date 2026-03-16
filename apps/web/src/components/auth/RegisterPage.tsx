@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/i18n/types';
@@ -15,7 +15,9 @@ interface Props {
 }
 
 export function RegisterPage({ dict, lang }: Props) {
-  const [role, setRole] = useState<'CLIENT' | 'EXPERT'>('CLIENT');
+  const searchParams = useSearchParams();
+  const initialRole = searchParams.get('role') === 'expert' ? 'EXPERT' : 'CLIENT';
+  const [role, setRole] = useState<'CLIENT' | 'EXPERT'>(initialRole);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
