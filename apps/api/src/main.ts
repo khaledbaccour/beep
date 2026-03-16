@@ -8,7 +8,7 @@ async function bootstrap(): Promise<void> {
 
   app.setGlobalPrefix('api/v1');
   app.enableCors({
-    origin: process.env.APP_URL || 'http://localhost:3000',
+    origin: true,
     credentials: true,
   });
 

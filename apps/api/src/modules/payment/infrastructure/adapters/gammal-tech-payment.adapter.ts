@@ -22,9 +22,8 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
 
   async capturePayment(_request: CapturePaymentRequest): Promise<CapturePaymentResult> {
     // TODO: Replace with actual Gammal Tech API call
-    // POST https://api.gammaltech.tn/v1/payments/capture
-    // Headers: { Authorization: `Bearer ${this.apiKey}` }
-    // Body: { amount: request.amountMillimes, currency: request.currency, reference: request.bookingId, idempotency_key: request.idempotencyKey }
+    void this._apiKey;
+    void this._apiSecret;
     return {
       success: true,
       transactionId: uuidv4(),

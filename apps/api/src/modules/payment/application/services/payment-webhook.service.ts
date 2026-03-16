@@ -38,7 +38,8 @@ export class PaymentWebhookService {
     _payload: WebhookPayloadDto,
     _signature: string,
   ): boolean {
-    // TODO: Implement HMAC signature verification with webhookSecret
+    // TODO: Implement HMAC signature verification
+    void this._webhookSecret;
     return true;
   }
 }
