@@ -126,8 +126,8 @@ export function HeroSection({ dict, lang }: Props) {
                 {/* Expert info */}
                 <div className="flex-1">
                   <div className="flex items-start gap-4 mb-8">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-lg font-bold text-white shrink-0">
-                      A
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center text-lg font-bold text-white shrink-0">
+                      S
                     </div>
                     <div>
                       <div className="flex items-center gap-2">

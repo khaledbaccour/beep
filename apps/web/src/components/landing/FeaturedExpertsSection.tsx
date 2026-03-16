@@ -13,11 +13,11 @@ interface Props {
 
 const experts = [
   { name: 'Yassine Bouaziz', slug: 'yassine', role: 'Fitness Coach', rating: 4.9, sessions: 340, price: 35, initials: 'YB', gradient: 'from-rose-400 to-orange-400', tags: ['Weight Loss', 'HIIT', 'Nutrition'] },
-  { name: 'Dr. Amira Ben Salem', slug: 'dr-amira', role: 'Dermatologist', rating: 5.0, sessions: 512, price: 80, initials: 'AB', gradient: 'from-emerald-400 to-teal-400', tags: ['Skincare', 'Acne', 'Anti-aging'] },
+  { name: 'Amira Ben Salem', slug: 'amira', role: 'Graphic Designer', rating: 5.0, sessions: 512, price: 80, initials: 'AB', gradient: 'from-emerald-400 to-teal-400', tags: ['Branding', 'Logo Design', 'UI/UX'] },
   { name: 'Mehdi Trabelsi', slug: 'mehdi', role: 'Software Engineer', rating: 4.8, sessions: 189, price: 50, initials: 'MT', gradient: 'from-blue-400 to-cyan-400', tags: ['React', 'System Design', 'Career'] },
   { name: 'Sana Khlifi', slug: 'sana', role: 'Business Consultant', rating: 4.9, sessions: 267, price: 65, initials: 'SK', gradient: 'from-violet-400 to-purple-400', tags: ['Startup', 'Strategy', 'Marketing'] },
   { name: 'Khalil Jebali', slug: 'khalil', role: 'English Teacher', rating: 4.7, sessions: 421, price: 25, initials: 'KJ', gradient: 'from-amber-400 to-yellow-400', tags: ['IELTS', 'Business English'] },
-  { name: 'Dr. Ines Maalej', slug: 'dr-ines', role: 'Psychologist', rating: 5.0, sessions: 198, price: 70, initials: 'IM', gradient: 'from-pink-400 to-rose-400', tags: ['Anxiety', 'CBT', 'Couples'] },
+  { name: 'Ines Maalej', slug: 'ines', role: 'Life Coach', rating: 5.0, sessions: 198, price: 70, initials: 'IM', gradient: 'from-pink-400 to-rose-400', tags: ['Productivity', 'Mindset', 'Career Change'] },
 ];
 
 export function FeaturedExpertsSection({ dict, lang }: Props) {

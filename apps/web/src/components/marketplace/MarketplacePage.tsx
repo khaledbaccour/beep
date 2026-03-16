@@ -13,17 +13,17 @@ interface Props {
   lang: Locale;
 }
 
-const categoryKeys = ['all', 'fitness', 'education', 'medicine', 'law', 'business', 'technology', 'psychology', 'languages'] as const;
+const categoryKeys = ['all', 'fitness', 'education', 'design', 'law', 'business', 'technology', 'coaching', 'languages'] as const;
 
 const experts = [
   { name: 'Yassine Bouaziz', slug: 'yassine', role: 'Fitness Coach', price: 35, rating: 4.9, sessions: 340, initials: 'YB', gradient: 'from-rose-400 to-orange-400', tags: ['Weight Loss', 'HIIT'] },
-  { name: 'Dr. Amira Ben Salem', slug: 'dr-amira', role: 'Dermatologist', price: 80, rating: 5.0, sessions: 512, initials: 'AB', gradient: 'from-emerald-400 to-teal-400', tags: ['Skincare', 'Acne'] },
+  { name: 'Amira Ben Salem', slug: 'amira', role: 'Graphic Designer', price: 80, rating: 5.0, sessions: 512, initials: 'AB', gradient: 'from-emerald-400 to-teal-400', tags: ['Branding', 'UI/UX'] },
   { name: 'Mehdi Trabelsi', slug: 'mehdi', role: 'Software Engineer', price: 50, rating: 4.8, sessions: 189, initials: 'MT', gradient: 'from-blue-400 to-cyan-400', tags: ['React', 'System Design'] },
   { name: 'Sana Khlifi', slug: 'sana', role: 'Business Consultant', price: 65, rating: 4.9, sessions: 267, initials: 'SK', gradient: 'from-violet-400 to-purple-400', tags: ['Startup', 'Strategy'] },
   { name: 'Khalil Jebali', slug: 'khalil', role: 'English Teacher', price: 25, rating: 4.7, sessions: 421, initials: 'KJ', gradient: 'from-amber-400 to-yellow-400', tags: ['IELTS', 'Speaking'] },
-  { name: 'Dr. Ines Maalej', slug: 'dr-ines', role: 'Psychologist', price: 70, rating: 5.0, sessions: 198, initials: 'IM', gradient: 'from-pink-400 to-rose-400', tags: ['Anxiety', 'CBT'] },
+  { name: 'Ines Maalej', slug: 'ines', role: 'Life Coach', price: 70, rating: 5.0, sessions: 198, initials: 'IM', gradient: 'from-pink-400 to-rose-400', tags: ['Mindset', 'Career'] },
   { name: 'Omar Chakroun', slug: 'omar', role: 'Lawyer', price: 90, rating: 4.8, sessions: 145, initials: 'OC', gradient: 'from-amber-500 to-orange-500', tags: ['Business Law', 'Contracts'] },
-  { name: 'Leila Hamdi', slug: 'leila', role: 'Nutritionist', price: 40, rating: 4.9, sessions: 278, initials: 'LH', gradient: 'from-green-400 to-emerald-400', tags: ['Diet Plans', 'Sports'] },
+  { name: 'Leila Hamdi', slug: 'leila', role: 'Photographer', price: 40, rating: 4.9, sessions: 278, initials: 'LH', gradient: 'from-green-400 to-emerald-400', tags: ['Portraits', 'Events'] },
   { name: 'Nabil Sfar', slug: 'nabil', role: 'Math Tutor', price: 20, rating: 4.6, sessions: 567, initials: 'NS', gradient: 'from-blue-500 to-indigo-500', tags: ['Calculus', 'Bac Prep'] },
 ];
 
