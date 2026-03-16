@@ -29,7 +29,7 @@ import jwtConfig from './config/jwt.config';
         const baseConfig = {
           type: 'postgres' as const,
           autoLoadEntities: true,
-          synchronize: !isProduction,
+          synchronize: true,
           ...(isProduction && {
             ssl: { rejectUnauthorized: false },
           }),
