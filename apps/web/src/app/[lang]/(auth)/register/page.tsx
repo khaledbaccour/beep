@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getDictionary, type Locale } from '@/i18n';
 import { RegisterPage } from '@/components/auth/RegisterPage';
 
@@ -7,5 +8,9 @@ interface PageProps {
 
 export default async function Register({ params }: PageProps) {
   const dict = await getDictionary(params.lang);
-  return <RegisterPage dict={dict} lang={params.lang} />;
+  return (
+    <Suspense>
+      <RegisterPage dict={dict} lang={params.lang} />
+    </Suspense>
+  );
 }

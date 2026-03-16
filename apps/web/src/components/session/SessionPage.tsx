@@ -17,6 +17,8 @@ interface SessionPageProps {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
 const PEERJS_HOST = process.env.NEXT_PUBLIC_PEERJS_HOST || 'localhost';
 const PEERJS_PORT = Number(process.env.NEXT_PUBLIC_PEERJS_PORT || '9000');
+const PEERJS_PATH = process.env.NEXT_PUBLIC_PEERJS_PATH || '/peer';
+const PEERJS_SECURE = PEERJS_HOST !== 'localhost';
 
 const DEFAULT_DURATION_MIN = 60;
 const GRACE_PERIOD_MIN = 5;
@@ -64,6 +66,7 @@ export function SessionPage({ roomId, lang }: SessionPageProps) {
 
   useEffect(() => {
     if (!user || !token) return;
+    const currentUser = user;
 
     let mounted = true;
 
@@ -109,8 +112,8 @@ export function SessionPage({ roomId, lang }: SessionPageProps) {
       const peer = new Peer({
         host: PEERJS_HOST,
         port: PEERJS_PORT,
-        path: '/peer',
-        secure: false,
+        path: PEERJS_PATH,
+        secure: PEERJS_SECURE,
       });
       peerRef.current = peer;
 
@@ -126,8 +129,8 @@ export function SessionPage({ roomId, lang }: SessionPageProps) {
           socket.emit('join-room', {
             roomId,
             peerId,
-            userId: user.id,
-            role: user.role.toLowerCase() as 'expert' | 'client',
+            userId: currentUser.id,
+            role: currentUser.role.toLowerCase() as 'expert' | 'client',
           });
         });
 
