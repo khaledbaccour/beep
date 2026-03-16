@@ -4,10 +4,10 @@ import { WebhookPayloadDto } from '../../infrastructure/controllers/payment-webh
 
 @Injectable()
 export class PaymentWebhookService {
-  private readonly webhookSecret: string;
+  private readonly _webhookSecret: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.webhookSecret =
+    this._webhookSecret =
       this.configService.get<string>('GAMMAL_TECH_WEBHOOK_SECRET') ?? '';
   }
 

@@ -24,7 +24,7 @@ export class SessionService {
 
   async joinRoom(
     roomId: string,
-    userId: string,
+    _userId: string,
     peerId: string,
     role: 'expert' | 'client',
   ): Promise<void> {

@@ -76,7 +76,7 @@ export class SessionGateway implements OnGatewayDisconnect {
     client.to(payload.roomId).emit('user-left', { socketId: client.id });
   }
 
-  async handleDisconnect(client: Socket): Promise<void> {
+  async handleDisconnect(_client: Socket): Promise<void> {
     // Socket.IO handles room cleanup on disconnect
   }
 }

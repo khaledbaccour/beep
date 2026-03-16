@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
 import { localePath } from '@/lib/i18n-utils';
+import { loginUser } from '@/lib/api';
 
 interface Props {
   dict: Dictionary;
@@ -15,11 +16,31 @@ interface Props {
 export function LoginPage({ dict, lang }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const res = await loginUser({ email, password });
+      localStorage.setItem('beep_token', res.data.accessToken);
+      localStorage.setItem('beep_user', JSON.stringify(res.data.user));
+      setSuccess(`Logged in as ${res.data.user.firstName} ${res.data.user.lastName} (${res.data.user.role})`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-white">
       <div className="w-full max-w-sm mx-auto px-4">
-        {/* Logo */}
         <a href={localePath(lang, '/')} className="flex items-center justify-center gap-2 mb-10">
           <div className="w-8 h-8 rounded-md bg-ink-900 flex items-center justify-center">
             <span className="text-white font-display font-bold text-sm">b</span>
@@ -34,7 +55,18 @@ export function LoginPage({ dict, lang }: Props) {
           <p className="text-sm text-ink-500">{dict.auth.loginSubtitle}</p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700" data-testid="login-error">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-700" data-testid="login-success">
+            {success}
+          </div>
+        )}
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-ink-700 mb-1.5">{dict.auth.email}</label>
             <Input
@@ -42,6 +74,8 @@ export function LoginPage({ dict, lang }: Props) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
+              required
+              data-testid="login-email"
             />
           </div>
           <div>
@@ -51,6 +85,8 @@ export function LoginPage({ dict, lang }: Props) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
+              required
+              data-testid="login-password"
             />
           </div>
 
@@ -64,8 +100,8 @@ export function LoginPage({ dict, lang }: Props) {
             </a>
           </div>
 
-          <Button variant="brand" size="lg" type="submit" className="w-full">
-            {dict.auth.loginButton}
+          <Button variant="brand" size="lg" type="submit" className="w-full" disabled={loading} data-testid="login-submit">
+            {loading ? '...' : dict.auth.loginButton}
           </Button>
         </form>
 

@@ -12,15 +12,15 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class GammalTechPaymentAdapter implements IPaymentGateway {
-  private readonly apiKey: string;
-  private readonly apiSecret: string;
+  private readonly _apiKey: string;
+  private readonly _apiSecret: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.apiKey = this.configService.get<string>('GAMMAL_TECH_API_KEY') ?? '';
-    this.apiSecret = this.configService.get<string>('GAMMAL_TECH_API_SECRET') ?? '';
+    this._apiKey = this.configService.get<string>('GAMMAL_TECH_API_KEY') ?? '';
+    this._apiSecret = this.configService.get<string>('GAMMAL_TECH_API_SECRET') ?? '';
   }
 
-  async capturePayment(request: CapturePaymentRequest): Promise<CapturePaymentResult> {
+  async capturePayment(_request: CapturePaymentRequest): Promise<CapturePaymentResult> {
     // TODO: Replace with actual Gammal Tech API call
     // POST https://api.gammaltech.tn/v1/payments/capture
     // Headers: { Authorization: `Bearer ${this.apiKey}` }
@@ -31,7 +31,7 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     };
   }
 
-  async refund(request: RefundRequest): Promise<RefundResult> {
+  async refund(_request: RefundRequest): Promise<RefundResult> {
     // TODO: Replace with actual Gammal Tech API call
     // POST https://api.gammaltech.tn/v1/payments/{transactionId}/refund
     return {
@@ -40,7 +40,7 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     };
   }
 
-  async releaseToExpert(request: ReleasePaymentRequest): Promise<{ success: boolean }> {
+  async releaseToExpert(_request: ReleasePaymentRequest): Promise<{ success: boolean }> {
     // TODO: Replace with actual Gammal Tech API call
     // POST https://api.gammaltech.tn/v1/payments/{transactionId}/release
     return { success: true };

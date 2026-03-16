@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ExpertProfileService } from '../../../expert-profile/application/services/expert-profile.service';
 import { ExpertProfileResponseDto } from '../../../expert-profile/application/dtos/expert-profile-response.dto';
-import { ExpertCategory, PaginationMeta } from '@beep/shared';
+import { ExpertCategory } from '@beep/shared';
 import { ApiResponseDto } from '../../../../common/application/dtos/api-response.dto';
 import { IsEnum, IsInt, IsOptional, IsString, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
