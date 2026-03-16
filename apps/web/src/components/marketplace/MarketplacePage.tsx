@@ -16,25 +16,33 @@ interface Props {
 const categoryKeys = ['all', 'fitness', 'education', 'design', 'law', 'business', 'technology', 'coaching', 'languages'] as const;
 
 const experts = [
-  { name: 'Yassine Bouaziz', slug: 'yassine', role: 'Fitness Coach', price: 35, rating: 4.9, sessions: 340, initials: 'YB', gradient: 'from-rose-400 to-orange-400', tags: ['Weight Loss', 'HIIT'] },
-  { name: 'Amira Ben Salem', slug: 'amira', role: 'Graphic Designer', price: 80, rating: 5.0, sessions: 512, initials: 'AB', gradient: 'from-emerald-400 to-teal-400', tags: ['Branding', 'UI/UX'] },
-  { name: 'Mehdi Trabelsi', slug: 'mehdi', role: 'Software Engineer', price: 50, rating: 4.8, sessions: 189, initials: 'MT', gradient: 'from-blue-400 to-cyan-400', tags: ['React', 'System Design'] },
-  { name: 'Sana Khlifi', slug: 'sana', role: 'Business Consultant', price: 65, rating: 4.9, sessions: 267, initials: 'SK', gradient: 'from-violet-400 to-purple-400', tags: ['Startup', 'Strategy'] },
-  { name: 'Khalil Jebali', slug: 'khalil', role: 'English Teacher', price: 25, rating: 4.7, sessions: 421, initials: 'KJ', gradient: 'from-amber-400 to-yellow-400', tags: ['IELTS', 'Speaking'] },
-  { name: 'Ines Maalej', slug: 'ines', role: 'Life Coach', price: 70, rating: 5.0, sessions: 198, initials: 'IM', gradient: 'from-pink-400 to-rose-400', tags: ['Mindset', 'Career'] },
-  { name: 'Omar Chakroun', slug: 'omar', role: 'Lawyer', price: 90, rating: 4.8, sessions: 145, initials: 'OC', gradient: 'from-amber-500 to-orange-500', tags: ['Business Law', 'Contracts'] },
-  { name: 'Leila Hamdi', slug: 'leila', role: 'Photographer', price: 40, rating: 4.9, sessions: 278, initials: 'LH', gradient: 'from-green-400 to-emerald-400', tags: ['Portraits', 'Events'] },
-  { name: 'Nabil Sfar', slug: 'nabil', role: 'Math Tutor', price: 20, rating: 4.6, sessions: 567, initials: 'NS', gradient: 'from-blue-500 to-indigo-500', tags: ['Calculus', 'Bac Prep'] },
+  { name: 'Yassine Bouaziz', slug: 'yassine', role: 'Fitness Coach', category: 'fitness', price: 35, rating: 4.9, sessions: 340, initials: 'YB', gradient: 'from-rose-400 to-orange-400', tags: ['Weight Loss', 'HIIT'] },
+  { name: 'Amira Ben Salem', slug: 'amira', role: 'Graphic Designer', category: 'design', price: 80, rating: 5.0, sessions: 512, initials: 'AB', gradient: 'from-emerald-400 to-teal-400', tags: ['Branding', 'UI/UX'] },
+  { name: 'Mehdi Trabelsi', slug: 'mehdi', role: 'Software Engineer', category: 'technology', price: 50, rating: 4.8, sessions: 189, initials: 'MT', gradient: 'from-blue-400 to-cyan-400', tags: ['React', 'System Design'] },
+  { name: 'Sana Khlifi', slug: 'sana', role: 'Business Consultant', category: 'business', price: 65, rating: 4.9, sessions: 267, initials: 'SK', gradient: 'from-violet-400 to-purple-400', tags: ['Startup', 'Strategy'] },
+  { name: 'Khalil Jebali', slug: 'khalil', role: 'English Teacher', category: 'languages', price: 25, rating: 4.7, sessions: 421, initials: 'KJ', gradient: 'from-amber-400 to-yellow-400', tags: ['IELTS', 'Speaking'] },
+  { name: 'Ines Maalej', slug: 'ines', role: 'Life Coach', category: 'coaching', price: 70, rating: 5.0, sessions: 198, initials: 'IM', gradient: 'from-pink-400 to-rose-400', tags: ['Mindset', 'Career'] },
+  { name: 'Omar Chakroun', slug: 'omar', role: 'Lawyer', category: 'law', price: 90, rating: 4.8, sessions: 145, initials: 'OC', gradient: 'from-amber-500 to-orange-500', tags: ['Business Law', 'Contracts'] },
+  { name: 'Leila Hamdi', slug: 'leila', role: 'Photographer', category: 'design', price: 40, rating: 4.9, sessions: 278, initials: 'LH', gradient: 'from-green-400 to-emerald-400', tags: ['Portraits', 'Events'] },
+  { name: 'Nabil Sfar', slug: 'nabil', role: 'Math Tutor', category: 'education', price: 20, rating: 4.6, sessions: 567, initials: 'NS', gradient: 'from-blue-500 to-indigo-500', tags: ['Calculus', 'Bac Prep'] },
 ];
 
 export function MarketplacePage({ dict, lang }: Props) {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [search, setSearch] = useState('');
 
   const getCategoryLabel = (key: string): string => {
     if (key === 'all') return dict.marketplace.all;
     const catKey = key as keyof typeof dict.categories;
     return dict.categories[catKey] as string;
   };
+
+  const filtered = experts.filter((e) => {
+    const matchesCategory = activeCategory === 'all' || e.category === activeCategory;
+    const q = search.toLowerCase();
+    const matchesSearch = !q || e.name.toLowerCase().includes(q) || e.role.toLowerCase().includes(q) || e.tags.some((t) => t.toLowerCase().includes(q));
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <section className="pt-24 pb-20 min-h-screen">
@@ -55,6 +63,8 @@ export function MarketplacePage({ dict, lang }: Props) {
               type="text"
               placeholder={dict.marketplace.searchPlaceholder}
               className="pl-10 h-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <Button variant="outline" size="default" className="gap-2 shrink-0">
@@ -82,7 +92,7 @@ export function MarketplacePage({ dict, lang }: Props) {
 
         {/* Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {experts.map((expert) => (
+          {filtered.map((expert) => (
             <a
               key={expert.slug}
               href={localePath(lang, `/${expert.slug}`)}

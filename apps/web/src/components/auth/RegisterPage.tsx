@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/i18n/types';
@@ -23,6 +24,7 @@ export function RegisterPage({ dict, lang }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +37,8 @@ export function RegisterPage({ dict, lang }: Props) {
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       setSuccess(`Account created for ${res.data.user.firstName} (${res.data.user.role})`);
+      const dest = res.data.user.role === 'EXPERT' ? '/dashboard' : '/marketplace';
+      setTimeout(() => router.push(localePath(lang, dest)), 800);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
