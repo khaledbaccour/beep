@@ -1,3 +1,4 @@
+import { getDictionary, type Locale } from '@/i18n';
 import { Navbar } from '@/components/layout/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { CategoriesSection } from '@/components/landing/CategoriesSection';
@@ -8,18 +9,25 @@ import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { Footer } from '@/components/layout/Footer';
 
-export default function HomePage() {
+interface PageProps {
+  params: { lang: Locale };
+}
+
+export default async function HomePage({ params }: PageProps) {
+  const dict = await getDictionary(params.lang);
+  const lang = params.lang;
+
   return (
     <main className="relative overflow-hidden">
-      <Navbar />
-      <HeroSection />
-      <CategoriesSection />
-      <FeaturedExpertsSection />
-      <HowItWorksSection />
-      <StatsSection />
-      <TestimonialsSection />
-      <CTASection />
-      <Footer />
+      <Navbar dict={dict} lang={lang} />
+      <HeroSection dict={dict} lang={lang} />
+      <CategoriesSection dict={dict} lang={lang} />
+      <FeaturedExpertsSection dict={dict} lang={lang} />
+      <HowItWorksSection dict={dict} lang={lang} />
+      <StatsSection dict={dict} lang={lang} />
+      <TestimonialsSection dict={dict} lang={lang} />
+      <CTASection dict={dict} lang={lang} />
+      <Footer dict={dict} lang={lang} />
     </main>
   );
 }

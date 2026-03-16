@@ -2,6 +2,14 @@
 
 import { Star, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import type { Dictionary } from '@/i18n/types';
+import type { Locale } from '@/i18n';
+import { localePath } from '@/lib/i18n-utils';
+
+interface Props {
+  dict: Dictionary;
+  lang: Locale;
+}
 
 const experts = [
   { name: 'Yassine Bouaziz', slug: 'yassine', role: 'Fitness Coach', rating: 4.9, sessions: 340, price: 35, initials: 'YB', gradient: 'from-rose-400 to-orange-400', tags: ['Weight Loss', 'HIIT', 'Nutrition'] },
@@ -12,22 +20,22 @@ const experts = [
   { name: 'Dr. Ines Maalej', slug: 'dr-ines', role: 'Psychologist', rating: 5.0, sessions: 198, price: 70, initials: 'IM', gradient: 'from-pink-400 to-rose-400', tags: ['Anxiety', 'CBT', 'Couples'] },
 ];
 
-export function FeaturedExpertsSection() {
+export function FeaturedExpertsSection({ dict, lang }: Props) {
   return (
     <section className="py-20 sm:py-28 bg-ink-50/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10">
           <div>
-            <p className="text-sm font-mono font-medium text-brand-500 mb-2">Featured</p>
+            <p className="text-sm font-mono font-medium text-brand-500 mb-2">{dict.featured.label}</p>
             <h2 className="text-3xl sm:text-4xl font-display font-bold text-ink-900 tracking-tight">
-              Top-rated experts
+              {dict.featured.title}
             </h2>
           </div>
           <a
-            href="/marketplace"
+            href={localePath(lang, '/marketplace')}
             className="mt-4 sm:mt-0 text-sm font-medium text-ink-500 hover:text-ink-900 flex items-center gap-1.5 transition-colors group"
           >
-            View all experts
+            {dict.featured.viewAll}
             <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
           </a>
         </div>
@@ -36,7 +44,7 @@ export function FeaturedExpertsSection() {
           {experts.map((expert) => (
             <a
               key={expert.slug}
-              href={`/${expert.slug}`}
+              href={localePath(lang, `/${expert.slug}`)}
               className="group rounded-xl border border-ink-200/60 bg-white p-5 transition-all duration-200 hover:shadow-card-hover hover:border-ink-300"
             >
               <div className="flex items-start justify-between mb-4">
@@ -69,9 +77,9 @@ export function FeaturedExpertsSection() {
               </div>
 
               <div className="flex items-center justify-between pt-3.5 border-t border-ink-100">
-                <span className="text-xs text-ink-400">{expert.sessions} sessions</span>
+                <span className="text-xs text-ink-400">{expert.sessions} {dict.featured.sessions}</span>
                 <span className="text-base font-bold text-ink-900">
-                  {expert.price} <span className="text-xs font-normal text-ink-400">TND</span>
+                  {expert.price} <span className="text-xs font-normal text-ink-400">{dict.common.tnd}</span>
                 </span>
               </div>
             </a>

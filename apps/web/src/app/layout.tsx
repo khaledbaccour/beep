@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Beep - Book Expert Sessions Instantly',
@@ -11,9 +10,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en" className="scroll-smooth">
-      <body className="min-h-screen bg-white">{children}</body>
-    </html>
-  );
+  return children;
 }

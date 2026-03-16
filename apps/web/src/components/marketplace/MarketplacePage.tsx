@@ -4,8 +4,16 @@ import { useState } from 'react';
 import { Search, Star, SlidersHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import type { Dictionary } from '@/i18n/types';
+import type { Locale } from '@/i18n';
+import { localePath } from '@/lib/i18n-utils';
 
-const categories = ['All', 'Fitness', 'Education', 'Medicine', 'Law', 'Business', 'Technology', 'Psychology', 'Languages'];
+interface Props {
+  dict: Dictionary;
+  lang: Locale;
+}
+
+const categoryKeys = ['all', 'fitness', 'education', 'medicine', 'law', 'business', 'technology', 'psychology', 'languages'] as const;
 
 const experts = [
   { name: 'Yassine Bouaziz', slug: 'yassine', role: 'Fitness Coach', price: 35, rating: 4.9, sessions: 340, initials: 'YB', gradient: 'from-rose-400 to-orange-400', tags: ['Weight Loss', 'HIIT'] },
@@ -19,8 +27,14 @@ const experts = [
   { name: 'Nabil Sfar', slug: 'nabil', role: 'Math Tutor', price: 20, rating: 4.6, sessions: 567, initials: 'NS', gradient: 'from-blue-500 to-indigo-500', tags: ['Calculus', 'Bac Prep'] },
 ];
 
-export function MarketplacePage() {
-  const [activeCategory, setActiveCategory] = useState('All');
+export function MarketplacePage({ dict, lang }: Props) {
+  const [activeCategory, setActiveCategory] = useState('all');
+
+  const getCategoryLabel = (key: string): string => {
+    if (key === 'all') return dict.marketplace.all;
+    const catKey = key as keyof typeof dict.categories;
+    return dict.categories[catKey] as string;
+  };
 
   return (
     <section className="pt-24 pb-20 min-h-screen">
@@ -28,9 +42,9 @@ export function MarketplacePage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-display font-bold text-ink-900 tracking-tight mb-1">
-            Marketplace
+            {dict.marketplace.title}
           </h1>
-          <p className="text-ink-500 text-sm">Discover and book sessions with verified experts.</p>
+          <p className="text-ink-500 text-sm">{dict.marketplace.subtitle}</p>
         </div>
 
         {/* Search + sort */}
@@ -39,29 +53,29 @@ export function MarketplacePage() {
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
             <Input
               type="text"
-              placeholder="Search experts, skills, specialties..."
+              placeholder={dict.marketplace.searchPlaceholder}
               className="pl-10 h-10"
             />
           </div>
           <Button variant="outline" size="default" className="gap-2 shrink-0">
             <SlidersHorizontal size={14} />
-            Filters
+            {dict.marketplace.filters}
           </Button>
         </div>
 
         {/* Category pills */}
         <div className="flex gap-1.5 mb-8 overflow-x-auto pb-1 scrollbar-none">
-          {categories.map((cat) => (
+          {categoryKeys.map((key) => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+              key={key}
+              onClick={() => setActiveCategory(key)}
               className={`px-3.5 py-1.5 rounded-md text-xs font-medium whitespace-nowrap border transition-all ${
-                activeCategory === cat
+                activeCategory === key
                   ? 'bg-ink-900 text-white border-ink-900'
                   : 'bg-white text-ink-500 border-ink-200 hover:border-ink-300 hover:text-ink-700'
               }`}
             >
-              {cat}
+              {getCategoryLabel(key)}
             </button>
           ))}
         </div>
@@ -71,7 +85,7 @@ export function MarketplacePage() {
           {experts.map((expert) => (
             <a
               key={expert.slug}
-              href={`/${expert.slug}`}
+              href={localePath(lang, `/${expert.slug}`)}
               className="group rounded-xl border border-ink-200/60 bg-white p-5 transition-all duration-200 hover:shadow-card-hover hover:border-ink-300"
             >
               <div className="flex items-start justify-between mb-4">
@@ -101,9 +115,9 @@ export function MarketplacePage() {
               </div>
 
               <div className="flex items-center justify-between pt-3.5 border-t border-ink-100">
-                <span className="text-xs text-ink-400">{expert.sessions} sessions</span>
+                <span className="text-xs text-ink-400">{expert.sessions} {dict.marketplace.sessions}</span>
                 <span className="text-base font-bold text-ink-900">
-                  {expert.price} <span className="text-xs font-normal text-ink-400">TND</span>
+                  {expert.price} <span className="text-xs font-normal text-ink-400">{dict.common.tnd}</span>
                 </span>
               </div>
             </a>

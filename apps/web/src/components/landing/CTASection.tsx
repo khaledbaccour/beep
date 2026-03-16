@@ -2,8 +2,16 @@
 
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import type { Dictionary } from '@/i18n/types';
+import type { Locale } from '@/i18n';
+import { localePath } from '@/lib/i18n-utils';
 
-export function CTASection() {
+interface Props {
+  dict: Dictionary;
+  lang: Locale;
+}
+
+export function CTASection({ dict, lang }: Props) {
   return (
     <section className="py-20 sm:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -21,10 +29,10 @@ export function CTASection() {
 
           <div className="relative max-w-2xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
-              Ready to get started?
+              {dict.cta.title}
             </h2>
             <p className="text-base sm:text-lg text-ink-400 mb-8 leading-relaxed">
-              Whether you need expert guidance or want to share your knowledge &mdash; Beep connects you in seconds.
+              {dict.cta.subtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -33,8 +41,8 @@ export function CTASection() {
                 className="bg-brand-500 text-white hover:bg-brand-600 shadow-warm hover:shadow-warm-lg"
                 asChild
               >
-                <a href="/register">
-                  Create free account
+                <a href={localePath(lang, '/register')}>
+                  {dict.cta.primary}
                   <ArrowRight size={16} />
                 </a>
               </Button>
@@ -44,12 +52,12 @@ export function CTASection() {
                 className="border-ink-600 text-ink-300 hover:text-white hover:bg-ink-800 hover:border-ink-500"
                 asChild
               >
-                <a href="/marketplace">Browse experts</a>
+                <a href={localePath(lang, '/marketplace')}>{dict.cta.secondary}</a>
               </Button>
             </div>
 
             <p className="mt-8 text-xs text-ink-500">
-              No credit card required &middot; Free for clients &middot; Experts pay only when they earn
+              {dict.cta.finePrint}
             </p>
           </div>
         </div>

@@ -1,13 +1,21 @@
 'use client';
 
-const stats = [
-  { value: '500+', label: 'Verified experts', sub: 'across 8 categories' },
-  { value: '12K+', label: 'Sessions completed', sub: 'and counting' },
-  { value: '4.9', label: 'Average rating', sub: 'from 8,000+ reviews' },
-  { value: '<2min', label: 'Average booking time', sub: 'find & book instantly' },
-];
+import type { Dictionary } from '@/i18n/types';
+import type { Locale } from '@/i18n';
 
-export function StatsSection() {
+interface Props {
+  dict: Dictionary;
+  lang: Locale;
+}
+
+export function StatsSection({ dict, lang }: Props) {
+  const stats = [
+    { value: dict.stats.experts, label: dict.stats.expertsLabel, sub: dict.stats.expertsSub },
+    { value: dict.stats.sessions, label: dict.stats.sessionsLabel, sub: dict.stats.sessionsSub },
+    { value: dict.stats.rating, label: dict.stats.ratingLabel, sub: dict.stats.ratingSub },
+    { value: dict.stats.booking, label: dict.stats.bookingLabel, sub: dict.stats.bookingSub },
+  ];
+
   return (
     <section className="py-16 sm:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">

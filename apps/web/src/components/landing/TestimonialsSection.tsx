@@ -1,39 +1,46 @@
 'use client';
 
 import { Star } from 'lucide-react';
+import type { Dictionary } from '@/i18n/types';
+import type { Locale } from '@/i18n';
 
-const testimonials = [
-  {
-    name: 'Saloua Mokadem',
-    role: 'Client',
-    text: 'I found an incredible English tutor on Beep in minutes. The video quality was perfect and booking was seamless. My IELTS score went from 6.0 to 7.5 in just 2 months!',
-    initials: 'SM',
-    gradient: 'from-pink-400 to-rose-400',
-  },
-  {
-    name: 'Dr. Khalil Jebali',
-    role: 'Expert, Cardiologist',
-    text: 'As a doctor, I can now offer consultations beyond my clinic hours. Beep handles scheduling, payments, and video \u2014 I just focus on my patients. My income grew 40%.',
-    initials: 'KJ',
-    gradient: 'from-emerald-400 to-teal-400',
-  },
-  {
-    name: 'Narimen Trabelsi',
-    role: 'Client',
-    text: 'The refund policy gives me confidence to try new experts. I booked a fitness coach, and when my schedule changed, the cancellation was instant and fair.',
-    initials: 'NT',
-    gradient: 'from-violet-400 to-purple-400',
-  },
-];
+interface Props {
+  dict: Dictionary;
+  lang: Locale;
+}
 
-export function TestimonialsSection() {
+export function TestimonialsSection({ dict, lang }: Props) {
+  const testimonials = [
+    {
+      name: dict.testimonials.t1Name,
+      role: dict.testimonials.t1Role,
+      text: dict.testimonials.t1Text,
+      initials: 'SM',
+      gradient: 'from-pink-400 to-rose-400',
+    },
+    {
+      name: dict.testimonials.t2Name,
+      role: dict.testimonials.t2Role,
+      text: dict.testimonials.t2Text,
+      initials: 'KJ',
+      gradient: 'from-emerald-400 to-teal-400',
+    },
+    {
+      name: dict.testimonials.t3Name,
+      role: dict.testimonials.t3Role,
+      text: dict.testimonials.t3Text,
+      initials: 'NT',
+      gradient: 'from-violet-400 to-purple-400',
+    },
+  ];
+
   return (
     <section className="py-20 sm:py-28 bg-ink-50/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-12">
-          <p className="text-sm font-mono font-medium text-brand-500 mb-2">Testimonials</p>
+          <p className="text-sm font-mono font-medium text-brand-500 mb-2">{dict.testimonials.label}</p>
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-ink-900 tracking-tight">
-            Trusted by thousands
+            {dict.testimonials.title}
           </h2>
         </div>
 

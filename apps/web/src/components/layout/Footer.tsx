@@ -1,36 +1,45 @@
 'use client';
 
-const footerLinks = [
-  {
-    title: 'Platform',
-    links: [
-      { label: 'Marketplace', href: '/marketplace' },
-      { label: 'Categories', href: '#categories' },
-      { label: 'How it works', href: '#how-it-works' },
-      { label: 'Pricing', href: '#' },
-    ],
-  },
-  {
-    title: 'For experts',
-    links: [
-      { label: 'Become an expert', href: '/register?role=expert' },
-      { label: 'Dashboard', href: '#' },
-      { label: 'Earnings', href: '#' },
-      { label: 'Support', href: '#' },
-    ],
-  },
-  {
-    title: 'Company',
-    links: [
-      { label: 'About', href: '#' },
-      { label: 'Privacy', href: '#' },
-      { label: 'Terms', href: '#' },
-      { label: 'Contact', href: '#' },
-    ],
-  },
-];
+import type { Dictionary } from '@/i18n/types';
+import type { Locale } from '@/i18n';
+import { localePath } from '@/lib/i18n-utils';
 
-export function Footer() {
+interface Props {
+  dict: Dictionary;
+  lang: Locale;
+}
+
+export function Footer({ dict, lang }: Props) {
+  const footerLinks = [
+    {
+      title: dict.footer.platform,
+      links: [
+        { label: dict.footer.marketplace, href: localePath(lang, '/marketplace') },
+        { label: dict.footer.categoriesLink, href: '#categories' },
+        { label: dict.footer.howItWorksLink, href: '#how-it-works' },
+        { label: dict.footer.pricing, href: '#' },
+      ],
+    },
+    {
+      title: dict.footer.forExperts,
+      links: [
+        { label: dict.footer.becomeExpert, href: localePath(lang, '/register') + '?role=expert' },
+        { label: dict.footer.dashboard, href: '#' },
+        { label: dict.footer.earnings, href: '#' },
+        { label: dict.footer.support, href: '#' },
+      ],
+    },
+    {
+      title: dict.footer.company,
+      links: [
+        { label: dict.footer.about, href: '#' },
+        { label: dict.footer.privacy, href: '#' },
+        { label: dict.footer.terms, href: '#' },
+        { label: dict.footer.contact, href: '#' },
+      ],
+    },
+  ];
+
   return (
     <footer className="border-t border-ink-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
@@ -46,7 +55,7 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm text-ink-400 leading-relaxed max-w-[240px] mb-4">
-              Tunisia&apos;s expert booking platform. 1-on-1 video sessions with verified professionals.
+              {dict.footer.description}
             </p>
           </div>
 
@@ -74,11 +83,11 @@ export function Footer() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between pt-8 mt-8 border-t border-ink-100 gap-3">
           <p className="text-xs text-ink-400">
-            &copy; {new Date().getFullYear()} Beep.tn. All rights reserved.
+            &copy; {new Date().getFullYear()} {dict.footer.copyright}
           </p>
           <div className="flex items-center gap-4 text-xs text-ink-400">
-            <a href="#" className="hover:text-ink-700 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-ink-700 transition-colors">Terms</a>
+            <a href="#" className="hover:text-ink-700 transition-colors">{dict.footer.privacyPolicy}</a>
+            <a href="#" className="hover:text-ink-700 transition-colors">{dict.footer.termsOfService}</a>
           </div>
         </div>
       </div>

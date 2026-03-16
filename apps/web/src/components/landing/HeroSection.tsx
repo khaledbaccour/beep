@@ -3,8 +3,16 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Star, CheckCircle2, Play } from 'lucide-react';
+import type { Dictionary } from '@/i18n/types';
+import type { Locale } from '@/i18n';
+import { localePath } from '@/lib/i18n-utils';
 
-export function HeroSection() {
+interface Props {
+  dict: Dictionary;
+  lang: Locale;
+}
+
+export function HeroSection({ dict, lang }: Props) {
   return (
     <section className="relative pt-28 pb-16 sm:pt-36 sm:pb-24">
       {/* Subtle grid pattern */}
@@ -24,40 +32,39 @@ export function HeroSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500" />
               </span>
-              Now live in Tunisia
+              {dict.hero.badge}
             </Badge>
           </div>
 
-          {/* Headline - cal.com style: large, bold, single-purpose */}
+          {/* Headline */}
           <h1 className="animate-fade-up opacity-0 stagger-1 text-[42px] sm:text-[56px] lg:text-[72px] font-display font-bold leading-[1.05] tracking-[-0.02em] text-ink-900">
-            Scheduling for{' '}
+            {dict.hero.headline}{' '}
             <span className="relative">
-              <span className="text-brand-500">experts</span>
+              <span className="text-brand-500">{dict.hero.headlineAccent}</span>
               <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 200 8" fill="none">
                 <path d="M1 5.5C47 2 87 1 100 2.5c30 1.5 60 2.5 99 2" stroke="#FF6B54" strokeWidth="2.5" strokeLinecap="round" opacity="0.4" />
               </svg>
             </span>
-            {' '}who{'\n'}mean business.
+            {' '}{dict.hero.headlineSuffix}
           </h1>
 
           {/* Subtext */}
           <p className="animate-fade-up opacity-0 stagger-2 mt-6 text-lg sm:text-xl text-ink-500 max-w-2xl leading-relaxed">
-            Beep gives every professional in Tunisia a personal booking page.
-            Clients find you, pick a time, pay securely, and join a video call &mdash; all in one place.
+            {dict.hero.subtitle}
           </p>
 
           {/* CTA row */}
           <div className="animate-fade-up opacity-0 stagger-3 mt-10 flex flex-col sm:flex-row items-start gap-3">
             <Button variant="brand" size="lg" asChild>
-              <a href="/register">
-                Start for free
+              <a href={localePath(lang, '/register')}>
+                {dict.hero.ctaPrimary}
                 <ArrowRight size={16} />
               </a>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <a href="/marketplace">
+              <a href={localePath(lang, '/marketplace')}>
                 <Play size={14} className="text-ink-400" />
-                Browse experts
+                {dict.hero.ctaSecondary}
               </a>
             </Button>
           </div>
@@ -76,7 +83,7 @@ export function HeroSection() {
                   </div>
                 ))}
               </div>
-              <span className="text-sm text-ink-500">500+ experts</span>
+              <span className="text-sm text-ink-500">{dict.hero.trustExperts}</span>
             </div>
             <div className="h-4 w-px bg-ink-200 hidden sm:block" />
             <div className="flex items-center gap-1.5">
@@ -85,17 +92,17 @@ export function HeroSection() {
                   <Star key={s} size={13} fill="#F59E0B" stroke="none" />
                 ))}
               </div>
-              <span className="text-sm text-ink-500">4.9/5 from 8k+ reviews</span>
+              <span className="text-sm text-ink-500">{dict.hero.trustRating}</span>
             </div>
             <div className="h-4 w-px bg-ink-200 hidden sm:block" />
             <div className="flex items-center gap-1.5">
               <CheckCircle2 size={14} className="text-success-500" />
-              <span className="text-sm text-ink-500">Free for clients</span>
+              <span className="text-sm text-ink-500">{dict.hero.trustFree}</span>
             </div>
           </div>
         </div>
 
-        {/* Product preview - cal.com-style browser mockup */}
+        {/* Product preview - browser mockup */}
         <div className="animate-fade-up opacity-0 stagger-6 mt-16 lg:mt-20">
           <div className="rounded-xl border border-ink-200/80 bg-white shadow-elevated overflow-hidden">
             {/* Browser chrome */}
@@ -107,7 +114,7 @@ export function HeroSection() {
               </div>
               <div className="flex-1 max-w-sm mx-auto">
                 <div className="h-7 rounded-md bg-white border border-ink-100 flex items-center justify-center">
-                  <span className="text-[11px] text-ink-400 font-mono tracking-tight">beep.tn/dr-amira</span>
+                  <span className="text-[11px] text-ink-400 font-mono tracking-tight">{dict.hero.mockupUrl}</span>
                 </div>
               </div>
               <div className="w-16" />
@@ -124,19 +131,19 @@ export function HeroSection() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-display font-bold text-ink-900">Dr. Amira Ben Salem</h3>
+                        <h3 className="text-lg font-display font-bold text-ink-900">{dict.hero.mockupName}</h3>
                         <Badge variant="success" className="text-[10px]">
                           <CheckCircle2 size={10} />
-                          Verified
+                          {dict.hero.mockupVerified}
                         </Badge>
                       </div>
-                      <p className="text-sm text-ink-500 mt-0.5">Dermatologist &middot; Tunis</p>
+                      <p className="text-sm text-ink-500 mt-0.5">{dict.hero.mockupRole} &middot; {dict.hero.mockupLocation}</p>
                     </div>
                   </div>
 
-                  {/* Time slots - cal.com style */}
+                  {/* Time slots */}
                   <div className="space-y-3">
-                    <p className="text-xs font-medium text-ink-400 uppercase tracking-wider">Available this week</p>
+                    <p className="text-xs font-medium text-ink-400 uppercase tracking-wider">{dict.hero.mockupAvailable}</p>
                     {['Mon', 'Tue', 'Wed', 'Thu'].map((day, i) => (
                       <div key={day} className="flex items-center gap-4">
                         <span className="text-xs text-ink-400 w-10 font-mono font-medium">{day}</span>
@@ -161,19 +168,19 @@ export function HeroSection() {
                 {/* Booking card */}
                 <div className="lg:w-64 shrink-0">
                   <div className="rounded-lg border border-ink-200 p-5">
-                    <p className="text-xs font-medium text-ink-400 uppercase tracking-wider mb-1">Session</p>
+                    <p className="text-xs font-medium text-ink-400 uppercase tracking-wider mb-1">{dict.hero.mockupSession}</p>
                     <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-3xl font-display font-bold text-ink-900">45</span>
-                      <span className="text-sm text-ink-400">TND</span>
+                      <span className="text-3xl font-display font-bold text-ink-900">{dict.hero.mockupPrice}</span>
+                      <span className="text-sm text-ink-400">{dict.hero.mockupCurrency}</span>
                     </div>
-                    <p className="text-xs text-ink-400">30 min video call</p>
+                    <p className="text-xs text-ink-400">{dict.hero.mockupDuration}</p>
 
                     <Button variant="brand" className="w-full mt-5" size="default">
-                      Book session
+                      {dict.hero.mockupBook}
                     </Button>
 
                     <div className="mt-4 space-y-2">
-                      {['Full refund 24h+ before', 'Secure escrow payment', 'HD video, no downloads'].map((text) => (
+                      {[dict.hero.mockupRefund, dict.hero.mockupEscrow, dict.hero.mockupVideo].map((text) => (
                         <div key={text} className="flex items-center gap-2">
                           <CheckCircle2 size={12} className="text-success-500 shrink-0" />
                           <span className="text-[11px] text-ink-400">{text}</span>

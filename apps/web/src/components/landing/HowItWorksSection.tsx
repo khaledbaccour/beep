@@ -1,42 +1,49 @@
 'use client';
 
 import { Search, CalendarDays, Video } from 'lucide-react';
+import type { Dictionary } from '@/i18n/types';
+import type { Locale } from '@/i18n';
 
-const steps = [
-  {
-    number: '01',
-    title: 'Find your expert',
-    description: 'Browse by category, specialty, or price. Read reviews from real clients. Every expert is verified.',
-    icon: Search,
-    color: 'text-brand-500',
-    bg: 'bg-brand-50',
-  },
-  {
-    number: '02',
-    title: 'Pick a time & pay',
-    description: 'Choose an available slot on their calendar. Pay securely — funds are held until the session completes.',
-    icon: CalendarDays,
-    color: 'text-violet-500',
-    bg: 'bg-violet-50',
-  },
-  {
-    number: '03',
-    title: 'Join the video call',
-    description: 'Connect face-to-face in your browser. No downloads, no subscriptions. Just click and talk.',
-    icon: Video,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-50',
-  },
-];
+interface Props {
+  dict: Dictionary;
+  lang: Locale;
+}
 
-export function HowItWorksSection() {
+export function HowItWorksSection({ dict, lang }: Props) {
+  const steps = [
+    {
+      number: '01',
+      title: dict.howItWorks.step1Title,
+      description: dict.howItWorks.step1Desc,
+      icon: Search,
+      color: 'text-brand-500',
+      bg: 'bg-brand-50',
+    },
+    {
+      number: '02',
+      title: dict.howItWorks.step2Title,
+      description: dict.howItWorks.step2Desc,
+      icon: CalendarDays,
+      color: 'text-violet-500',
+      bg: 'bg-violet-50',
+    },
+    {
+      number: '03',
+      title: dict.howItWorks.step3Title,
+      description: dict.howItWorks.step3Desc,
+      icon: Video,
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-50',
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-20 sm:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="max-w-2xl mb-14">
-          <p className="text-sm font-mono font-medium text-brand-500 mb-2">How it works</p>
+          <p className="text-sm font-mono font-medium text-brand-500 mb-2">{dict.howItWorks.label}</p>
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-ink-900 tracking-tight">
-            Three steps to expertise
+            {dict.howItWorks.title}
           </h2>
         </div>
 
