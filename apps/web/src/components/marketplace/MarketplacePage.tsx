@@ -1,48 +1,134 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, Star, SlidersHorizontal } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Search, Star, SlidersHorizontal, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
 import { localePath } from '@/lib/i18n-utils';
+import { searchExperts, type ExpertProfile, type MarketplaceSearchParams } from '@/lib/api';
 
 interface Props {
   dict: Dictionary;
   lang: Locale;
 }
 
+const CATEGORY_TO_ENUM: Record<string, string> = {
+  fitness: 'FITNESS',
+  education: 'EDUCATION',
+  design: 'ART',
+  law: 'LAW',
+  business: 'BUSINESS',
+  technology: 'TECHNOLOGY',
+  coaching: 'PSYCHOLOGY',
+  languages: 'LANGUAGES',
+};
+
 const categoryKeys = ['all', 'fitness', 'education', 'design', 'law', 'business', 'technology', 'coaching', 'languages'] as const;
 
-const experts = [
-  { name: 'Yassine Bouaziz', slug: 'yassine', role: 'Fitness Coach', category: 'fitness', price: 35, rating: 4.9, sessions: 340, initials: 'YB', gradient: 'from-rose-400 to-orange-400', tags: ['Weight Loss', 'HIIT'] },
-  { name: 'Amira Ben Salem', slug: 'amira', role: 'Graphic Designer', category: 'design', price: 80, rating: 5.0, sessions: 512, initials: 'AB', gradient: 'from-emerald-400 to-teal-400', tags: ['Branding', 'UI/UX'] },
-  { name: 'Mehdi Trabelsi', slug: 'mehdi', role: 'Software Engineer', category: 'technology', price: 50, rating: 4.8, sessions: 189, initials: 'MT', gradient: 'from-blue-400 to-cyan-400', tags: ['React', 'System Design'] },
-  { name: 'Sana Khlifi', slug: 'sana', role: 'Business Consultant', category: 'business', price: 65, rating: 4.9, sessions: 267, initials: 'SK', gradient: 'from-violet-400 to-purple-400', tags: ['Startup', 'Strategy'] },
-  { name: 'Khalil Jebali', slug: 'khalil', role: 'English Teacher', category: 'languages', price: 25, rating: 4.7, sessions: 421, initials: 'KJ', gradient: 'from-amber-400 to-yellow-400', tags: ['IELTS', 'Speaking'] },
-  { name: 'Ines Maalej', slug: 'ines', role: 'Life Coach', category: 'coaching', price: 70, rating: 5.0, sessions: 198, initials: 'IM', gradient: 'from-pink-400 to-rose-400', tags: ['Mindset', 'Career'] },
-  { name: 'Omar Chakroun', slug: 'omar', role: 'Lawyer', category: 'law', price: 90, rating: 4.8, sessions: 145, initials: 'OC', gradient: 'from-amber-500 to-orange-500', tags: ['Business Law', 'Contracts'] },
-  { name: 'Leila Hamdi', slug: 'leila', role: 'Photographer', category: 'design', price: 40, rating: 4.9, sessions: 278, initials: 'LH', gradient: 'from-green-400 to-emerald-400', tags: ['Portraits', 'Events'] },
-  { name: 'Nabil Sfar', slug: 'nabil', role: 'Math Tutor', category: 'education', price: 20, rating: 4.6, sessions: 567, initials: 'NS', gradient: 'from-blue-500 to-indigo-500', tags: ['Calculus', 'Bac Prep'] },
-];
+const GRADIENT_BY_CATEGORY: Record<string, string> = {
+  FITNESS: 'from-rose-400 to-orange-400',
+  EDUCATION: 'from-blue-500 to-indigo-500',
+  ART: 'from-emerald-400 to-teal-400',
+  LAW: 'from-amber-500 to-orange-500',
+  BUSINESS: 'from-violet-400 to-purple-400',
+  TECHNOLOGY: 'from-blue-400 to-cyan-400',
+  PSYCHOLOGY: 'from-pink-400 to-rose-400',
+  LANGUAGES: 'from-amber-400 to-yellow-400',
+};
+
+const PAGE_SIZE = 20;
+
+function getInitials(firstName: string, lastName: string): string {
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+}
+
+function formatPrice(millimes: number): number {
+  return Math.round(millimes / 1000);
+}
 
 export function MarketplacePage({ dict, lang }: Props) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
+  const [experts, setExperts] = useState<ExpertProfile[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchExperts = useCallback(async (
+    category: string,
+    searchTerm: string,
+    pageNum: number,
+    append: boolean,
+  ) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    setError(null);
+
+    try {
+      const params: MarketplaceSearchParams = {
+        page: pageNum,
+        limit: PAGE_SIZE,
+      };
+      if (category !== 'all') {
+        params.category = CATEGORY_TO_ENUM[category] ?? category.toUpperCase();
+      }
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
+
+      const result = await searchExperts(params);
+      if (append) {
+        setExperts((prev) => [...prev, ...result.data]);
+      } else {
+        setExperts(result.data);
+      }
+      setTotalPages(result.meta.totalPages);
+      setPage(pageNum);
+    } catch {
+      setError(dict.marketplace.error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [dict.marketplace.error]);
+
+  // Initial load + re-fetch when category changes
+  useEffect(() => {
+    fetchExperts(activeCategory, search, 1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCategory]);
+
+  // Debounced search
+  useEffect(() => {
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(() => {
+      fetchExperts(activeCategory, search, 1, false);
+    }, 350);
+    return () => {
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const handleLoadMore = () => {
+    if (page < totalPages && !loadingMore) {
+      fetchExperts(activeCategory, search, page + 1, true);
+    }
+  };
 
   const getCategoryLabel = (key: string): string => {
     if (key === 'all') return dict.marketplace.all;
     const catKey = key as keyof typeof dict.categories;
     return dict.categories[catKey] as string;
   };
-
-  const filtered = experts.filter((e) => {
-    const matchesCategory = activeCategory === 'all' || e.category === activeCategory;
-    const q = search.toLowerCase();
-    const matchesSearch = !q || e.name.toLowerCase().includes(q) || e.role.toLowerCase().includes(q) || e.tags.some((t) => t.toLowerCase().includes(q));
-    return matchesCategory && matchesSearch;
-  });
 
   return (
     <section className="pt-24 pb-20 min-h-screen">
@@ -79,10 +165,10 @@ export function MarketplacePage({ dict, lang }: Props) {
             <button
               key={key}
               onClick={() => setActiveCategory(key)}
-              className={`px-3.5 py-1.5 rounded-md text-xs font-medium whitespace-nowrap border transition-all ${
+              className={`px-3.5 py-1.5 rounded-md text-xs font-bold whitespace-nowrap border-2 transition-all ${
                 activeCategory === key
-                  ? 'bg-ink-900 text-white border-ink-900'
-                  : 'bg-white text-ink-500 border-ink-200 hover:border-ink-300 hover:text-ink-700'
+                  ? 'bg-ink-900 text-white border-ink-900 shadow-retro-sm'
+                  : 'bg-white text-ink-600 border-ink-900 hover:bg-ink-50'
               }`}
             >
               {getCategoryLabel(key)}
@@ -90,49 +176,108 @@ export function MarketplacePage({ dict, lang }: Props) {
           ))}
         </div>
 
-        {/* Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((expert) => (
-            <a
-              key={expert.slug}
-              href={localePath(lang, `/${expert.slug}`)}
-              className="group rounded-xl border border-ink-200/60 bg-white p-5 transition-all duration-200 hover:shadow-card-hover hover:border-ink-300"
+        {/* Loading state */}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={24} className="animate-spin text-ink-400 mr-2" />
+            <span className="text-ink-400 text-sm">{dict.marketplace.loading}</span>
+          </div>
+        )}
+
+        {/* Error state */}
+        {!loading && error && (
+          <div className="text-center py-20">
+            <p className="text-ink-500 text-sm">{error}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => fetchExperts(activeCategory, search, 1, false)}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${expert.gradient} flex items-center justify-center text-white text-xs font-bold`}>
-                    {expert.initials}
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-ink-900 group-hover:text-brand-500 transition-colors">
-                      {expert.name}
-                    </h3>
-                    <p className="text-xs text-ink-400">{expert.role}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
-                  <Star size={10} fill="#F59E0B" stroke="none" />
-                  {expert.rating}
-                </div>
-              </div>
+              {dict.marketplace.loadMore}
+            </Button>
+          </div>
+        )}
 
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {expert.tags.map((tag) => (
-                  <span key={tag} className="px-2 py-0.5 text-[11px] font-medium rounded-md bg-ink-50 text-ink-500 border border-ink-100">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+        {/* Empty state */}
+        {!loading && !error && experts.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-ink-500 text-sm">{dict.marketplace.noResults}</p>
+          </div>
+        )}
 
-              <div className="flex items-center justify-between pt-3.5 border-t border-ink-100">
-                <span className="text-xs text-ink-400">{expert.sessions} {dict.marketplace.sessions}</span>
-                <span className="text-base font-bold text-ink-900">
-                  {expert.price} <span className="text-xs font-normal text-ink-400">{dict.common.tnd}</span>
-                </span>
+        {/* Grid */}
+        {!loading && !error && experts.length > 0 && (
+          <>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {experts.map((expert) => {
+                const gradient = GRADIENT_BY_CATEGORY[expert.category] ?? 'from-gray-400 to-gray-500';
+                const initials = getInitials(expert.firstName, expert.lastName);
+                const price = formatPrice(expert.sessionPriceMillimes);
+
+                return (
+                  <a
+                    key={expert.id}
+                    href={localePath(lang, `/${expert.slug}`)}
+                    className="group rounded-2xl border-2 border-ink-900 bg-white p-5 shadow-retro transition-all duration-200 hover:-translate-y-0.5 hover:shadow-retro-md"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full border-2 border-ink-900 bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xs font-black`}>
+                          {initials}
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-ink-900 group-hover:text-brand-500 transition-colors">
+                            {expert.firstName} {expert.lastName}
+                          </h3>
+                          <p className="text-xs text-ink-400">{expert.headline ?? expert.category}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border-2 border-ink-900">
+                        <Star size={10} fill="#F59E0B" stroke="none" />
+                        {expert.averageRating.toFixed(1)}
+                      </div>
+                    </div>
+
+                    {expert.tags && expert.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {expert.tags.map((tag) => (
+                          <span key={tag} className="px-2 py-0.5 text-[11px] font-bold rounded-md bg-ink-50 text-ink-600 border-2 border-ink-900">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-3.5 border-t-2 border-ink-900/10">
+                      <span className="text-xs text-ink-400">{expert.totalSessions} {dict.marketplace.sessions}</span>
+                      <span className="text-base font-bold text-ink-900">
+                        {price} <span className="text-xs font-normal text-ink-400">{dict.common.tnd}</span>
+                      </span>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+
+            {/* Load more */}
+            {page < totalPages && (
+              <div className="flex justify-center mt-8">
+                <Button
+                  variant="outline"
+                  size="default"
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? (
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                  ) : null}
+                  {dict.marketplace.loadMore}
+                </Button>
               </div>
-            </a>
-          ))}
-        </div>
+            )}
+          </>
+        )}
       </div>
     </section>
   );
