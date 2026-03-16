@@ -65,22 +65,7 @@ export function RegisterPage({ dict, lang }: Props) {
           <p className="text-sm text-ink-500">{dict.auth.registerSubtitle}</p>
         </div>
 
-        <div className="flex gap-1 p-1 rounded-lg bg-ink-50 border border-ink-100 mb-6">
-          {(['CLIENT', 'EXPERT'] as const).map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRole(r)}
-              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
-                role === r
-                  ? 'bg-white text-ink-900 shadow-sm'
-                  : 'text-ink-400 hover:text-ink-600'
-              }`}
-            >
-              {r === 'CLIENT' ? dict.auth.needExpert : dict.auth.amExpert}
-            </button>
-          ))}
-        </div>
+        {/* Role is determined by URL: /register = CLIENT, /register?role=expert = EXPERT */}
 
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700" data-testid="register-error">
