@@ -27,8 +27,8 @@ export function CTASection({ dict, lang }: Props) {
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
         {/* Pill badge */}
-        <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-white/70 text-xs font-black uppercase tracking-wider mb-8 border-2 border-white/20">
-          Get started today
+        <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 text-white/70 text-xs font-black uppercase tracking-wider mb-8 border-2 border-white/20 shadow-retro-white">
+          {dict.cta.label}
         </span>
 
         {/* Massive heading */}

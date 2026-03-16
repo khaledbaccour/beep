@@ -76,14 +76,14 @@ export function HowItWorksSection({ dict, lang }: Props) {
             return (
               <div
                 key={step.number}
-                className={`${step.cardBg} border-2 ${step.borderColor} rounded-2xl p-8 relative overflow-hidden transition-transform hover:-translate-y-1`}
+                className={`${step.cardBg} border-2 ${step.borderColor} rounded-2xl p-8 relative overflow-hidden shadow-retro hover:shadow-retro-md hover:-translate-y-1 active:shadow-retro-sm active:translate-y-0 transition-all duration-200`}
               >
                 {/* Step number */}
                 <div className="flex items-center justify-between mb-6">
                   <span className="text-5xl font-display font-black text-ink-900/10">
                     {step.number}
                   </span>
-                  <div className={`w-12 h-12 rounded-full ${step.iconBg} flex items-center justify-center border-2 border-ink-900`}>
+                  <div className={`w-12 h-12 rounded-full ${step.iconBg} flex items-center justify-center border-2 border-ink-900 shadow-retro-sm`}>
                     <Icon size={22} className={step.iconColor} strokeWidth={2} />
                   </div>
                 </div>
