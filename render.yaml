@@ -1,9 +1,11 @@
 services:
+  # ── Production API (deploys from main) ──────────────────
   - type: web
     name: beep-api
     runtime: node
     region: frankfurt
     plan: free
+    branch: main
     rootDir: .
     buildCommand: npm install && npm run build --workspace=packages/shared && npm run build --workspace=apps/api
     startCommand: node apps/api/dist/main.js
@@ -23,9 +25,43 @@ services:
       - key: PORT
         value: 10000
 
+  # ── Development API (deploys from dev) ──────────────────
+  - type: web
+    name: beep-api-dev
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: dev
+    rootDir: .
+    buildCommand: npm install && npm run build --workspace=packages/shared && npm run build --workspace=apps/api
+    startCommand: node apps/api/dist/main.js
+    envVars:
+      - key: NODE_ENV
+        value: development
+      - key: DATABASE_URL
+        fromDatabase:
+          name: beep-db-dev
+          property: connectionString
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false
+      - key: PORT
+        value: 10000
+
 databases:
+  # ── Production Database ─────────────────────────────────
   - name: beep-db
     plan: free
     region: frankfurt
-    databaseName: beep_vqrw
+    databaseName: beep_prod
+    user: beep
+
+  # ── Development Database ────────────────────────────────
+  - name: beep-db-dev
+    plan: free
+    region: frankfurt
+    databaseName: beep_dev
     user: beep
