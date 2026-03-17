@@ -24,15 +24,15 @@ import jwtConfig from './config/jwt.config';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const databaseUrl = config.get<string>('database.url');
-        const isProduction = config.get<string>('NODE_ENV') === 'production';
+        const needsSsl =
+          config.get<string>('NODE_ENV') === 'production' ||
+          (databaseUrl && !databaseUrl.includes('localhost'));
 
         const baseConfig = {
           type: 'postgres' as const,
           autoLoadEntities: true,
           synchronize: true,
-          ...(isProduction && {
-            ssl: { rejectUnauthorized: false },
-          }),
+          ...(needsSsl ? { ssl: { rejectUnauthorized: false } } : {}),
         };
 
         if (databaseUrl) {
@@ -54,7 +54,17 @@ import jwtConfig from './config/jwt.config';
       useFactory: (config: ConfigService) => {
         const redisUrl = config.get<string>('redis.url');
         if (redisUrl) {
-          return { url: redisUrl };
+          const parsed = new URL(redisUrl);
+          const useTls = parsed.protocol === 'rediss:';
+          return {
+            redis: {
+              host: parsed.hostname,
+              port: parseInt(parsed.port || '6379', 10),
+              password: parsed.password || undefined,
+              username: parsed.username || 'default',
+              ...(useTls ? { tls: { rejectUnauthorized: false } } : {}),
+            },
+          };
         }
         return {
           redis: {

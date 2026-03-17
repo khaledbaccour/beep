@@ -78,7 +78,7 @@ export class BookingService {
     booking.expertProfileId = profile.id;
     booking.scheduledStartTime = startTime;
     booking.scheduledEndTime = endTime;
-    booking.amountMillimes = profile.sessionPriceMillimes;
+    booking.amountMillimes = profile.sessionPriceMillimes ?? 0;
     booking.status = BookingStatus.PENDING_PAYMENT;
     booking.sessionRoomId = uuidv4();
 
