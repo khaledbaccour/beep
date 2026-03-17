@@ -294,6 +294,132 @@ export async function cancelBooking(id: string, reason: string): Promise<ApiResp
   return res.json();
 }
 
+/* ── Expert Onboarding ── */
+
+export interface OnboardingStep1Data {
+  slug: string;
+  bio: string;
+  headline?: string;
+  category: string;
+}
+
+export interface OnboardingStep2Data {
+  tags: string[];
+  certifications: { name: string; issuer: string; year: number }[];
+  yearsOfExperience: number;
+  languages: string[];
+}
+
+export interface OnboardingStep3Data {
+  sessionPriceMillimes: number;
+  sessionDurationMinutes: number;
+  timezone: string;
+}
+
+export interface OnboardingStep4Data {
+  payoutMethod: 'BANK_TRANSFER' | 'MOBILE_MONEY';
+  bankName?: string;
+  iban?: string;
+  accountHolderName?: string;
+  mobileProvider?: string;
+  mobilePhone?: string;
+}
+
+export interface OnboardingStatus {
+  currentStep: number;
+  completed: boolean;
+  step1?: OnboardingStep1Data;
+  step2?: OnboardingStep2Data;
+  step3?: OnboardingStep3Data;
+  step4?: OnboardingStep4Data;
+}
+
+export async function saveOnboardingStep1(data: OnboardingStep1Data): Promise<ApiResponse<OnboardingStatus>> {
+  const res = await fetch(`${API_BASE}/experts/onboarding/step-1`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to save step 1' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function saveOnboardingStep2(data: OnboardingStep2Data): Promise<ApiResponse<OnboardingStatus>> {
+  const res = await fetch(`${API_BASE}/experts/onboarding/step-2`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to save step 2' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function saveOnboardingStep3(data: OnboardingStep3Data): Promise<ApiResponse<OnboardingStatus>> {
+  const res = await fetch(`${API_BASE}/experts/onboarding/step-3`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to save step 3' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function saveOnboardingStep4(data: OnboardingStep4Data): Promise<ApiResponse<OnboardingStatus>> {
+  const res = await fetch(`${API_BASE}/experts/onboarding/step-4`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to save step 4' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function completeOnboarding(): Promise<ApiResponse<{ redirectUrl: string }>> {
+  const res = await fetch(`${API_BASE}/experts/onboarding/complete`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to complete onboarding' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getOnboardingStatus(): Promise<ApiResponse<OnboardingStatus>> {
+  const res = await fetch(`${API_BASE}/experts/onboarding/status`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to get onboarding status' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function checkSlugAvailability(slug: string): Promise<ApiResponse<{ available: boolean }>> {
+  const res = await fetch(`${API_BASE}/experts/slug-available/${encodeURIComponent(slug)}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to check slug' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
 /* ── Marketplace Search ── */
 
 export async function searchExperts(
