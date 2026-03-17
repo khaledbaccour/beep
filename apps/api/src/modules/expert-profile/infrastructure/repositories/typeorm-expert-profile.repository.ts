@@ -72,4 +72,8 @@ export class TypeOrmExpertProfileRepository implements IExpertProfileRepository 
     const count = await this.repo.count({ where: { slug } });
     return count > 0;
   }
+
+  async delete(id: string): Promise<void> {
+    await this.repo.delete(id);
+  }
 }

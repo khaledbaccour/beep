@@ -14,6 +14,10 @@ import {
   IUserRepository,
   USER_REPOSITORY,
 } from '../../domain/repositories/user.repository.interface';
+import {
+  IExpertProfileRepository,
+  EXPERT_PROFILE_REPOSITORY,
+} from '../../../expert-profile/domain/repositories/expert-profile.repository.interface';
 import { RegisterDto } from '../dtos/register.dto';
 import { LoginDto } from '../dtos/login.dto';
 import { AuthResponseDto, UserProfileDto } from '../dtos/auth-response.dto';
@@ -25,6 +29,8 @@ export class AuthService {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
+    @Inject(EXPERT_PROFILE_REPOSITORY)
+    private readonly profileRepository: IExpertProfileRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -105,6 +111,12 @@ export class AuthService {
 
     if (user.onboardingCompleted) {
       throw new BadRequestException('Cannot revert after completing onboarding');
+    }
+
+    // Delete incomplete expert profile to free up reserved slug
+    const profile = await this.profileRepository.findByUserId(user.id);
+    if (profile && !profile.onboardingCompleted) {
+      await this.profileRepository.delete(profile.id);
     }
 
     await this.userRepository.update(user.id, {

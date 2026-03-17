@@ -52,6 +52,7 @@ export function DashboardPage({ dict, lang }: Props) {
   const [slugCopied, setSlugCopied] = useState(false);
   const [onboardingBannerDismissed, setOnboardingBannerDismissed] = useState(false);
   const [revertingToClient, setRevertingToClient] = useState(false);
+  const [revertError, setRevertError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -92,13 +93,14 @@ export function DashboardPage({ dict, lang }: Props) {
 
   async function handleRevertToClient() {
     setRevertingToClient(true);
+    setRevertError('');
     try {
       const res = await revertToClient();
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       setUser(res.data.user as unknown as UserProfile);
-    } catch {
-      // ignore - stay as is
+    } catch (err) {
+      setRevertError(err instanceof Error ? err.message : 'Failed to revert. Please try again.');
     } finally {
       setRevertingToClient(false);
     }
@@ -214,6 +216,9 @@ export function DashboardPage({ dict, lang }: Props) {
                         : (d.stayAsClient ?? 'Stay as client')}
                     </button>
                   </div>
+                  {revertError && (
+                    <p className="mt-2 text-sm text-red-600 font-medium">{revertError}</p>
+                  )}
                 </div>
                 <button
                   onClick={() => setOnboardingBannerDismissed(true)}

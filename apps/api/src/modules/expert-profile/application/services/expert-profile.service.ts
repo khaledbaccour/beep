@@ -313,12 +313,12 @@ export class ExpertProfileService {
       );
     }
 
-    // Update user role to EXPERT
+    // Update user role to EXPERT and mark user-level onboarding complete
     const user = await this.userRepo.findById(currentUser.id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    await this.userRepo.update(user.id, { role: UserRole.EXPERT });
+    await this.userRepo.update(user.id, { role: UserRole.EXPERT, onboardingCompleted: true });
 
     profile.onboardingCompleted = true;
     profile.isVisible = true;
