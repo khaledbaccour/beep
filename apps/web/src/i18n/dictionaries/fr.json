@@ -4,7 +4,9 @@
     "howItWorks": "Comment ca marche",
     "categories": "Categories",
     "login": "Connexion",
-    "getStarted": "Commencer"
+    "getStarted": "Commencer",
+    "dashboard": "Tableau de bord",
+    "logout": "Deconnexion"
   },
   "hero": {
     "badge": "Disponible en Tunisie",

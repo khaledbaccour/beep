@@ -4,7 +4,9 @@
     "howItWorks": "How it works",
     "categories": "Categories",
     "login": "Log in",
-    "getStarted": "Get started"
+    "getStarted": "Get started",
+    "dashboard": "Dashboard",
+    "logout": "Log out"
   },
   "hero": {
     "badge": "Now live in Tunisia",

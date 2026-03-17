@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X, ArrowRight, LogOut, LayoutDashboard } from 'lucide-react';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
 import { localePath } from '@/lib/i18n-utils';
@@ -12,9 +12,19 @@ interface Props {
   lang: Locale;
 }
 
+interface StoredUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: 'CLIENT' | 'EXPERT' | 'ADMIN';
+  avatarUrl: string | null;
+}
+
 export function Navbar({ dict, lang }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<StoredUser | null>(null);
+  const router = useRouter();
 
   const navLinks = [
     { label: dict.nav.experts, href: localePath(lang, '/marketplace') },
@@ -28,8 +38,28 @@ export function Navbar({ dict, lang }: Props) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const stored = localStorage.getItem('beep_user');
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored) as StoredUser);
+      } catch {
+        // ignore invalid JSON
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('beep_token');
+    localStorage.removeItem('beep_user');
+    setUser(null);
+    router.push(localePath(lang, '/'));
+  };
+
   const pathname = usePathname();
   const pathWithoutLang = pathname.replace(/^\/(fr|en|ar)/, '') || '/';
+
+  const dashboardHref = localePath(lang, '/dashboard');
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
@@ -79,20 +109,40 @@ export function Navbar({ dict, lang }: Props) {
             ))}
           </div>
 
-          <a
-            href={localePath(lang, '/login')}
-            className="px-3 py-1.5 text-sm font-medium text-ink-600 hover:text-ink-900 transition-colors"
-          >
-            {dict.nav.login}
-          </a>
+          {user ? (
+            <>
+              <a
+                href={dashboardHref}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
+              >
+                <LayoutDashboard size={14} strokeWidth={2.5} />
+                {dict.nav.dashboard}
+              </a>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 text-sm font-medium text-ink-600 hover:text-ink-900 transition-colors"
+              >
+                {dict.nav.logout}
+              </button>
+            </>
+          ) : (
+            <>
+              <a
+                href={localePath(lang, '/login')}
+                className="px-3 py-1.5 text-sm font-medium text-ink-600 hover:text-ink-900 transition-colors"
+              >
+                {dict.nav.login}
+              </a>
 
-          <a
-            href={localePath(lang, '/register')}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
-          >
-            {dict.nav.getStarted}
-            <ArrowRight size={14} strokeWidth={2.5} />
-          </a>
+              <a
+                href={localePath(lang, '/register')}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
+              >
+                {dict.nav.getStarted}
+                <ArrowRight size={14} strokeWidth={2.5} />
+              </a>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -138,19 +188,39 @@ export function Navbar({ dict, lang }: Props) {
             </div>
 
             <div className="pt-3 mt-2 border-t border-ink-100 flex flex-col gap-2">
-              <a
-                href={localePath(lang, '/login')}
-                className="w-full text-center px-4 py-2 text-sm font-medium text-ink-600 hover:text-ink-900 border border-ink-200 rounded-full transition-colors"
-              >
-                {dict.nav.login}
-              </a>
-              <a
-                href={localePath(lang, '/register')}
-                className="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
-              >
-                {dict.nav.getStarted}
-                <ArrowRight size={14} strokeWidth={2.5} />
-              </a>
+              {user ? (
+                <>
+                  <a
+                    href={dashboardHref}
+                    className="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
+                  >
+                    <LayoutDashboard size={14} strokeWidth={2.5} />
+                    {dict.nav.dashboard}
+                  </a>
+                  <button
+                    onClick={() => { handleLogout(); setMobileOpen(false); }}
+                    className="w-full text-center px-4 py-2 text-sm font-medium text-ink-600 hover:text-ink-900 border border-ink-200 rounded-full transition-colors"
+                  >
+                    {dict.nav.logout}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <a
+                    href={localePath(lang, '/login')}
+                    className="w-full text-center px-4 py-2 text-sm font-medium text-ink-600 hover:text-ink-900 border border-ink-200 rounded-full transition-colors"
+                  >
+                    {dict.nav.login}
+                  </a>
+                  <a
+                    href={localePath(lang, '/register')}
+                    className="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
+                  >
+                    {dict.nav.getStarted}
+                    <ArrowRight size={14} strokeWidth={2.5} />
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>
