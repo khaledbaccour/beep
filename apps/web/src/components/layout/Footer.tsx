@@ -47,11 +47,10 @@ export function Footer({ dict, lang }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10 lg:gap-16">
           {/* Brand column */}
           <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                <span className="text-white font-display font-bold text-sm">b</span>
-              </div>
-              <span className="text-lg font-display font-bold text-white">
+            <div className="flex items-center gap-1.5 mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.svg" alt="Beep" className="w-9 h-9" />
+              <span className="text-lg font-body font-extrabold text-white">
                 beep<span className="text-brand-400">.tn</span>
               </span>
             </div>

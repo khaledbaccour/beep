@@ -106,7 +106,7 @@ export function HeroSection({ dict, lang }: Props) {
           </div>
 
           {/* MASSIVE headline */}
-          <h1 className="animate-fade-up opacity-0 stagger-1 text-[52px] sm:text-[76px] lg:text-[96px] font-display font-black uppercase leading-[0.9] tracking-tight text-ink-900">
+          <h1 className="animate-fade-up opacity-0 stagger-1 text-[36px] sm:text-[64px] lg:text-[96px] font-display font-normal uppercase leading-[0.95] tracking-[-0.02em] text-ink-900">
             {dict.hero.headline}{' '}
             <span className="italic text-[#7C3AED] relative">
               {dict.hero.headlineAccent}
@@ -200,7 +200,7 @@ export function HeroSection({ dict, lang }: Props) {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-display font-bold text-ink-900">{dict.hero.mockupName}</h3>
+                        <h3 className="text-lg font-bold text-ink-900">{dict.hero.mockupName}</h3>
                         <Badge variant="success" className="text-[10px]">
                           <CheckCircle2 size={10} />
                           {dict.hero.mockupVerified}
@@ -239,7 +239,7 @@ export function HeroSection({ dict, lang }: Props) {
                   <div className="rounded-xl border-[2.5px] border-ink-900 p-5 shadow-retro-sm">
                     <p className="text-xs font-bold text-ink-400 uppercase tracking-wider mb-1">{dict.hero.mockupSession}</p>
                     <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-3xl font-display font-black text-ink-900">{dict.hero.mockupPrice}</span>
+                      <span className="text-3xl font-extrabold text-ink-900">{dict.hero.mockupPrice}</span>
                       <span className="text-sm text-ink-400 font-bold">{dict.hero.mockupCurrency}</span>
                     </div>
                     <p className="text-xs text-ink-400">{dict.hero.mockupDuration}</p>

@@ -32,7 +32,7 @@ export function CTASection({ dict, lang }: Props) {
         </span>
 
         {/* Massive heading */}
-        <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-black text-white tracking-tight mb-6 leading-[1.1]">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 leading-[1.15]">
           {dict.cta.title.split(' ').slice(0, -1).join(' ')}{' '}
           <em className="not-italic text-[#FFB088] italic">
             {dict.cta.title.split(' ').slice(-1)[0]}

@@ -39,11 +39,10 @@ export function Navbar({ dict, lang }: Props) {
         }`}
       >
         {/* Logo */}
-        <a href={localePath(lang, '/')} className="flex items-center gap-2 shrink-0">
-          <div className="w-7 h-7 rounded-full bg-ink-900 flex items-center justify-center">
-            <span className="text-white font-display font-bold text-xs tracking-tight">b</span>
-          </div>
-          <span className="text-[17px] font-display font-bold text-ink-900">
+        <a href={localePath(lang, '/')} className="flex items-center gap-1.5 shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
+          <span className="text-[17px] font-body font-extrabold text-ink-900">
             beep<span className="text-brand-500">.tn</span>
           </span>
         </a>
