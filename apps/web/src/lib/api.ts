@@ -432,17 +432,6 @@ export async function getOnboardingStatus(): Promise<ApiResponse<OnboardingStatu
   return res.json();
 }
 
-export async function checkSlugAvailability(slug: string): Promise<ApiResponse<{ available: boolean }>> {
-  const res = await fetch(`${API_BASE}/experts/slug-available/${encodeURIComponent(slug)}`, {
-    headers: getAuthHeaders(),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: 'Failed to check slug' }));
-    throw new Error(err.message || `Error ${res.status}`);
-  }
-  return res.json();
-}
-
 /* ── Marketplace Search ── */
 
 export async function searchExperts(
