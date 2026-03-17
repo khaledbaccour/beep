@@ -36,7 +36,7 @@ export function RegisterPage({ dict, lang }: Props) {
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       setSuccess(dict.auth.accountCreated);
-      setTimeout(() => router.push(localePath(lang, '/choose-path')), 800);
+      router.push(localePath(lang, '/choose-path'));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {

@@ -41,7 +41,7 @@ export function LoginPage({ dict, lang }: Props) {
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       setSuccess(`Logged in as ${res.data.user.firstName} ${res.data.user.lastName}`);
       const dest = getPostLoginDestination(res.data.user);
-      setTimeout(() => router.push(localePath(lang, dest)), 800);
+      router.push(localePath(lang, dest));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
