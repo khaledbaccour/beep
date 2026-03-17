@@ -1,12 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ExpertProfile, AvailabilityScheduleSlot } from '@/lib/api';
 import { setAvailability, getSchedules } from '@/lib/api';
 import type { TabProps } from './types';
 import { DAYS } from './types';
+
+const DAY_EMOJI: Record<string, string> = {
+  MONDAY: '🟡',
+  TUESDAY: '🟢',
+  WEDNESDAY: '🔵',
+  THURSDAY: '🟣',
+  FRIDAY: '🟠',
+  SATURDAY: '⚪',
+  SUNDAY: '🔴',
+};
 
 export function AvailabilityTab({ d }: TabProps) {
   const dayLabels: Record<string, string> = {
@@ -60,60 +70,88 @@ export function AvailabilityTab({ d }: TabProps) {
     }
   }
 
-  if (loading) return <p className="text-sm text-ink-400">{d.loading}</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3 py-12 justify-center">
+        <div className="w-5 h-5 border-2 border-ink-200 border-t-ink-900 rounded-full animate-spin" />
+        <p className="text-sm text-ink-400">{d.loading}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-2xl border-2 border-ink-900 bg-white p-6 shadow-retro">
-      <h2 className="text-lg font-display font-bold text-ink-900 mb-6">{d.weeklySchedule}</h2>
+    <div className="rounded-2xl border-[2.5px] border-ink-900 bg-white shadow-retro overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-5 border-b-2 border-ink-100 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-ink-900 flex items-center justify-center">
+            <Clock size={14} className="text-white" />
+          </div>
+          <h2 className="text-lg font-display font-bold text-ink-900">{d.weeklySchedule}</h2>
+        </div>
+        <Button variant="brand" size="sm" onClick={handleSave} disabled={saving} className="gap-1.5">
+          {saving ? d.saving : d.saveSchedule}
+        </Button>
+      </div>
 
-      <div className="space-y-6">
+      {/* Days */}
+      <div className="divide-y-2 divide-ink-100/60">
         {DAYS.map((day) => {
           const daySlots = slots
             .map((s, i) => ({ ...s, _index: i }))
             .filter((s) => s.dayOfWeek === day);
 
           return (
-            <div key={day} className="border-b border-ink-100 pb-4 last:border-0">
+            <div key={day} className="px-6 py-4 hover:bg-cream-50/50 transition-colors">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-ink-700">{dayLabels[day]}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{DAY_EMOJI[day]}</span>
+                  <span className="text-sm font-bold text-ink-900">{dayLabels[day]}</span>
+                  {daySlots.length > 0 && (
+                    <span className="text-[10px] font-bold text-ink-400 bg-ink-50 px-2 py-0.5 rounded-full border border-ink-200">
+                      {daySlots.length} {daySlots.length === 1 ? 'slot' : 'slots'}
+                    </span>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => addSlot(day)}
-                  className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700"
+                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-brand-600 bg-brand-50 rounded-lg border-2 border-brand-200 hover:border-brand-400 hover:bg-brand-100 transition-all"
                 >
-                  <Plus size={14} />
+                  <Plus size={12} />
                   {d.addSlot}
                 </button>
               </div>
 
               {daySlots.length === 0 ? (
-                <p className="text-xs text-ink-300 ml-1">--</p>
+                <p className="text-xs text-ink-300 italic ml-6">—</p>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2 ml-6">
                   {daySlots.map((slot) => (
-                    <div key={slot._index} className="flex items-center gap-3">
+                    <div key={slot._index} className="flex items-center gap-3 p-2.5 rounded-lg bg-cream-50 border border-ink-200/60">
                       <div className="flex items-center gap-2">
-                        <label className="text-xs text-ink-400">{d.startTime}</label>
+                        <label className="text-[10px] font-bold text-ink-400 uppercase tracking-wider">{d.startTime}</label>
                         <input
                           type="time"
                           value={slot.startTime}
                           onChange={(e) => updateSlot(slot._index, 'startTime', e.target.value)}
-                          className="h-9 px-2 rounded-md border border-ink-200 text-sm text-ink-900 focus:outline-none focus:border-ink-400"
+                          className="h-8 px-2.5 rounded-lg border-2 border-ink-200 text-sm font-bold text-ink-900 focus:outline-none focus:border-ink-400 bg-white"
                         />
                       </div>
+                      <span className="text-ink-300 font-bold">→</span>
                       <div className="flex items-center gap-2">
-                        <label className="text-xs text-ink-400">{d.endTime}</label>
+                        <label className="text-[10px] font-bold text-ink-400 uppercase tracking-wider">{d.endTime}</label>
                         <input
                           type="time"
                           value={slot.endTime}
                           onChange={(e) => updateSlot(slot._index, 'endTime', e.target.value)}
-                          className="h-9 px-2 rounded-md border border-ink-200 text-sm text-ink-900 focus:outline-none focus:border-ink-400"
+                          className="h-8 px-2.5 rounded-lg border-2 border-ink-200 text-sm font-bold text-ink-900 focus:outline-none focus:border-ink-400 bg-white"
                         />
                       </div>
                       <button
                         type="button"
                         onClick={() => removeSlot(slot._index)}
-                        className="text-red-400 hover:text-red-600 ml-auto"
+                        className="ml-auto p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -126,17 +164,12 @@ export function AvailabilityTab({ d }: TabProps) {
         })}
       </div>
 
+      {/* Message */}
       {message && (
-        <p className={`text-sm font-medium mt-4 ${isError ? 'text-red-600' : 'text-emerald-600'}`}>
+        <div className={`px-6 py-3 text-sm font-medium ${isError ? 'bg-red-50 text-red-700' : 'bg-success-50 text-success-700'}`}>
           {message}
-        </p>
+        </div>
       )}
-
-      <div className="mt-6">
-        <Button variant="brand" onClick={handleSave} disabled={saving}>
-          {saving ? d.saving : d.saveSchedule}
-        </Button>
-      </div>
     </div>
   );
 }

@@ -12,6 +12,12 @@ interface BookingsTabProps extends TabProps {
 
 type BookingFilter = 'upcoming' | 'past' | 'cancelled';
 
+const FILTER_EMOJI: Record<BookingFilter, string> = {
+  upcoming: '🔜',
+  past: '✅',
+  cancelled: '❌',
+};
+
 export function BookingsTab({ d, lang, isExpert }: BookingsTabProps) {
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,29 +46,38 @@ export function BookingsTab({ d, lang, isExpert }: BookingsTabProps) {
   ];
 
   return (
-    <div className="rounded-2xl border-2 border-ink-900 bg-white p-6 shadow-retro">
-      <h2 className="text-lg font-display font-bold text-ink-900 mb-4">{d.bookings}</h2>
+    <div className="rounded-2xl border-[2.5px] border-ink-900 bg-white p-6 shadow-retro">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <h2 className="text-lg font-display font-bold text-ink-900">{d.bookings}</h2>
 
-      <div className="flex gap-2 mb-6">
-        {filters.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
-              filter === f.key
-                ? 'bg-ink-900 text-white border-ink-900'
-                : 'bg-white text-ink-500 border-ink-200 hover:border-ink-300'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+        <div className="flex gap-1.5">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border-[2.5px] transition-all duration-200 ${
+                filter === f.key
+                  ? 'bg-ink-900 text-white border-ink-900 shadow-retro-sm -translate-y-0.5'
+                  : 'bg-white text-ink-500 border-ink-900 hover:bg-ink-50 hover:-translate-y-0.5 hover:shadow-retro-sm'
+              }`}
+            >
+              <span>{FILTER_EMOJI[f.key]}</span>
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
-        <p className="text-sm text-ink-400">{d.loading}</p>
+        <div className="flex items-center gap-3 py-8 justify-center">
+          <div className="w-5 h-5 border-2 border-ink-200 border-t-ink-900 rounded-full animate-spin" />
+          <p className="text-sm text-ink-400">{d.loading}</p>
+        </div>
       ) : filtered.length === 0 ? (
-        <p className="text-sm text-ink-400">{d.noBookings}</p>
+        <div className="text-center py-10 px-4">
+          <div className="text-4xl mb-3">📭</div>
+          <p className="text-sm text-ink-400 font-medium">{d.noBookings}</p>
+        </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((b) => (

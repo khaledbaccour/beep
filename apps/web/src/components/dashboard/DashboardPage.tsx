@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Sparkles, Copy, Check, ExternalLink } from 'lucide-react';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
 import { localePath } from '@/lib/i18n-utils';
@@ -11,16 +12,43 @@ import { ProfileTab } from './ProfileTab';
 import { AvailabilityTab } from './AvailabilityTab';
 import { BookingsTab } from './BookingsTab';
 import { ClientDashboard } from './ClientDashboard';
+import type { ExpertProfile } from '@/lib/api';
 
 interface Props {
   dict: Dictionary;
   lang: Locale;
 }
 
+const TAB_ICONS: Record<Tab, string> = {
+  overview: '📊',
+  profile: '✏️',
+  availability: '🗓️',
+  bookings: '📋',
+};
+
+function getGreeting(lang: Locale): string {
+  const h = new Date().getHours();
+  if (lang === 'ar') {
+    if (h < 12) return 'صباح الخير';
+    if (h < 18) return 'مساء الخير';
+    return 'مساء الخير';
+  }
+  if (lang === 'en') {
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+  if (h < 12) return 'Bonjour';
+  if (h < 18) return 'Bon apres-midi';
+  return 'Bonsoir';
+}
+
 export function DashboardPage({ dict, lang }: Props) {
   const d = dict.dashboard;
   const [user, setUser] = useState<UserProfile | null>(null);
   const [tab, setTab] = useState<Tab>('overview');
+  const [expertProfile, setExpertProfile] = useState<ExpertProfile | null>(null);
+  const [slugCopied, setSlugCopied] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -30,6 +58,11 @@ export function DashboardPage({ dict, lang }: Props) {
       return;
     }
     setUser(JSON.parse(stored));
+
+    const storedProfile = localStorage.getItem('beep_expert_profile');
+    if (storedProfile) {
+      try { setExpertProfile(JSON.parse(storedProfile)); } catch { /* ignore */ }
+    }
   }, [lang, router]);
 
   if (!user) return null;
@@ -42,47 +75,124 @@ export function DashboardPage({ dict, lang }: Props) {
     { key: 'bookings', label: d.bookings },
   ];
 
+  const greeting = getGreeting(lang);
+  const profileUrl = expertProfile ? `beep.tn/${expertProfile.slug}` : null;
+
+  function copySlug() {
+    if (!profileUrl) return;
+    navigator.clipboard.writeText(`https://${profileUrl}`);
+    setSlugCopied(true);
+    setTimeout(() => setSlugCopied(false), 2000);
+  }
+
   return (
     <section className="pt-24 pb-20 min-h-screen bg-cream-50/30">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="mb-8">
-          <p className="text-sm text-ink-500 mb-1">
-            {isExpert ? d.proDashboard : d.myAccount}
-          </p>
-          <h1 className="text-3xl font-display font-bold text-ink-900">
-            {user.firstName} {user.lastName}
-          </h1>
-          <p className="text-sm text-ink-400 mt-1">{user.email}</p>
+      {/* Decorative background pattern */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div className="absolute top-20 right-[10%] w-64 h-64 bg-brand-100/30 rounded-full blur-3xl" />
+        <div className="absolute top-40 left-[5%] w-48 h-48 bg-peach-100/40 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 relative">
+        {/* Hero greeting card */}
+        <div
+          className="relative mb-8 rounded-2xl border-[2.5px] border-ink-900 bg-white overflow-hidden shadow-retro-md animate-fade-up"
+        >
+          {/* Colored top accent strip */}
+          <div className="h-2 bg-gradient-to-r from-peach-500 via-brand-400 to-peach-400" />
+
+          <div className="px-6 py-6 sm:px-8 sm:py-7">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                {/* Avatar */}
+                <div className="relative shrink-0">
+                  <div className="w-14 h-14 rounded-xl border-[2.5px] border-ink-900 bg-gradient-to-br from-peach-400 to-brand-400 flex items-center justify-center shadow-retro-sm">
+                    <span className="text-xl font-display font-bold text-white">
+                      {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                    </span>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white bg-success-500 flex items-center justify-center">
+                    <Sparkles size={10} className="text-white" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm text-ink-400 font-medium">{greeting} 👋</p>
+                  <h1 className="text-2xl sm:text-3xl font-display font-bold text-ink-900 -mt-0.5">
+                    {user.firstName} {user.lastName}
+                  </h1>
+                  <p className="text-xs text-ink-400 mt-0.5">{user.email}</p>
+                </div>
+              </div>
+
+              {/* Expert badge + link */}
+              {isExpert && (
+                <div className="flex flex-col items-start sm:items-end gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full bg-brand-100 text-brand-700 border-2 border-brand-300">
+                    {d.proDashboard}
+                  </span>
+                  {profileUrl && (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={copySlug}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-ink-600 bg-cream-100 border-2 border-ink-200 rounded-lg hover:border-ink-400 transition-all group"
+                      >
+                        {slugCopied ? <Check size={12} className="text-success-600" /> : <Copy size={12} />}
+                        <span className="font-mono">{profileUrl}</span>
+                      </button>
+                      <a
+                        href={localePath(lang, `/${expertProfile!.slug}`)}
+                        className="p-1.5 rounded-lg border-2 border-ink-200 text-ink-400 hover:text-ink-900 hover:border-ink-400 transition-all"
+                      >
+                        <ExternalLink size={14} />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!isExpert && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full bg-peach-100 text-peach-700 border-2 border-peach-300">
+                  {d.myAccount}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
+        {/* Tab navigation for experts */}
         {isExpert && (
-          <div className="flex gap-1 mb-8 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex gap-1.5 mb-8 overflow-x-auto pb-1 scrollbar-none animate-fade-up" style={{ animationDelay: '80ms' }}>
             {expertTabs.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap border-2 transition-all ${
+                className={`group flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border-[2.5px] transition-all duration-200 ${
                   tab === t.key
-                    ? 'bg-ink-900 text-white border-ink-900 shadow-retro-sm'
-                    : 'bg-white text-ink-500 border-ink-200 hover:border-ink-300 hover:text-ink-700'
+                    ? 'bg-ink-900 text-white border-ink-900 shadow-retro-sm -translate-y-0.5'
+                    : 'bg-white text-ink-500 border-ink-900 hover:bg-ink-50 hover:-translate-y-0.5 hover:shadow-retro-sm'
                 }`}
               >
+                <span className="text-base">{TAB_ICONS[t.key]}</span>
                 {t.label}
               </button>
             ))}
           </div>
         )}
 
-        {isExpert ? (
-          <>
-            {tab === 'overview' && <OverviewTab d={d} lang={lang} />}
-            {tab === 'profile' && <ProfileTab d={d} lang={lang} />}
-            {tab === 'availability' && <AvailabilityTab d={d} lang={lang} />}
-            {tab === 'bookings' && <BookingsTab d={d} lang={lang} isExpert />}
-          </>
-        ) : (
-          <ClientDashboard d={d} lang={lang} />
-        )}
+        {/* Tab content */}
+        <div className="animate-fade-up" style={{ animationDelay: '150ms' }}>
+          {isExpert ? (
+            <>
+              {tab === 'overview' && <OverviewTab d={d} lang={lang} />}
+              {tab === 'profile' && <ProfileTab d={d} lang={lang} />}
+              {tab === 'availability' && <AvailabilityTab d={d} lang={lang} />}
+              {tab === 'bookings' && <BookingsTab d={d} lang={lang} isExpert />}
+            </>
+          ) : (
+            <ClientDashboard d={d} lang={lang} />
+          )}
+        </div>
       </div>
     </section>
   );
