@@ -9,6 +9,7 @@ import { TypeOrmUserRepository } from './infrastructure/repositories/typeorm-use
 import { AuthService } from './application/services/auth.service';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
 import { AuthController } from './infrastructure/controllers/auth.controller';
+import { UsersController } from './infrastructure/controllers/users.controller';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { AuthController } from './infrastructure/controllers/auth.controller';
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, UsersController],
   providers: [
     AuthService,
     JwtStrategy,

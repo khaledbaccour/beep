@@ -1,5 +1,4 @@
-import { IsEmail, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
-import { UserRole } from '@beep/shared';
+import { IsEmail, IsString, MinLength, IsOptional } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -16,10 +15,6 @@ export class RegisterDto {
   @IsString()
   @MinLength(1)
   lastName!: string;
-
-  @IsEnum(UserRole)
-  @IsOptional()
-  role: UserRole = UserRole.CLIENT;
 
   @IsString()
   @IsOptional()

@@ -3,6 +3,9 @@ import {
   Inject,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -15,6 +18,7 @@ import { RegisterDto } from '../dtos/register.dto';
 import { LoginDto } from '../dtos/login.dto';
 import { AuthResponseDto, UserProfileDto } from '../dtos/auth-response.dto';
 import { AuthenticatedUser } from '../../domain/interfaces/authenticated-user.interface';
+import { UserRole } from '@beep/shared';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +39,8 @@ export class AuthService {
     user.passwordHash = await bcrypt.hash(dto.password, 12);
     user.firstName = dto.firstName;
     user.lastName = dto.lastName;
-    user.role = dto.role;
+    user.role = UserRole.CLIENT;
+    user.onboardingCompleted = true;
     user.phone = dto.phone;
 
     const saved = await this.userRepository.save(user);
@@ -61,6 +66,50 @@ export class AuthService {
     return this.userRepository.findById(payload.id);
   }
 
+  async upgradeToExpert(authenticatedUser: AuthenticatedUser): Promise<AuthResponseDto> {
+    const user = await this.userRepository.findById(authenticatedUser.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role === UserRole.EXPERT) {
+      throw new BadRequestException('Already an expert');
+    }
+
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admins cannot change their own role');
+    }
+
+    await this.userRepository.update(user.id, {
+      role: UserRole.EXPERT,
+      onboardingCompleted: false,
+    });
+
+    const updated = await this.userRepository.findById(user.id);
+    if (!updated) {
+      throw new NotFoundException('User not found after update');
+    }
+
+    return this.buildAuthResponse(updated);
+  }
+
+  async getUserProfile(authenticatedUser: AuthenticatedUser): Promise<UserProfileDto> {
+    const user = await this.userRepository.findById(authenticatedUser.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return new UserProfileDto({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      avatarUrl: user.avatarUrl,
+      onboardingCompleted: user.onboardingCompleted,
+    });
+  }
+
   private buildAuthResponse(user: User): AuthResponseDto {
     const payload: AuthenticatedUser = {
       id: user.id,
@@ -77,6 +126,7 @@ export class AuthService {
       lastName: user.lastName,
       role: user.role,
       avatarUrl: user.avatarUrl,
+      onboardingCompleted: user.onboardingCompleted,
     });
 
     return new AuthResponseDto(accessToken, profile);
