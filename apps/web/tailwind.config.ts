@@ -59,10 +59,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ['"Clash Display"', '"Cabinet Grotesk"', 'system-ui', 'sans-serif'],
-        body: ['"DM Sans"', 'system-ui', 'sans-serif'],
-        accent: ['"General Sans"', 'Georgia', 'serif'],
-        mono: ['"JetBrains Mono"', '"IBM Plex Mono"', 'monospace'],
+        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+        body: ['var(--font-body)', 'system-ui', 'sans-serif'],
+        accent: ['var(--font-accent)', 'Georgia', 'serif'],
+        mono: ['var(--font-mono)', '"IBM Plex Mono"', 'monospace'],
       },
       boxShadow: {
         'subtle': '0 1px 2px 0 rgba(20,20,24,0.04)',

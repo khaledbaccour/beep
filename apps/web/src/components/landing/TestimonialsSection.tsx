@@ -42,7 +42,7 @@ export function TestimonialsSection({ dict, lang }: Props) {
           <span className="inline-block px-4 py-1.5 rounded-full bg-ink-900 text-white text-xs font-bold uppercase tracking-wider mb-6">
             {dict.testimonials.label}
           </span>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-display font-black text-ink-900 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-ink-900 tracking-tight">
             What people{' '}
             <em className="not-italic text-[#FFB088] italic">love</em>{' '}
             about us

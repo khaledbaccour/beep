@@ -37,7 +37,7 @@ export function StatsSection({ dict, lang }: Props) {
 
         {/* Heading */}
         <div className="text-center mb-14">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-display font-black text-ink-900 tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-ink-900 tracking-tight leading-tight">
             Trusted by <em className="italic text-[#E87C6A]">thousands</em>
           </h2>
         </div>
@@ -50,7 +50,7 @@ export function StatsSection({ dict, lang }: Props) {
                 key={stat.label}
                 className={`text-center ${i > 0 ? 'md:border-l-2 md:border-ink-200' : ''} flex flex-col items-center`}
               >
-                <div className={`text-5xl sm:text-6xl font-display font-black ${valueColors[i]} mb-2`}>
+                <div className={`text-4xl sm:text-5xl font-extrabold ${valueColors[i]} mb-2`}>
                   {stat.value}
                 </div>
                 <div className="text-base font-bold text-ink-900">

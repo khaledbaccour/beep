@@ -29,7 +29,7 @@ export function FeaturedExpertsSection({ dict, lang }: Props) {
             <Users size={14} strokeWidth={2.5} />
             {dict.featured.label}
           </div>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-[#141418] tracking-tight leading-[1.1]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#141418] tracking-tight leading-[1.15]">
             {dict.featured.title}
           </h2>
         </div>
@@ -68,7 +68,7 @@ export function FeaturedExpertsSection({ dict, lang }: Props) {
 
                 <div className="mb-5">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-display font-bold text-[#141418]">
+                    <h3 className="text-lg font-bold text-[#141418]">
                       {expert.name}
                     </h3>
                     <CheckCircle2 size={16} className="text-[#141418]" />
@@ -94,7 +94,7 @@ export function FeaturedExpertsSection({ dict, lang }: Props) {
               {/* Bottom bar - dark */}
               <div className="px-6 py-4 bg-[#141418] flex items-center justify-between">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-display font-bold text-white">
+                  <span className="text-2xl font-extrabold text-white">
                     {expert.price}
                   </span>
                   <span className="text-sm text-white/60">{dict.common.tnd}</span>
