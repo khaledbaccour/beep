@@ -199,7 +199,18 @@
     "createAccount": "Create account",
     "termsNotice": "By signing up, you agree to our Terms of Service and Privacy Policy",
     "hasAccount": "Already have an account?",
-    "logIn": "Log in"
+    "logIn": "Log in",
+    "accountCreated": "Account created successfully!"
+  },
+  "choosePath": {
+    "title": "How do you want to use Beep?",
+    "subtitle": "You can always change later.",
+    "clientTitle": "I'm looking for experts",
+    "clientDesc": "Browse verified professionals, book video sessions, and get personalized advice.",
+    "clientCta": "Discover pros",
+    "expertTitle": "I'm a professional",
+    "expertDesc": "Create your profile, set your availability, and start receiving clients online.",
+    "expertCta": "Set up my profile"
   },
   "dashboard": {
     "proDashboard": "Pro Dashboard",

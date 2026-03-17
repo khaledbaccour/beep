@@ -51,6 +51,7 @@ interface AuthResponse {
     lastName: string;
     role: 'CLIENT' | 'EXPERT' | 'ADMIN';
     avatarUrl: string | null;
+    onboardingCompleted?: boolean;
   };
 }
 
@@ -59,7 +60,6 @@ export async function registerUser(body: {
   password: string;
   firstName: string;
   lastName: string;
-  role: 'CLIENT' | 'EXPERT';
   phone?: string;
 }): Promise<ApiResponse<AuthResponse>> {
   const res = await fetch(`${API_BASE}/auth/register`, {
@@ -196,6 +196,29 @@ function getAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   return headers;
+}
+
+/* ── User Upgrade ── */
+
+export async function upgradeToExpert(): Promise<ApiResponse<AuthResponse>> {
+  const res = await fetch(`${API_BASE}/users/upgrade-to-expert`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Upgrade failed' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function checkSlugAvailability(slug: string): Promise<ApiResponse<{ available: boolean }>> {
+  const res = await fetch(`${API_BASE}/experts/slug-available/${encodeURIComponent(slug)}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Slug check failed' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
 }
 
 export interface CreateExpertProfileBody {
