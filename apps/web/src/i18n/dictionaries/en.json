@@ -271,7 +271,12 @@
     "friday": "Friday",
     "saturday": "Saturday",
     "sunday": "Sunday",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "onboardingPending": "Setup pending",
+    "completeYourProfile": "Complete your expert profile",
+    "completeYourProfileDesc": "Finish setting up your profile to start receiving bookings. You can browse as a client in the meantime.",
+    "continueOnboarding": "Continue setup",
+    "stayAsClient": "Stay as client"
   },
   "common": {
     "tnd": "TND"

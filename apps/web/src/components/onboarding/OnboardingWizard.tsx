@@ -424,10 +424,18 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           </div>
         </div>
 
-        {/* Bottom note */}
+        {/* Bottom note + skip option */}
         <p className="text-center text-xs text-ink-400 mt-6">
           You can always update your profile details later from your dashboard.
         </p>
+        <div className="text-center mt-3">
+          <a
+            href={localePath(lang, '/dashboard')}
+            className="text-xs text-ink-400 hover:text-ink-600 underline underline-offset-2 transition-colors"
+          >
+            Skip for now — browse as a client
+          </a>
+        </div>
       </div>
     </div>
   );

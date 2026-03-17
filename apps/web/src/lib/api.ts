@@ -212,6 +212,18 @@ export async function upgradeToExpert(): Promise<ApiResponse<AuthResponse>> {
   return res.json();
 }
 
+export async function revertToClient(): Promise<ApiResponse<AuthResponse>> {
+  const res = await fetch(`${API_BASE}/users/revert-to-client`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Revert failed' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function checkSlugAvailability(slug: string): Promise<ApiResponse<{ available: boolean }>> {
   const res = await fetch(`${API_BASE}/experts/slug-available/${encodeURIComponent(slug)}`);
   if (!res.ok) {
@@ -341,11 +353,15 @@ export interface OnboardingStep3Data {
 
 export interface OnboardingStep4Data {
   payoutMethod: 'BANK_TRANSFER' | 'MOBILE_MONEY';
-  bankName?: string;
-  iban?: string;
-  accountHolderName?: string;
-  mobileProvider?: string;
-  mobilePhone?: string;
+  bankTransferDetails?: {
+    accountHolderName: string;
+    bankName: string;
+    iban: string;
+  };
+  mobileMoneyDetails?: {
+    mobileProvider: string;
+    mobilePhone: string;
+  };
 }
 
 export interface OnboardingStatus {

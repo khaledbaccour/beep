@@ -31,4 +31,14 @@ export class UsersController {
     const result = await this.authService.upgradeToExpert(user);
     return ApiResponseDto.ok(result);
   }
+
+  @Post('revert-to-client')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async revertToClient(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApiResponseDto<AuthResponseDto>> {
+    const result = await this.authService.revertToClient(user);
+    return ApiResponseDto.ok(result);
+  }
 }
