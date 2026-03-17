@@ -12,6 +12,10 @@
 const SDK_URL =
   process.env.NEXT_PUBLIC_GAMMAL_TECH_SDK_URL ?? 'https://api.gammal.tech/sdk-web.js';
 
+const DEMO_MODE = process.env.NEXT_PUBLIC_PAYMENT_DEMO_MODE === 'true';
+
+let demoTxnCounter = 0;
+
 /* ── SDK type definitions (from SDK v3.0.2 source) ─────── */
 
 interface PayCardDelivery {
@@ -157,6 +161,16 @@ export async function payWithCard(
   amountTND: number,
   description: string,
 ): Promise<{ txn: string; amount: number }> {
+  if (DEMO_MODE) {
+    demoTxnCounter++;
+    const txn = `demo_txn_${Date.now()}_${demoTxnCounter}`;
+    // eslint-disable-next-line no-console
+    console.log(
+      `[DEMO MODE] Payment simulated: ${amountTND} TND — "${description}" → txn: ${txn}`,
+    );
+    return { txn, amount: amountTND };
+  }
+
   await loadGammalTechSDK();
 
   const sdk = getSDK();
@@ -194,6 +208,10 @@ export async function settlePendingPayments(): Promise<{
   amount?: number;
   description?: string;
 }> {
+  if (DEMO_MODE) {
+    return { recovered: false };
+  }
+
   await loadGammalTechSDK();
 
   const sdk = getSDK();
