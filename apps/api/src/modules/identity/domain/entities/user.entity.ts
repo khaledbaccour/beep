@@ -27,6 +27,9 @@ export class User extends BaseEntity {
   avatarUrl?: string;
 
   @Column({ default: true })
+  onboardingCompleted!: boolean;
+
+  @Column({ default: true })
   isActive!: boolean;
 
   @Column({ type: 'timestamptz', nullable: true })

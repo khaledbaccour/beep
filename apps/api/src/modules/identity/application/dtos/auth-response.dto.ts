@@ -17,6 +17,7 @@ export class UserProfileDto {
   lastName: string;
   role: UserRole;
   avatarUrl?: string;
+  onboardingCompleted: boolean;
 
   constructor(partial: UserProfileDto) {
     this.id = partial.id;
@@ -25,5 +26,6 @@ export class UserProfileDto {
     this.lastName = partial.lastName;
     this.role = partial.role;
     this.avatarUrl = partial.avatarUrl;
+    this.onboardingCompleted = partial.onboardingCompleted;
   }
 }
