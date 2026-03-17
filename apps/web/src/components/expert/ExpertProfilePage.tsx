@@ -355,10 +355,10 @@ function ProfileHeader({ expert, t }: { expert: ExpertProfile; t: Dictionary['ex
             <CheckCircle2 size={10} />
             {t.verified}
           </Badge>
-          {expert.averageRating > 0 && (
+          {Number(expert.averageRating) > 0 && (
             <Badge variant="warning">
               <Star size={10} fill="currentColor" stroke="none" />
-              {expert.averageRating.toFixed(1)} ({expert.totalSessions} {t.sessions})
+              {Number(expert.averageRating).toFixed(1)} ({expert.totalSessions} {t.sessions})
             </Badge>
           )}
         </div>
