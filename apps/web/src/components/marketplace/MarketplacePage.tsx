@@ -235,7 +235,7 @@ export function MarketplacePage({ dict, lang }: Props) {
                       </div>
                       <div className="flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border-2 border-ink-900">
                         <Star size={10} fill="#F59E0B" stroke="none" />
-                        {expert.averageRating.toFixed(1)}
+                        {Number(expert.averageRating).toFixed(1)}
                       </div>
                     </div>
 

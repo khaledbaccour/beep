@@ -148,7 +148,7 @@ export class ExpertProfileService {
       sessionPriceMillimes: profile.sessionPriceMillimes,
       sessionDurationMinutes: profile.sessionDurationMinutes,
       timezone: profile.timezone,
-      averageRating: profile.averageRating,
+      averageRating: Number(profile.averageRating),
       totalSessions: profile.totalSessions,
     });
   }
