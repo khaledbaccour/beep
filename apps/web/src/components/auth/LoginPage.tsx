@@ -14,6 +14,13 @@ interface Props {
   lang: Locale;
 }
 
+function getPostLoginDestination(user: { role: string; onboardingCompleted?: boolean }): string {
+  if (user.role === 'EXPERT') {
+    return user.onboardingCompleted ? '/dashboard' : '/onboarding';
+  }
+  return '/marketplace';
+}
+
 export function LoginPage({ dict, lang }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,9 +39,9 @@ export function LoginPage({ dict, lang }: Props) {
       const res = await loginUser({ email, password });
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
-      setSuccess(`Logged in as ${res.data.user.firstName} ${res.data.user.lastName} (${res.data.user.role})`);
-      const dest = res.data.user.role === 'EXPERT' ? '/dashboard' : '/marketplace';
-      setTimeout(() => router.push(localePath(lang, dest)), 800);
+      setSuccess(`Logged in as ${res.data.user.firstName} ${res.data.user.lastName}`);
+      const dest = getPostLoginDestination(res.data.user);
+      router.push(localePath(lang, dest));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {

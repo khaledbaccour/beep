@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/i18n/types';
@@ -15,9 +15,6 @@ interface Props {
 }
 
 export function RegisterPage({ dict, lang }: Props) {
-  const searchParams = useSearchParams();
-  const initialRole = searchParams.get('role') === 'expert' ? 'EXPERT' : 'CLIENT';
-  const [role, setRole] = useState<'CLIENT' | 'EXPERT'>(initialRole);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,12 +32,11 @@ export function RegisterPage({ dict, lang }: Props) {
     setLoading(true);
 
     try {
-      const res = await registerUser({ email, password, firstName, lastName, role, phone: phone || undefined });
+      const res = await registerUser({ email, password, firstName, lastName, phone: phone || undefined });
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
-      setSuccess(`Account created for ${res.data.user.firstName} (${res.data.user.role})`);
-      const dest = res.data.user.role === 'EXPERT' ? '/dashboard' : '/marketplace';
-      setTimeout(() => router.push(localePath(lang, dest)), 800);
+      setSuccess(dict.auth.accountCreated);
+      router.push(localePath(lang, '/choose-path'));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -62,27 +58,6 @@ export function RegisterPage({ dict, lang }: Props) {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-display font-bold text-ink-900 mb-1">{dict.auth.registerTitle}</h1>
           <p className="text-sm text-ink-500">{dict.auth.registerSubtitle}</p>
-        </div>
-
-        <div className="flex gap-1 p-1 rounded-lg bg-ink-50 border border-ink-100 mb-6">
-          <button
-            type="button"
-            onClick={() => setRole('CLIENT')}
-            className={`flex-1 py-2.5 rounded-md text-sm font-medium transition-all ${
-              role === 'CLIENT' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
-            }`}
-          >
-            Client
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole('EXPERT')}
-            className={`flex-1 py-2.5 rounded-md text-sm font-medium transition-all ${
-              role === 'EXPERT' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
-            }`}
-          >
-            Professionnel
-          </button>
         </div>
 
         {error && (

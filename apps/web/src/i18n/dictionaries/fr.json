@@ -199,7 +199,18 @@
     "createAccount": "Creer un compte",
     "termsNotice": "En vous inscrivant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialite",
     "hasAccount": "Vous avez deja un compte ?",
-    "logIn": "Se connecter"
+    "logIn": "Se connecter",
+    "accountCreated": "Compte cree avec succes !"
+  },
+  "choosePath": {
+    "title": "Comment souhaitez-vous utiliser Beep ?",
+    "subtitle": "Vous pourrez toujours changer plus tard.",
+    "clientTitle": "Je cherche un expert",
+    "clientDesc": "Parcourez des professionnels verifies, reservez des seances video et obtenez des conseils personnalises.",
+    "clientCta": "Decouvrir les pros",
+    "expertTitle": "Je suis un professionnel",
+    "expertDesc": "Creez votre profil, definissez vos disponibilites et commencez a recevoir des clients en ligne.",
+    "expertCta": "Configurer mon profil"
   },
   "dashboard": {
     "proDashboard": "Tableau de bord Pro",
