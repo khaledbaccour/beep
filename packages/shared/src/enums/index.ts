@@ -6,3 +6,5 @@ export { SessionStatus } from './session-status.enum';
 export { NotificationType } from './notification-type.enum';
 export { DayOfWeek } from './day-of-week.enum';
 export { RefundEligibility } from './refund-eligibility.enum';
+export { OnboardingStep } from './onboarding-step.enum';
+export { PayoutMethod } from './payout-method.enum';
