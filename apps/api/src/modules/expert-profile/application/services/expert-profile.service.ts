@@ -6,7 +6,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { UserRole } from '@beep/shared';
+import { UserRole, OnboardingStep } from '@beep/shared';
 import { ExpertProfile } from '../../domain/entities/expert-profile.entity';
 import {
   IExpertProfileRepository,
@@ -59,6 +59,7 @@ const RESERVED_SLUGS: string[] = [
   'categories',
   'bookings',
   'sessions',
+  'slug-available',
 ];
 
 @Injectable()
@@ -154,6 +155,9 @@ export class ExpertProfileService {
     }
 
     if (dto.slug && dto.slug !== profile.slug) {
+      if (RESERVED_SLUGS.includes(dto.slug)) {
+        throw new ConflictException('This slug is reserved');
+      }
       if (await this.profileRepo.slugExists(dto.slug)) {
         throw new ConflictException('Slug already taken');
       }
@@ -222,7 +226,7 @@ export class ExpertProfileService {
     profile.category = dto.category;
     profile.isVisible = false;
     profile.onboardingCompleted = false;
-    profile.onboardingStep = 1;
+    profile.onboardingStep = OnboardingStep.BASIC_INFO;
     profile.profileCompleteness = profile.calculateCompleteness();
 
     const saved = await this.profileRepo.save(profile);
@@ -235,11 +239,15 @@ export class ExpertProfileService {
   ): Promise<OnboardingStatusResponseDto> {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
+    if (profile.onboardingStep < OnboardingStep.BASIC_INFO) {
+      throw new BadRequestException('Complete step 1 first');
+    }
+
     profile.tags = dto.tags;
     profile.certifications = dto.certifications;
     profile.yearsOfExperience = dto.yearsOfExperience;
     profile.languages = dto.languages;
-    profile.onboardingStep = Math.max(profile.onboardingStep, 2);
+    profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.EXPERTISE);
     profile.profileCompleteness = profile.calculateCompleteness();
 
     const saved = await this.profileRepo.save(profile);
@@ -252,10 +260,14 @@ export class ExpertProfileService {
   ): Promise<OnboardingStatusResponseDto> {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
+    if (profile.onboardingStep < OnboardingStep.EXPERTISE) {
+      throw new BadRequestException('Complete step 2 first');
+    }
+
     profile.sessionPriceMillimes = dto.sessionPriceMillimes;
     profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
     profile.timezone = dto.timezone ?? 'Africa/Tunis';
-    profile.onboardingStep = Math.max(profile.onboardingStep, 3);
+    profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PRICING);
     profile.profileCompleteness = profile.calculateCompleteness();
 
     const saved = await this.profileRepo.save(profile);
@@ -268,9 +280,13 @@ export class ExpertProfileService {
   ): Promise<OnboardingStatusResponseDto> {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
+    if (profile.onboardingStep < OnboardingStep.PRICING) {
+      throw new BadRequestException('Complete step 3 first');
+    }
+
     profile.payoutMethod = dto.payoutMethod;
     profile.payoutDetails = dto.payoutDetails;
-    profile.onboardingStep = Math.max(profile.onboardingStep, 4);
+    profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PAYOUT);
     profile.profileCompleteness = profile.calculateCompleteness();
 
     const saved = await this.profileRepo.save(profile);

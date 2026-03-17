@@ -30,7 +30,7 @@ export class ExpertProfile extends BaseEntity {
 
   /** Session price in millimes (TND) */
   @Column({ type: 'int', nullable: true })
-  sessionPriceMillimes!: number;
+  sessionPriceMillimes!: number | null;
 
   /** Default session duration in minutes */
   @Column({ type: 'int', default: 60 })

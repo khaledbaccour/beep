@@ -10,7 +10,7 @@ export class ExpertProfileResponseDto {
   headline?: string;
   category: ExpertCategory;
   tags?: string[];
-  sessionPriceMillimes: number;
+  sessionPriceMillimes: number | null;
   sessionDurationMinutes: number;
   timezone: string;
   averageRating: number;
