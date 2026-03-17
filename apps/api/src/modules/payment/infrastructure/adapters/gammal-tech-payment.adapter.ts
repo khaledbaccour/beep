@@ -1,47 +1,96 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PaymentStatus } from '@beep/shared';
 import {
   IPaymentGateway,
-  CapturePaymentRequest,
-  CapturePaymentResult,
+  RecordPaymentRequest,
+  RecordPaymentResult,
   RefundRequest,
   RefundResult,
-  ReleasePaymentRequest,
 } from '../../domain/ports/payment-gateway.interface';
+import { PaymentTransaction } from '../../domain/entities/payment-transaction.entity';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class GammalTechPaymentAdapter implements IPaymentGateway {
-  private readonly _apiKey: string;
-  private readonly _apiSecret: string;
+  private readonly logger = new Logger(GammalTechPaymentAdapter.name);
 
-  constructor(private readonly configService: ConfigService) {
-    this._apiKey = this.configService.get<string>('GAMMAL_TECH_API_KEY') ?? '';
-    this._apiSecret = this.configService.get<string>('GAMMAL_TECH_API_SECRET') ?? '';
-  }
+  constructor(
+    @InjectRepository(PaymentTransaction)
+    private readonly txnRepo: Repository<PaymentTransaction>,
+  ) {}
 
-  async capturePayment(_request: CapturePaymentRequest): Promise<CapturePaymentResult> {
-    // TODO: Replace with actual Gammal Tech API call
-    void this._apiKey;
-    void this._apiSecret;
-    return {
-      success: true,
-      transactionId: uuidv4(),
-    };
-  }
+  async recordPayment(request: RecordPaymentRequest): Promise<RecordPaymentResult> {
+    const existing = await this.txnRepo.findOne({
+      where: { idempotencyKey: request.idempotencyKey },
+    });
 
-  async refund(_request: RefundRequest): Promise<RefundResult> {
-    // TODO: Replace with actual Gammal Tech API call
-    // POST https://api.gammaltech.tn/v1/payments/{transactionId}/refund
-    return {
-      success: true,
-      refundId: uuidv4(),
-    };
-  }
+    if (existing) {
+      this.logger.warn(
+        `Duplicate payment recording attempt: ${request.idempotencyKey}`,
+      );
+      return { success: true };
+    }
 
-  async releaseToExpert(_request: ReleasePaymentRequest): Promise<{ success: boolean }> {
-    // TODO: Replace with actual Gammal Tech API call
-    // POST https://api.gammaltech.tn/v1/payments/{transactionId}/release
+    const txn = this.txnRepo.create({
+      bookingId: request.bookingId,
+      externalTransactionId: request.transactionId,
+      amountMillimes: request.amountMillimes,
+      currency: request.currency,
+      status: PaymentStatus.CAPTURED,
+      idempotencyKey: request.idempotencyKey,
+    });
+
+    await this.txnRepo.save(txn);
+
+    this.logger.log(
+      `Payment recorded: booking=${request.bookingId} txn=${request.transactionId} amount=${request.amountMillimes}`,
+    );
+
     return { success: true };
+  }
+
+  async requestRefund(request: RefundRequest): Promise<RefundResult> {
+    const txn = await this.txnRepo.findOne({
+      where: { externalTransactionId: request.transactionId },
+    });
+
+    if (!txn) {
+      return {
+        success: false,
+        refundId: '',
+        requiresManualAction: false,
+        errorMessage: 'Transaction not found',
+      };
+    }
+
+    const refundId = uuidv4();
+    txn.refundedAmountMillimes += request.amountMillimes;
+
+    if (txn.refundedAmountMillimes >= txn.amountMillimes) {
+      txn.status = PaymentStatus.PENDING_REFUND;
+    } else {
+      txn.status = PaymentStatus.PENDING_REFUND;
+    }
+
+    txn.gatewayResponse = JSON.stringify({
+      refundId,
+      reason: request.reason,
+      requestedAt: new Date().toISOString(),
+      note: 'Gammal Tech has no refund API. Process manually via dashboard or contact support@gammal.tech.',
+    });
+
+    await this.txnRepo.save(txn);
+
+    this.logger.warn(
+      `Manual refund required: txn=${request.transactionId} amount=${request.amountMillimes} refundId=${refundId}`,
+    );
+
+    return {
+      success: true,
+      refundId,
+      requiresManualAction: true,
+    };
   }
 }

@@ -10,11 +10,18 @@ import {
   getExpertBySlug,
   getAvailableSlots,
   createBooking,
+  confirmBookingPayment,
   type ExpertProfile,
   type AvailableSlot,
   type BookingResponse,
 } from '@/lib/api';
-import { initiatePayment, settlePendingPayments } from '@/lib/gammal-tech';
+import {
+  payWithCard,
+  settlePendingPayments,
+  setPendingBookingId,
+  getPendingBookingId,
+  clearPendingBookingId,
+} from '@/lib/gammal-tech';
 import { formatPrice, formatTime, formatDate, toDateString } from './utils';
 import { DatePicker } from './DatePicker';
 import { TimeSlotPicker } from './TimeSlotPicker';
@@ -58,11 +65,26 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [booking, setBooking] = useState<BookingResponse | null>(null);
 
-  // Settle any pending/undelivered payments from prior sessions
+  // Settle any pending/undelivered Gammal Tech payments on page load.
+  // If a payment was interrupted (browser crash, tab closed), recover it
+  // and confirm with our backend.
   useEffect(() => {
-    settlePendingPayments().catch(() => {
-      /* best-effort — ignore errors */
-    });
+    const token = getAuthToken();
+    if (!token) return;
+
+    settlePendingPayments()
+      .then(async (settlement) => {
+        if (!settlement.recovered || !settlement.txn) return;
+
+        const pendingBookingId = getPendingBookingId();
+        if (!pendingBookingId) return;
+
+        await confirmBookingPayment(pendingBookingId, settlement.txn, token);
+        clearPendingBookingId();
+      })
+      .catch(() => {
+        /* best-effort — ignore errors */
+      });
   }, []);
 
   useEffect(() => {
@@ -114,6 +136,12 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     setStep('confirm');
   };
 
+  /**
+   * Two-step payment flow:
+   * 1. Create booking on our backend (PENDING_PAYMENT)
+   * 2. Open Gammal Tech payment popup (client-side SDK)
+   * 3. On success, confirm payment with our backend (CONFIRMED)
+   */
   const handlePayAndBook = async () => {
     if (!expert || !selectedSlot) return;
     const token = getAuthToken();
@@ -126,23 +154,41 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     setBookingError(null);
 
     try {
-      const amountTND = expert.sessionPriceMillimes / 1000;
-      await initiatePayment(
-        amountTND,
-        `Session with ${expert.firstName} ${expert.lastName}`,
-      );
-
-      const res = await createBooking(
+      // Step 1: Create booking (PENDING_PAYMENT)
+      const bookingRes = await createBooking(
         {
           expertProfileId: expert.id,
           scheduledStartTime: selectedSlot.startTime,
         },
         token,
       );
-      setBooking(res.data);
+      const pendingBooking = bookingRes.data;
+
+      // Persist booking ID so settlePending can recover if browser crashes
+      setPendingBookingId(pendingBooking.id);
+
+      // Step 2: Open Gammal Tech payment popup
+      const amountTND = expert.sessionPriceMillimes / 1000;
+      const payment = await payWithCard(
+        amountTND,
+        `Beep: Session with ${expert.firstName} ${expert.lastName}`,
+      );
+
+      // Step 3: Confirm payment with our backend
+      const confirmedRes = await confirmBookingPayment(
+        pendingBooking.id,
+        payment.txn,
+        token,
+      );
+
+      clearPendingBookingId();
+      setBooking(confirmedRes.data);
       setStep('success');
     } catch (err: unknown) {
-      setBookingError(err instanceof Error ? err.message : t.paymentFailed);
+      const message = err instanceof Error ? err.message : t.paymentFailed;
+      if (message !== 'Payment cancelled') {
+        setBookingError(message);
+      }
     } finally {
       setBookingLoading(false);
     }

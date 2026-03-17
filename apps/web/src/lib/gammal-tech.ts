@@ -1,33 +1,71 @@
 /**
- * Gammal Tech Payment SDK integration.
+ * Gammal Tech Payment SDK integration (v3).
  *
- * All payments go to the platform owner's account.
  * The SDK is a client-side script that opens a payment popup.
+ * Security is based on domain whitelisting — no API keys.
+ * All payments go to the platform owner's Gammal Tech account.
+ *
+ * SDK reference: https://api.gammal.tech/sdk-web.js
+ * Guide: https://www.gammal.tech/blog/how-to-add-card-payments.html
  */
 
 const SDK_URL =
   process.env.NEXT_PUBLIC_GAMMAL_TECH_SDK_URL ?? 'https://api.gammal.tech/sdk-web.js';
 
-const DOMAIN =
-  process.env.NEXT_PUBLIC_GAMMAL_TECH_DOMAIN ?? undefined;
+/* ── SDK type definitions (from SDK v3.0.2 source) ─────── */
 
-/* ── SDK type definitions ─────────────────────────────────── */
+interface PayCardDelivery {
+  txn: string;
+  amount: number;
+  description: string;
+}
 
-interface GammalTechPayResult {
-  token: string;
+interface PayCardResult {
+  success: boolean;
+  txn: string;
+  amount: number;
+  delivered_at: string;
+}
+
+interface SettlePendingResult {
+  has_pending: boolean;
+  payment_token?: string;
+  description?: string;
+  amount?: number;
+}
+
+interface VerifyPaymentResult {
+  valid: boolean;
+  txn: string;
+  amount: number;
+  description: string;
 }
 
 interface GammalTechPaymentAPI {
-  pay: (opts: {
-    amount: number;
-    currency: string;
-    description: string;
-    domain?: string;
-  }) => Promise<GammalTechPayResult>;
-  settlePending: () => Promise<void>;
+  settlePending: (token?: string | null) => Promise<SettlePendingResult>;
+  verifyPayment: (
+    token: string | null,
+    paymentToken: string,
+  ) => Promise<VerifyPaymentResult>;
+  confirmDelivery: (token?: string | null) => Promise<void>;
 }
 
 interface GammalTechSDK {
+  login: () => Promise<string>;
+  logout: (token?: string) => Promise<boolean>;
+  verify: (token?: string) => Promise<{ valid: boolean }>;
+  isLoggedIn: () => boolean;
+  getToken: () => string | null;
+  onAuth: (
+    onLoggedIn: (token: string) => void,
+    onLoggedOut: () => void,
+  ) => Promise<boolean>;
+  payCard: (
+    amount: number,
+    currency: string,
+    description: string,
+    onDeliver: (delivery: PayCardDelivery) => void,
+  ) => Promise<PayCardResult>;
   payment: GammalTechPaymentAPI;
 }
 
@@ -35,10 +73,11 @@ interface GammalTechSDK {
 
 function getSDK(): GammalTechSDK | undefined {
   if (typeof window === 'undefined') return undefined;
-  return (window as unknown as Record<string, unknown>).GammalTech as GammalTechSDK | undefined;
+  return (window as unknown as Record<string, unknown>)
+    .GammalTech as GammalTechSDK | undefined;
 }
 
-/* ── Public API ───────────────────────────────────────────── */
+/* ── SDK Loader ──────────────────────────────────────────── */
 
 let loadPromise: Promise<void> | null = null;
 
@@ -65,46 +104,125 @@ export function loadGammalTechSDK(): Promise<void> {
   return loadPromise;
 }
 
+/* ── Pending-booking persistence ────────────────────────── */
+
+const PENDING_BOOKING_KEY = 'beep_pending_booking_id';
+
+export function setPendingBookingId(bookingId: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(PENDING_BOOKING_KEY, bookingId);
+  }
+}
+
+export function getPendingBookingId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(PENDING_BOOKING_KEY);
+}
+
+export function clearPendingBookingId(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(PENDING_BOOKING_KEY);
+  }
+}
+
+/* ── Auth helpers ────────────────────────────────────────── */
+
+export async function ensureGammalTechLogin(): Promise<string> {
+  await loadGammalTechSDK();
+  const sdk = getSDK();
+  if (!sdk) throw new Error('Gammal Tech SDK not available');
+
+  if (sdk.isLoggedIn()) {
+    return sdk.getToken()!;
+  }
+
+  return sdk.login();
+}
+
+export function isGammalTechLoggedIn(): boolean {
+  const sdk = getSDK();
+  return sdk?.isLoggedIn() ?? false;
+}
+
+/* ── Payment ─────────────────────────────────────────────── */
+
 /**
- * Opens the Gammal Tech payment popup.
+ * Opens the Gammal Tech card payment popup.
  *
- * @param amount   Amount in TND (NOT millimes).
- * @param description  Human-readable description shown in the popup.
- * @returns The payment token on success.
+ * @param amountTND  Amount in TND (NOT millimes).
+ * @param description  Human-readable description shown on receipt.
+ * @returns The transaction details on success.
  */
-export async function initiatePayment(
-  amount: number,
+export async function payWithCard(
+  amountTND: number,
   description: string,
-): Promise<GammalTechPayResult> {
+): Promise<{ txn: string; amount: number }> {
   await loadGammalTechSDK();
 
   const sdk = getSDK();
-  if (!sdk?.payment?.pay) {
+  if (!sdk?.payCard) {
     throw new Error('Gammal Tech SDK not available');
   }
 
-  const opts: Parameters<GammalTechPaymentAPI['pay']>[0] = {
-    amount,
-    currency: 'TND',
-    description,
-  };
-
-  if (DOMAIN) {
-    opts.domain = DOMAIN;
+  if (!sdk.isLoggedIn()) {
+    await sdk.login();
   }
 
-  return sdk.payment.pay(opts);
+  return new Promise<{ txn: string; amount: number }>((resolve, reject) => {
+    sdk
+      .payCard(amountTND, 'TND', description, (delivery) => {
+        resolve({ txn: delivery.txn, amount: delivery.amount });
+      })
+      .catch((err: Error) => {
+        reject(err);
+      });
+  });
 }
 
+/* ── Settlement (recover interrupted payments) ───────────── */
+
 /**
- * Settles any pending/undelivered payments from prior sessions.
- * Should be called once on page load.
+ * Recovers any paid-but-undelivered transactions from prior sessions.
+ * Must be called on every page load for logged-in users.
+ *
+ * Returns the recovered transaction info if a pending payment was found,
+ * so the caller can confirm it with the backend.
  */
-export async function settlePendingPayments(): Promise<void> {
+export async function settlePendingPayments(): Promise<{
+  recovered: boolean;
+  txn?: string;
+  amount?: number;
+  description?: string;
+}> {
   await loadGammalTechSDK();
 
   const sdk = getSDK();
-  if (sdk?.payment?.settlePending) {
-    await sdk.payment.settlePending();
+  if (!sdk?.payment?.settlePending || !sdk.isLoggedIn()) {
+    return { recovered: false };
   }
+
+  const result = await sdk.payment.settlePending();
+
+  if (!result.has_pending || !result.payment_token) {
+    return { recovered: false };
+  }
+
+  const verified = await sdk.payment.verifyPayment(null, result.payment_token);
+
+  if (!verified.valid) {
+    return { recovered: false };
+  }
+
+  await sdk.payment.confirmDelivery();
+
+  // Check for more pending payments (recursive)
+  const more = await settlePendingPayments();
+
+  // Return the first recovered payment (caller handles it)
+  return {
+    recovered: true,
+    txn: verified.txn,
+    amount: verified.amount,
+    description: verified.description,
+  };
 }

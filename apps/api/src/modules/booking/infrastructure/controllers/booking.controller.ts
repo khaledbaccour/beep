@@ -9,6 +9,7 @@ import {
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { BookingService } from '../../application/services/booking.service';
 import { CreateBookingDto } from '../../application/dtos/create-booking.dto';
+import { ConfirmPaymentDto } from '../../application/dtos/confirm-payment.dto';
 import { CancelBookingDto } from '../../application/dtos/cancel-booking.dto';
 import { BookingResponseDto } from '../../application/dtos/booking-response.dto';
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
@@ -32,6 +33,16 @@ export class BookingController {
     @Body() dto: CreateBookingDto,
   ): Promise<ApiResponseDto<BookingResponseDto>> {
     const result = await this.bookingService.createBooking(user, dto);
+    return ApiResponseDto.ok(result);
+  }
+
+  @Post(':id/confirm-payment')
+  async confirmPayment(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: ConfirmPaymentDto,
+  ): Promise<ApiResponseDto<BookingResponseDto>> {
+    const result = await this.bookingService.confirmPayment(user, id, dto);
     return ApiResponseDto.ok(result);
   }
 

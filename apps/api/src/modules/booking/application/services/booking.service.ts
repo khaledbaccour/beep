@@ -21,6 +21,7 @@ import {
   PAYMENT_GATEWAY,
 } from '../../../payment/domain/ports/payment-gateway.interface';
 import { CreateBookingDto } from '../dtos/create-booking.dto';
+import { ConfirmPaymentDto } from '../dtos/confirm-payment.dto';
 import { CancelBookingDto } from '../dtos/cancel-booking.dto';
 import { BookingResponseDto } from '../dtos/booking-response.dto';
 import { AuthenticatedUser } from '../../../identity/domain/interfaces/authenticated-user.interface';
@@ -37,6 +38,10 @@ export class BookingService {
     private readonly paymentGateway: IPaymentGateway,
   ) {}
 
+  /**
+   * Step 1: Create a booking in PENDING_PAYMENT status.
+   * The frontend then opens the Gammal Tech payment popup.
+   */
   async createBooking(
     currentUser: AuthenticatedUser,
     dto: CreateBookingDto,
@@ -78,20 +83,51 @@ export class BookingService {
     booking.sessionRoomId = uuidv4();
 
     const saved = await this.bookingRepo.save(booking);
+    return this.toResponseDto(saved);
+  }
 
-    const paymentResult = await this.paymentGateway.capturePayment({
-      bookingId: saved.id,
-      amountMillimes: saved.amountMillimes,
-      currency: 'TND',
-      idempotencyKey: `booking-${saved.id}`,
-    });
-
-    if (paymentResult.success) {
-      saved.paymentId = paymentResult.transactionId;
-      saved.confirm();
-      await this.bookingRepo.save(saved);
+  /**
+   * Step 2: Frontend calls this after Gammal Tech SDK payment popup completes.
+   * Records the payment and transitions booking to CONFIRMED.
+   */
+  async confirmPayment(
+    currentUser: AuthenticatedUser,
+    bookingId: string,
+    dto: ConfirmPaymentDto,
+  ): Promise<BookingResponseDto> {
+    const booking = await this.bookingRepo.findById(bookingId);
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
     }
 
+    if (booking.clientId !== currentUser.id) {
+      throw new ForbiddenException('Only the booking client can confirm payment');
+    }
+
+    if (booking.status !== BookingStatus.PENDING_PAYMENT) {
+      throw new BadRequestException(
+        `Booking is not awaiting payment (status: ${booking.status})`,
+      );
+    }
+
+    const result = await this.paymentGateway.recordPayment({
+      bookingId: booking.id,
+      transactionId: dto.transactionId,
+      amountMillimes: booking.amountMillimes,
+      currency: 'TND',
+      idempotencyKey: `booking-${booking.id}`,
+    });
+
+    if (!result.success) {
+      throw new BadRequestException(
+        result.errorMessage ?? 'Failed to record payment',
+      );
+    }
+
+    booking.paymentId = dto.transactionId;
+    booking.confirm();
+
+    const saved = await this.bookingRepo.save(booking);
     return this.toResponseDto(saved);
   }
 
@@ -119,9 +155,10 @@ export class BookingService {
     }
 
     if (booking.refundAmountMillimes > 0 && booking.paymentId) {
-      await this.paymentGateway.refund({
+      await this.paymentGateway.requestRefund({
         transactionId: booking.paymentId,
         amountMillimes: booking.refundAmountMillimes,
+        reason: dto.reason,
         idempotencyKey: `refund-${booking.id}-${Date.now()}`,
       });
     }

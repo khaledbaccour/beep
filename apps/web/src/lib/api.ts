@@ -166,6 +166,29 @@ export async function createBooking(
   return res.json();
 }
 
+export async function confirmBookingPayment(
+  bookingId: string,
+  transactionId: string,
+  token: string,
+): Promise<ApiResponse<BookingResponse>> {
+  const res = await fetch(
+    `${API_BASE}/bookings/${encodeURIComponent(bookingId)}/confirm-payment`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ transactionId }),
+    },
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Payment confirmation failed' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
 /* ── Dashboard: Expert Profile CRUD ── */
 
 function getAuthHeaders(): Record<string, string> {
