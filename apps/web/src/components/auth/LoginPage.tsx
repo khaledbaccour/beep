@@ -45,11 +45,10 @@ export function LoginPage({ dict, lang }: Props) {
   return (
     <main className="min-h-screen flex items-center justify-center bg-white">
       <div className="w-full max-w-sm mx-auto px-4">
-        <a href={localePath(lang, '/')} className="flex items-center justify-center gap-2 mb-10">
-          <div className="w-8 h-8 rounded-md bg-ink-900 flex items-center justify-center">
-            <span className="text-white font-display font-bold text-sm">b</span>
-          </div>
-          <span className="text-[17px] font-display font-bold text-ink-900">
+        <a href={localePath(lang, '/')} className="flex items-center justify-center gap-1.5 mb-10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
+          <span className="text-[17px] font-body font-extrabold text-ink-900">
             beep<span className="text-brand-500">.tn</span>
           </span>
         </a>
