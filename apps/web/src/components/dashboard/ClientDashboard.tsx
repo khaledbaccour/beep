@@ -83,7 +83,7 @@ export function ClientDashboard({ d, lang }: TabProps) {
             </div>
             <div>
               <p className="text-base font-display font-bold text-white mb-1">{d.browseExperts}</p>
-              <p className="text-xs text-ink-400 font-medium">{d.findExpert ?? ''}</p>
+              <p className="text-xs text-ink-400 font-medium">{(d as Record<string, string>).findExpert ?? ''}</p>
             </div>
           </div>
         </a>
