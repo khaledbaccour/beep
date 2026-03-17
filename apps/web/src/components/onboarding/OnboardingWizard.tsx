@@ -340,7 +340,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
               <StepBasicInfo data={step1} onChange={setStep1} errors={errors} />
             )}
             {currentStep === 2 && (
-              <StepExpertise data={step2} onChange={setStep2} errors={errors} />
+              <StepExpertise data={step2} onChange={setStep2} errors={errors} category={step1.category} />
             )}
             {currentStep === 3 && (
               <StepPricing data={step3} onChange={setStep3} errors={errors} />

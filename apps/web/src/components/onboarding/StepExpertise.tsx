@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { Plus, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { SKILLS_BY_CATEGORY, ALL_SKILLS, ExpertCategory } from '@beep/shared';
 
 interface Certification {
   name: string;
@@ -22,15 +23,66 @@ interface StepExpertiseProps {
   data: StepExpertiseData;
   onChange: (data: StepExpertiseData) => void;
   errors: Record<string, string>;
+  category?: string;
 }
 
 const COMMON_LANGUAGES = [
   'Arabic', 'French', 'English', 'Italian', 'German', 'Spanish', 'Turkish',
 ];
 
-export function StepExpertise({ data, onChange, errors }: StepExpertiseProps) {
+export function StepExpertise({ data, onChange, errors, category }: StepExpertiseProps) {
   const [tagInput, setTagInput] = useState('');
   const [langInput, setLangInput] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isSelectingRef = useRef(false);
+
+  // Get suggested skills based on category + search input
+  const suggestedSkills = useMemo(() => {
+    const query = tagInput.trim().toLowerCase();
+    const alreadySelected = new Set(data.tags);
+
+    // If user is typing, search across all skills
+    if (query.length > 0) {
+      const results = ALL_SKILLS
+        .filter((s) => s.includes(query) && !alreadySelected.has(s))
+        .slice(0, 12);
+      return results;
+    }
+
+    // Otherwise show category-specific skills
+    if (category && category in SKILLS_BY_CATEGORY) {
+      return (SKILLS_BY_CATEGORY[category as ExpertCategory] || [])
+        .filter((s) => !alreadySelected.has(s))
+        .slice(0, 15);
+    }
+
+    return [];
+  }, [tagInput, data.tags, category]);
+
+  // Check if user's typed input is a custom skill (not in suggestions)
+  const isCustomSkill = useMemo(() => {
+    const query = tagInput.trim().toLowerCase();
+    if (!query) return false;
+    return !ALL_SKILLS.includes(query);
+  }, [tagInput]);
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   function addTag(value: string) {
     const tag = value.trim().toLowerCase();
@@ -46,9 +98,21 @@ export function StepExpertise({ data, onChange, errors }: StepExpertiseProps) {
   function handleTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
-      addTag(tagInput);
-      setTagInput('');
+      if (tagInput.trim()) {
+        addTag(tagInput);
+        setTagInput('');
+      }
     }
+    if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  }
+
+  function selectSuggestion(skill: string) {
+    addTag(skill);
+    setTagInput('');
+    setShowSuggestions(true); // Keep open for multi-select
+    inputRef.current?.focus();
   }
 
   function addLanguage(lang: string) {
@@ -89,33 +153,109 @@ export function StepExpertise({ data, onChange, errors }: StepExpertiseProps) {
 
   return (
     <div className="space-y-6">
-      {/* Tags */}
+      {/* Tags / Skills */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
           Skill Tags
         </label>
-        <div className="flex flex-wrap gap-2 mb-2">
-          {data.tags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-peach-100 text-ink-900 border-2 border-ink-200 rounded-lg"
+
+        {/* Selected tags */}
+        {data.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {data.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-peach-100 text-ink-900 border-2 border-ink-200 rounded-lg"
+              >
+                {tag}
+                <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
+                  <X size={12} strokeWidth={3} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Search input with suggestions dropdown */}
+        <div className="relative">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+            <Input
+              ref={inputRef}
+              value={tagInput}
+              onChange={(e) => {
+                setTagInput(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={handleTagKeyDown}
+              onBlur={() => {
+                setTimeout(() => {
+                  if (isSelectingRef.current) {
+                    isSelectingRef.current = false;
+                    return;
+                  }
+                  if (tagInput.trim()) {
+                    addTag(tagInput);
+                    setTagInput('');
+                  }
+                }, 200);
+              }}
+              placeholder="Search skills or type your own..."
+              className="border-2 border-ink-200 rounded-xl pl-9"
+            />
+          </div>
+
+          {/* Suggestions dropdown */}
+          {showSuggestions && (suggestedSkills.length > 0 || isCustomSkill) && (
+            <div
+              ref={suggestionsRef}
+              className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border-2 border-ink-200 rounded-xl shadow-elevated max-h-56 overflow-y-auto"
             >
-              {tag}
-              <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
-                <X size={12} strokeWidth={3} />
-              </button>
-            </span>
-          ))}
+              {suggestedSkills.length > 0 && (
+                <div className="p-2">
+                  <p className="px-2 py-1 text-[10px] font-bold text-ink-400 uppercase tracking-wider">
+                    {tagInput.trim() ? 'Matching skills' : 'Suggested for your category'}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 px-1 py-1">
+                    {suggestedSkills.map((skill) => (
+                      <button
+                        key={skill}
+                        type="button"
+                        onMouseDown={(e) => { e.preventDefault(); isSelectingRef.current = true; }}
+                        onClick={() => selectSuggestion(skill)}
+                        className="px-3 py-1.5 text-xs font-bold text-ink-700 bg-cream-100 border border-ink-200 rounded-lg hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 transition-all duration-150"
+                      >
+                        + {skill}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {isCustomSkill && tagInput.trim() && (
+                <div className="border-t border-ink-100 p-2">
+                  <button
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); isSelectingRef.current = true; }}
+                    onClick={() => {
+                      addTag(tagInput);
+                      setTagInput('');
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-lg hover:bg-brand-100 transition-all duration-150"
+                  >
+                    <Plus size={12} strokeWidth={3} />
+                    Add custom skill: &ldquo;{tagInput.trim().toLowerCase()}&rdquo;
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <Input
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={handleTagKeyDown}
-          onBlur={() => { if (tagInput.trim()) { addTag(tagInput); setTagInput(''); } }}
-          placeholder="Type a skill and press Enter (e.g. yoga, weight loss, strength)"
-          className="border-2 border-ink-200 rounded-xl"
-        />
-        <p className="mt-1 text-xs text-ink-400">Press Enter or comma to add a tag</p>
+
+        <p className="mt-1.5 text-xs text-ink-400">
+          Pick from suggestions or type your own. Press Enter to add.
+        </p>
         {errors.tags && <p className="mt-1 text-xs font-medium text-red-500">{errors.tags}</p>}
       </div>
 
