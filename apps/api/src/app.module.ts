@@ -49,22 +49,36 @@ import jwtConfig from './config/jwt.config';
         };
       },
     }),
-    BullModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const redisUrl = config.get<string>('redis.url');
-        if (redisUrl) {
-          return { url: redisUrl };
-        }
-        return {
-          redis: {
-            host: config.get<string>('redis.host'),
-            port: config.get<number>('redis.port'),
-            password: config.get<string>('redis.password'),
-          },
-        };
-      },
-    }),
+    ...(process.env.REDIS_URL
+      ? [
+          BullModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => {
+              const redisUrl = config.get<string>('redis.url');
+              if (redisUrl) {
+                const parsed = new URL(redisUrl);
+                const useTls = parsed.protocol === 'rediss:';
+                return {
+                  redis: {
+                    host: parsed.hostname,
+                    port: parseInt(parsed.port || '6379', 10),
+                    password: parsed.password || undefined,
+                    username: parsed.username || 'default',
+                    ...(useTls ? { tls: { rejectUnauthorized: false } } : {}),
+                  },
+                };
+              }
+              return {
+                redis: {
+                  host: config.get<string>('redis.host'),
+                  port: config.get<number>('redis.port'),
+                  password: config.get<string>('redis.password'),
+                },
+              };
+            },
+          }),
+        ]
+      : []),
     IdentityModule,
     ExpertProfileModule,
     AvailabilityModule,

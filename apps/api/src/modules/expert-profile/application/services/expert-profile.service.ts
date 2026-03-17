@@ -373,7 +373,7 @@ export class ExpertProfileService {
         certifications: profile.certifications,
         yearsOfExperience: profile.yearsOfExperience,
         languages: profile.languages,
-        sessionPriceMillimes: profile.sessionPriceMillimes,
+        sessionPriceMillimes: profile.sessionPriceMillimes ?? undefined,
         sessionDurationMinutes: profile.sessionDurationMinutes,
         timezone: profile.timezone,
         payoutMethod: profile.payoutMethod,
