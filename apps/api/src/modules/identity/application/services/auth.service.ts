@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -71,19 +72,25 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    if (user.role !== UserRole.CLIENT) {
-      throw new BadRequestException('Only clients can upgrade to expert');
+    if (user.role === UserRole.EXPERT) {
+      throw new BadRequestException('Already an expert');
     }
 
-    user.role = UserRole.EXPERT;
-    user.onboardingCompleted = false;
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admins cannot change their own role');
+    }
 
     await this.userRepository.update(user.id, {
       role: UserRole.EXPERT,
       onboardingCompleted: false,
     });
 
-    return this.buildAuthResponse(user);
+    const updated = await this.userRepository.findById(user.id);
+    if (!updated) {
+      throw new NotFoundException('User not found after update');
+    }
+
+    return this.buildAuthResponse(updated);
   }
 
   async getUserProfile(authenticatedUser: AuthenticatedUser): Promise<UserProfileDto> {
