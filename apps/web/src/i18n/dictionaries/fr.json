@@ -271,7 +271,12 @@
     "friday": "Vendredi",
     "saturday": "Samedi",
     "sunday": "Dimanche",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "onboardingPending": "Configuration en attente",
+    "completeYourProfile": "Completez votre profil professionnel",
+    "completeYourProfileDesc": "Terminez la configuration de votre profil pour commencer a recevoir des reservations. Vous pouvez naviguer en tant que client en attendant.",
+    "continueOnboarding": "Continuer la configuration",
+    "stayAsClient": "Rester en tant que client"
   },
   "common": {
     "tnd": "TND"

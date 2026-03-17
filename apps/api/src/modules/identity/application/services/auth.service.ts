@@ -93,6 +93,33 @@ export class AuthService {
     return this.buildAuthResponse(updated);
   }
 
+  async revertToClient(authenticatedUser: AuthenticatedUser): Promise<AuthResponseDto> {
+    const user = await this.userRepository.findById(authenticatedUser.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role !== UserRole.EXPERT) {
+      throw new BadRequestException('Only experts can revert to client');
+    }
+
+    if (user.onboardingCompleted) {
+      throw new BadRequestException('Cannot revert after completing onboarding');
+    }
+
+    await this.userRepository.update(user.id, {
+      role: UserRole.CLIENT,
+      onboardingCompleted: true,
+    });
+
+    const updated = await this.userRepository.findById(user.id);
+    if (!updated) {
+      throw new NotFoundException('User not found after update');
+    }
+
+    return this.buildAuthResponse(updated);
+  }
+
   async getUserProfile(authenticatedUser: AuthenticatedUser): Promise<UserProfileDto> {
     const user = await this.userRepository.findById(authenticatedUser.id);
     if (!user) {

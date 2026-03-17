@@ -18,6 +18,7 @@ interface StoredUser {
   lastName: string;
   role: 'CLIENT' | 'EXPERT' | 'ADMIN';
   avatarUrl: string | null;
+  onboardingCompleted?: boolean;
 }
 
 export function Navbar({ dict, lang }: Props) {

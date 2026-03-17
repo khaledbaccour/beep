@@ -7,6 +7,7 @@ export interface UserProfile {
   lastName: string;
   email: string;
   role: 'CLIENT' | 'EXPERT' | 'ADMIN';
+  onboardingCompleted?: boolean;
 }
 
 export type Tab = 'overview' | 'profile' | 'availability' | 'bookings';

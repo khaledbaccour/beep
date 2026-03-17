@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Copy, Check, ExternalLink } from 'lucide-react';
+import { Sparkles, Copy, Check, ExternalLink, ArrowRight, X } from 'lucide-react';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
 import { localePath } from '@/lib/i18n-utils';
@@ -12,6 +12,7 @@ import { ProfileTab } from './ProfileTab';
 import { AvailabilityTab } from './AvailabilityTab';
 import { BookingsTab } from './BookingsTab';
 import { ClientDashboard } from './ClientDashboard';
+import { revertToClient } from '@/lib/api';
 import type { ExpertProfile } from '@/lib/api';
 
 interface Props {
@@ -49,6 +50,8 @@ export function DashboardPage({ dict, lang }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
   const [expertProfile, setExpertProfile] = useState<ExpertProfile | null>(null);
   const [slugCopied, setSlugCopied] = useState(false);
+  const [onboardingBannerDismissed, setOnboardingBannerDismissed] = useState(false);
+  const [revertingToClient, setRevertingToClient] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -67,7 +70,9 @@ export function DashboardPage({ dict, lang }: Props) {
 
   if (!user) return null;
 
-  const isExpert = user.role === 'EXPERT';
+  const isExpertWithOnboarding = user.role === 'EXPERT' && user.onboardingCompleted !== false;
+  const isIncompleteExpert = user.role === 'EXPERT' && user.onboardingCompleted === false;
+  const isExpert = isExpertWithOnboarding;
   const expertTabs: { key: Tab; label: string }[] = [
     { key: 'overview', label: d.overview },
     { key: 'profile', label: d.profile },
@@ -83,6 +88,20 @@ export function DashboardPage({ dict, lang }: Props) {
     navigator.clipboard.writeText(`https://${profileUrl}`);
     setSlugCopied(true);
     setTimeout(() => setSlugCopied(false), 2000);
+  }
+
+  async function handleRevertToClient() {
+    setRevertingToClient(true);
+    try {
+      const res = await revertToClient();
+      localStorage.setItem('beep_token', res.data.accessToken);
+      localStorage.setItem('beep_user', JSON.stringify(res.data.user));
+      setUser(res.data.user as unknown as UserProfile);
+    } catch {
+      // ignore - stay as is
+    } finally {
+      setRevertingToClient(false);
+    }
   }
 
   return (
@@ -159,6 +178,54 @@ export function DashboardPage({ dict, lang }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Incomplete onboarding banner */}
+        {isIncompleteExpert && !onboardingBannerDismissed && (
+          <div className="mb-8 rounded-2xl border-[2.5px] border-ink-900 bg-gradient-to-r from-brand-50 via-white to-peach-50 overflow-hidden shadow-retro animate-fade-up" style={{ animationDelay: '80ms' }}>
+            <div className="px-6 py-5 sm:px-8">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full bg-amber-100 text-amber-700 border border-amber-300">
+                      {d.onboardingPending ?? 'Setup pending'}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-display font-bold text-ink-900 mb-1">
+                    {d.completeYourProfile ?? 'Complete your expert profile'}
+                  </h3>
+                  <p className="text-sm text-ink-500 mb-4">
+                    {d.completeYourProfileDesc ?? 'Finish setting up your profile to start receiving bookings. You can browse as a client in the meantime.'}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <a
+                      href={localePath(lang, '/onboarding')}
+                      className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-black rounded-full bg-ink-900 text-white border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#7C3AED] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#7C3AED] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#7C3AED] transition-all duration-150"
+                    >
+                      {d.continueOnboarding ?? 'Continue setup'}
+                      <ArrowRight size={14} strokeWidth={2.5} />
+                    </a>
+                    <button
+                      onClick={handleRevertToClient}
+                      disabled={revertingToClient}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-full text-ink-500 border-2 border-ink-200 hover:border-ink-300 hover:text-ink-700 transition-all"
+                    >
+                      {revertingToClient
+                        ? (d.loading ?? 'Loading...')
+                        : (d.stayAsClient ?? 'Stay as client')}
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setOnboardingBannerDismissed(true)}
+                  className="p-1.5 rounded-lg text-ink-300 hover:text-ink-600 hover:bg-ink-100 transition-all shrink-0"
+                  aria-label="Dismiss"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tab navigation for experts */}
         {isExpert && (

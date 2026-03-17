@@ -16,7 +16,7 @@ interface Props {
 
 function getPostLoginDestination(user: { role: string; onboardingCompleted?: boolean }): string {
   if (user.role === 'EXPERT') {
-    return user.onboardingCompleted ? '/dashboard' : '/onboarding';
+    return '/dashboard';
   }
   return '/marketplace';
 }
