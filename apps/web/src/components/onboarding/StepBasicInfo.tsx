@@ -7,7 +7,7 @@ import { checkSlugAvailability } from '@/lib/api';
 
 const CATEGORIES = [
   'FITNESS', 'EDUCATION', 'LAW', 'BUSINESS', 'TECHNOLOGY',
-  'PSYCHOLOGY', 'NUTRITION', 'FINANCE', 'LANGUAGES', 'MUSIC', 'ART', 'OTHER',
+  'NUTRITION', 'FINANCE', 'LANGUAGES', 'MUSIC', 'ART', 'OTHER',
 ] as const;
 
 interface StepBasicInfoData {

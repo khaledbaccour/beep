@@ -73,6 +73,15 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
       return;
     }
 
+    const userStr = localStorage.getItem('beep_user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.role !== 'EXPERT') {
+        router.push(localePath(lang, '/marketplace'));
+        return;
+      }
+    }
+
     async function loadStatus() {
       try {
         const res = await getOnboardingStatus();
@@ -103,7 +112,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
         if (status.step3) {
           setStep3({
             priceTND: status.step3.sessionPriceMillimes
-              ? String(status.step3.sessionPriceMillimes / 1000)
+              ? (status.step3.sessionPriceMillimes / 1000).toFixed(3)
               : '',
             sessionDurationMinutes: status.step3.sessionDurationMinutes || 30,
             timezone: status.step3.timezone || 'Africa/Tunis',
@@ -138,6 +147,9 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
     if (step === 1) {
       if (!step1.slug || step1.slug.length < 3) newErrors.slug = 'Slug must be at least 3 characters';
       if (step1.slug.length > 30) newErrors.slug = 'Slug must be at most 30 characters';
+      if (step1.slug && step1.slug.length >= 2 && !/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(step1.slug)) {
+        newErrors.slug = 'Slug must start and end with a letter or number';
+      }
       if (!step1.bio || step1.bio.length < 10) newErrors.bio = 'Bio must be at least 10 characters';
       if (!step1.category) newErrors.category = 'Please select a category';
     }
@@ -149,6 +161,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
 
     if (step === 3) {
       if (!step3.priceTND || parseFloat(step3.priceTND) <= 0) newErrors.priceTND = 'Price must be greater than 0';
+      if (parseFloat(step3.priceTND) > 9999) newErrors.priceTND = 'Price cannot exceed 9999 TND';
       if (!step3.sessionDurationMinutes) newErrors.sessionDurationMinutes = 'Select a duration';
       if (!step3.timezone) newErrors.timezone = 'Select a timezone';
     }

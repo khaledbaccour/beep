@@ -43,6 +43,7 @@ export function StepPricing({ data, onChange, errors }: StepPricingProps) {
           <Input
             type="number"
             min="1"
+            max="9999"
             step="0.5"
             value={data.priceTND}
             onChange={(e) => onChange({ ...data, priceTND: e.target.value })}

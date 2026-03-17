@@ -213,7 +213,7 @@ export function StepExpertise({ data, onChange, errors }: StepExpertiseProps) {
                   min="1950"
                   max={new Date().getFullYear()}
                   value={cert.year || ''}
-                  onChange={(e) => updateCertification(index, 'year', parseInt(e.target.value, 10) || 0)}
+                  onChange={(e) => { const val = parseInt(e.target.value, 10); if (!isNaN(val)) updateCertification(index, 'year', val); }}
                   placeholder="Year"
                   className="border-2 border-ink-200 rounded-xl text-sm"
                 />
