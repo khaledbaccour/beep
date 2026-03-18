@@ -15,8 +15,8 @@ export function Footer({ dict, lang }: Props) {
       title: dict.footer.platform,
       links: [
         { label: dict.footer.marketplace, href: localePath(lang, '/marketplace') },
-        { label: dict.footer.categoriesLink, href: '#categories' },
-        { label: dict.footer.howItWorksLink, href: '#how-it-works' },
+        { label: dict.footer.categoriesLink, href: localePath(lang, '/categories') },
+        { label: dict.footer.howItWorksLink, href: localePath(lang, '/how-it-works') },
         { label: dict.footer.pricing, href: '#' },
       ],
     },

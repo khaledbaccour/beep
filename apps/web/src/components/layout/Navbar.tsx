@@ -29,8 +29,8 @@ export function Navbar({ dict, lang }: Props) {
 
   const navLinks = [
     { label: dict.nav.experts, href: localePath(lang, '/marketplace') },
-    { label: dict.nav.howItWorks, href: '#how-it-works' },
-    { label: dict.nav.categories, href: '#categories' },
+    { label: dict.nav.howItWorks, href: localePath(lang, '/how-it-works') },
+    { label: dict.nav.categories, href: localePath(lang, '/categories') },
   ];
 
   useEffect(() => {
