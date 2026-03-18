@@ -341,11 +341,15 @@ export interface OnboardingStep3Data {
 
 export interface OnboardingStep4Data {
   payoutMethod: 'BANK_TRANSFER' | 'MOBILE_MONEY';
-  bankName?: string;
-  iban?: string;
-  accountHolderName?: string;
-  mobileProvider?: string;
-  mobilePhone?: string;
+  bankTransferDetails?: {
+    accountHolderName: string;
+    bankName: string;
+    iban: string;
+  };
+  mobileMoneyDetails?: {
+    mobileProvider: string;
+    mobilePhone: string;
+  };
 }
 
 export interface OnboardingStatus {
