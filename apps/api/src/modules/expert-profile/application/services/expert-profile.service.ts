@@ -6,7 +6,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { UserRole, OnboardingStep } from '@beep/shared';
+import { UserRole, OnboardingStep, PayoutMethod } from '@beep/shared';
 import { ExpertProfile } from '../../domain/entities/expert-profile.entity';
 import {
   IExpertProfileRepository,
@@ -285,7 +285,16 @@ export class ExpertProfileService {
     }
 
     profile.payoutMethod = dto.payoutMethod;
-    profile.payoutDetails = dto.payoutDetails;
+    profile.payoutDetails = dto.payoutMethod === PayoutMethod.BANK_TRANSFER
+      ? {
+          accountHolderName: dto.bankTransferDetails!.accountHolderName.trim(),
+          bankName: dto.bankTransferDetails!.bankName,
+          iban: dto.bankTransferDetails!.iban.replace(/\s/g, '').toUpperCase(),
+        }
+      : {
+          mobileProvider: dto.mobileMoneyDetails!.mobileProvider,
+          mobilePhone: dto.mobileMoneyDetails!.mobilePhone.replace(/\s/g, ''),
+        };
     profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PAYOUT);
     profile.profileCompleteness = profile.calculateCompleteness();
 
@@ -377,6 +386,7 @@ export class ExpertProfileService {
         sessionDurationMinutes: profile.sessionDurationMinutes,
         timezone: profile.timezone,
         payoutMethod: profile.payoutMethod,
+        payoutDetails: profile.payoutDetails ?? undefined,
       },
     });
   }

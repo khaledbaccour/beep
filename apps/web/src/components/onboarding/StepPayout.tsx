@@ -2,6 +2,7 @@
 
 import { Banknote, Smartphone } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { TUNISIAN_BANKS, MOBILE_PROVIDERS } from '@beep/shared';
 
 type PayoutMethod = 'BANK_TRANSFER' | 'MOBILE_MONEY';
 
@@ -20,9 +21,31 @@ interface StepPayoutProps {
   errors: Record<string, string>;
 }
 
-const MOBILE_PROVIDERS = ['D17', 'Flouci', 'Sobflous', 'MobiDinar'];
+function formatIbanDisplay(raw: string): string {
+  const cleaned = raw.replace(/\s/g, '').toUpperCase();
+  return cleaned.replace(/(.{4})/g, '$1 ').trim();
+}
 
 export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
+  function handleIbanChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
+    const cleaned = raw.replace(/\s/g, '').toUpperCase();
+    const limited = cleaned.slice(0, 24);
+    onChange({ ...data, iban: limited });
+  }
+
+  function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    const cleaned = val.replace(/[^\d+]/g, '');
+    onChange({ ...data, mobilePhone: cleaned });
+  }
+
+  function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    const cleaned = val.replace(/[^a-zA-Z\u00C0-\u024F\s\-']/g, '');
+    onChange({ ...data, accountHolderName: cleaned });
+  }
+
   return (
     <div className="space-y-6">
       {/* Method selector */}
@@ -88,10 +111,12 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
             </label>
             <Input
               value={data.accountHolderName}
-              onChange={(e) => onChange({ ...data, accountHolderName: e.target.value })}
+              onChange={handleNameChange}
               placeholder="Full name as it appears on your account"
               className="border-2 border-ink-200 rounded-xl"
+              maxLength={100}
             />
+            <p className="mt-1 text-xs text-ink-400">Letters, spaces, hyphens and apostrophes only</p>
             {errors.accountHolderName && (
               <p className="mt-1 text-xs font-medium text-red-500">{errors.accountHolderName}</p>
             )}
@@ -101,12 +126,16 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
             <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
               Bank Name *
             </label>
-            <Input
+            <select
               value={data.bankName}
               onChange={(e) => onChange({ ...data, bankName: e.target.value })}
-              placeholder="e.g. BIAT, Attijari Bank, STB"
-              className="border-2 border-ink-200 rounded-xl"
-            />
+              className="flex h-11 w-full rounded-xl border-2 border-ink-200 bg-white px-3.5 py-2 text-sm text-ink-900 font-medium transition-colors focus-visible:outline-none focus-visible:border-ink-400 focus-visible:ring-2 focus-visible:ring-ink-100"
+            >
+              <option value="">Select your bank</option>
+              {TUNISIAN_BANKS.map((bank) => (
+                <option key={bank} value={bank}>{bank}</option>
+              ))}
+            </select>
             {errors.bankName && (
               <p className="mt-1 text-xs font-medium text-red-500">{errors.bankName}</p>
             )}
@@ -114,14 +143,18 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
 
           <div>
             <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-              IBAN / RIB *
+              IBAN *
             </label>
             <Input
-              value={data.iban}
-              onChange={(e) => onChange({ ...data, iban: e.target.value })}
+              value={formatIbanDisplay(data.iban)}
+              onChange={handleIbanChange}
               placeholder="TN59 XXXX XXXX XXXX XXXX XXXX"
               className="border-2 border-ink-200 rounded-xl font-mono"
+              maxLength={29}
             />
+            <p className="mt-1 text-xs text-ink-400">
+              Tunisian IBAN: TN59 followed by 20 digits ({data.iban.length}/24 characters)
+            </p>
             {errors.iban && (
               <p className="mt-1 text-xs font-medium text-red-500">{errors.iban}</p>
             )}
@@ -158,10 +191,12 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
             <Input
               type="tel"
               value={data.mobilePhone}
-              onChange={(e) => onChange({ ...data, mobilePhone: e.target.value })}
-              placeholder="+216 XX XXX XXX"
+              onChange={handlePhoneChange}
+              placeholder="+216XXXXXXXX"
               className="border-2 border-ink-200 rounded-xl font-mono"
+              maxLength={12}
             />
+            <p className="mt-1 text-xs text-ink-400">Tunisian number: +216 followed by 8 digits</p>
             {errors.mobilePhone && (
               <p className="mt-1 text-xs font-medium text-red-500">{errors.mobilePhone}</p>
             )}
