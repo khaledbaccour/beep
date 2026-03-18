@@ -10,7 +10,7 @@
     "dev": "docker compose up --build",
     "dev:api": "npm run start:dev --workspace=apps/api",
     "dev:web": "npm run dev --workspace=apps/web",
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspace=packages/shared && npm run build --workspace=apps/api && npm run build --workspace=apps/web",
     "lint": "npm run lint --workspaces",
     "test": "npm run test --workspace=apps/api",
     "test:e2e": "npm run test:e2e --workspace=apps/api"
