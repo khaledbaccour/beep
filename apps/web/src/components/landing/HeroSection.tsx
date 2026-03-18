@@ -91,7 +91,7 @@ export function HeroSection({ dict, lang }: Props) {
         <div className="flex flex-col items-center text-center">
           {/* Badge */}
           <div className="animate-fade-up opacity-0 mb-8">
-            <span className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-white/60 backdrop-blur-sm px-5 py-2 text-xs font-black uppercase tracking-wider text-ink-900 shadow-retro-sm">
+            <span className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-white/60 backdrop-blur-sm px-5 py-2 text-xs font-bold uppercase tracking-wider text-ink-900 shadow-retro-sm">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
@@ -127,14 +127,14 @@ export function HeroSection({ dict, lang }: Props) {
           <div className="animate-fade-up opacity-0 stagger-3 mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href={localePath(lang, '/register')}
-              className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-white px-8 py-3.5 text-sm font-black uppercase tracking-wider text-ink-900 shadow-retro hover:-translate-y-0.5 hover:shadow-retro-md active:translate-y-0 active:shadow-retro-sm transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-white px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-ink-900 shadow-retro hover:-translate-y-0.5 hover:shadow-retro-md active:translate-y-0 active:shadow-retro-sm transition-all duration-200"
             >
               {dict.hero.ctaPrimary}
               <ArrowRight size={16} strokeWidth={3} />
             </a>
             <a
               href={localePath(lang, '/marketplace')}
-              className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-ink-900 px-8 py-3.5 text-sm font-black uppercase tracking-wider text-white shadow-retro-purple hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#7C3AED] active:translate-y-0 active:shadow-[2px_2px_0px_0px_#7C3AED] transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-ink-900 px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-retro-purple hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#7C3AED] active:translate-y-0 active:shadow-[2px_2px_0px_0px_#7C3AED] transition-all duration-200"
             >
               {dict.hero.ctaSecondary}
             </a>
@@ -239,7 +239,7 @@ export function HeroSection({ dict, lang }: Props) {
                   <div className="rounded-xl border-[2.5px] border-ink-900 p-5 shadow-retro-sm">
                     <p className="text-xs font-bold text-ink-400 uppercase tracking-wider mb-1">{dict.hero.mockupSession}</p>
                     <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-3xl font-extrabold text-ink-900">{dict.hero.mockupPrice}</span>
+                      <span className="text-3xl font-bold text-ink-900">{dict.hero.mockupPrice}</span>
                       <span className="text-sm text-ink-400 font-bold">{dict.hero.mockupCurrency}</span>
                     </div>
                     <p className="text-xs text-ink-400">{dict.hero.mockupDuration}</p>

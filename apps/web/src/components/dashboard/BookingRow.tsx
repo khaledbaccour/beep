@@ -52,7 +52,7 @@ export function BookingRow({ booking, d, lang, isExpert }: BookingRowProps) {
       {/* Avatar + name */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="w-9 h-9 rounded-lg border-2 border-ink-900 bg-gradient-to-br from-brand-200 to-peach-200 flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-black text-ink-900">{initials}</span>
+          <span className="text-[11px] font-bold text-ink-900">{initials}</span>
         </div>
         <div className="min-w-0">
           <p className="text-sm font-bold text-ink-900 truncate">
@@ -67,7 +67,7 @@ export function BookingRow({ booking, d, lang, isExpert }: BookingRowProps) {
 
       {/* Amount + status + join */}
       <div className="flex items-center gap-2.5 flex-wrap">
-        <span className="text-sm font-black text-ink-900 tabular-nums">
+        <span className="text-sm font-bold text-ink-900 tabular-nums">
           {millimesToTND(booking.amountMillimes)} <span className="text-[10px] font-bold text-ink-400">TND</span>
         </span>
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase border ${style.border} ${style.bg} ${style.text}`}>
@@ -77,7 +77,7 @@ export function BookingRow({ booking, d, lang, isExpert }: BookingRowProps) {
         {isUpcoming && booking.sessionRoomId && (
           <a
             href={localePath(lang, `/session/${booking.sessionRoomId}`)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black bg-ink-900 text-white border-2 border-ink-900 shadow-retro-sm hover:-translate-y-0.5 hover:shadow-retro transition-all"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-ink-900 text-white border-2 border-ink-900 shadow-retro-sm hover:-translate-y-0.5 hover:shadow-retro transition-all"
           >
             <Video size={12} />
             {d.joinCall}

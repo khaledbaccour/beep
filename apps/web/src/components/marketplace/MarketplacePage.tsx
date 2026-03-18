@@ -223,7 +223,7 @@ export function MarketplacePage({ dict, lang }: Props) {
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full border-2 border-ink-900 bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xs font-black`}>
+                        <div className={`w-10 h-10 rounded-full border-2 border-ink-900 bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-xs font-bold`}>
                           {initials}
                         </div>
                         <div>

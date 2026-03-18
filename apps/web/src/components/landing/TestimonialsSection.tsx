@@ -71,12 +71,12 @@ export function TestimonialsSection({ dict, lang }: Props) {
               {/* Person */}
               <div className="flex items-center gap-3 pt-5 border-t-2 border-ink-900/10">
                 <div
-                  className={`w-10 h-10 rounded-full border-2 border-ink-900 bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-xs font-black`}
+                  className={`w-10 h-10 rounded-full border-2 border-ink-900 bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-xs font-bold`}
                 >
                   {t.initials}
                 </div>
                 <div>
-                  <div className="text-sm font-black text-ink-900">{t.name}</div>
+                  <div className="text-sm font-bold text-ink-900">{t.name}</div>
                   <div className="text-xs text-ink-500 font-medium">{t.role}</div>
                 </div>
               </div>

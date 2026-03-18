@@ -50,7 +50,7 @@ export function StatsSection({ dict, lang }: Props) {
                 key={stat.label}
                 className={`text-center ${i > 0 ? 'md:border-l-2 md:border-ink-200' : ''} flex flex-col items-center`}
               >
-                <div className={`text-4xl sm:text-5xl font-extrabold ${valueColors[i]} mb-2`}>
+                <div className={`text-4xl sm:text-5xl font-bold ${valueColors[i]} mb-2`}>
                   {stat.value}
                 </div>
                 <div className="text-base font-bold text-ink-900">

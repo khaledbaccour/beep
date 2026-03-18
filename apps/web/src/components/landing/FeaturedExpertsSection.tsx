@@ -94,7 +94,7 @@ export function FeaturedExpertsSection({ dict, lang }: Props) {
               {/* Bottom bar - dark */}
               <div className="px-6 py-4 bg-[#141418] flex items-center justify-between">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-extrabold text-white">
+                  <span className="text-2xl font-bold text-white">
                     {expert.price}
                   </span>
                   <span className="text-sm text-white/60">{dict.common.tnd}</span>

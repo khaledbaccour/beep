@@ -139,7 +139,7 @@ export function DashboardPage({ dict, lang }: Props) {
               {/* Expert badge + link */}
               {isExpert && (
                 <div className="flex flex-col items-start sm:items-end gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full bg-brand-100 text-brand-700 border-2 border-brand-300">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full bg-brand-100 text-brand-700 border-2 border-brand-300">
                     {d.proDashboard}
                   </span>
                   {profileUrl && (
@@ -163,7 +163,7 @@ export function DashboardPage({ dict, lang }: Props) {
               )}
 
               {!isExpert && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full bg-peach-100 text-peach-700 border-2 border-peach-300">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full bg-peach-100 text-peach-700 border-2 border-peach-300">
                   {d.myAccount}
                 </span>
               )}
@@ -178,7 +178,7 @@ export function DashboardPage({ dict, lang }: Props) {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full bg-amber-100 text-amber-700 border border-amber-300">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-100 text-amber-700 border border-amber-300">
                       {d.onboardingPending ?? 'Setup pending'}
                     </span>
                   </div>
@@ -191,7 +191,7 @@ export function DashboardPage({ dict, lang }: Props) {
                   <div className="flex flex-wrap items-center gap-3">
                     <a
                       href={localePath(lang, '/onboarding')}
-                      className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-black rounded-full bg-ink-900 text-white border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#7C3AED] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#7C3AED] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#7C3AED] transition-all duration-150"
+                      className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-bold rounded-full bg-ink-900 text-white border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#7C3AED] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#7C3AED] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#7C3AED] transition-all duration-150"
                     >
                       {d.continueOnboarding ?? 'Continue setup'}
                       <ArrowRight size={14} strokeWidth={2.5} />

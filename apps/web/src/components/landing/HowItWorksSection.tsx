@@ -59,7 +59,7 @@ export function HowItWorksSection({ dict, lang }: Props) {
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-normal leading-tight">
             {dict.howItWorks.title.split(' ').map((word: string, i: number, arr: string[]) =>
               i === Math.floor(arr.length / 2) ? (
-                <em key={i} className="italic text-[#E8A87C] not-italic font-black" style={{ fontStyle: 'italic' }}>
+                <em key={i} className="italic text-[#E8A87C] not-italic font-bold" style={{ fontStyle: 'italic' }}>
                   {word}{' '}
                 </em>
               ) : (
@@ -80,7 +80,7 @@ export function HowItWorksSection({ dict, lang }: Props) {
               >
                 {/* Step number */}
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-5xl font-extrabold text-ink-900/10">
+                  <span className="text-5xl font-bold text-ink-900/10">
                     {step.number}
                   </span>
                   <div className={`w-12 h-12 rounded-full ${step.iconBg} flex items-center justify-center border-2 border-ink-900 shadow-retro-sm`}>

@@ -118,7 +118,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
           <a href={localePath(lang, '/')} className="flex items-center justify-center gap-1.5 mb-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
-            <span className="text-[17px] font-body font-extrabold text-ink-900">
+            <span className="text-[17px] font-body font-bold text-ink-900">
               beep<span className="text-brand-500">.tn</span>
             </span>
           </a>
@@ -186,7 +186,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
                 ))}
               </div>
 
-              <span className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-[#FFB088] px-6 py-2.5 text-sm font-black uppercase tracking-wider text-ink-900 shadow-[3px_3px_0px_0px_#141418] group-hover:-translate-y-0.5 group-hover:shadow-[4px_4px_0px_0px_#141418] group-active:translate-y-0 group-active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150">
+              <span className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-[#FFB088] px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-ink-900 shadow-[3px_3px_0px_0px_#141418] group-hover:-translate-y-0.5 group-hover:shadow-[4px_4px_0px_0px_#141418] group-active:translate-y-0 group-active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150">
                 {loading === 'client' ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-ink-900 border-t-transparent rounded-full animate-spin" />
@@ -241,7 +241,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
                 ))}
               </div>
 
-              <span className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-ink-900 px-6 py-2.5 text-sm font-black uppercase tracking-wider text-white shadow-[3px_3px_0px_0px_#7C3AED] group-hover:-translate-y-0.5 group-hover:shadow-[4px_4px_0px_0px_#7C3AED] group-active:translate-y-0 group-active:shadow-[1px_1px_0px_0px_#7C3AED] transition-all duration-150">
+              <span className="inline-flex items-center gap-2 rounded-full border-[2.5px] border-ink-900 bg-ink-900 px-6 py-2.5 text-sm font-bold uppercase tracking-wider text-white shadow-[3px_3px_0px_0px_#7C3AED] group-hover:-translate-y-0.5 group-hover:shadow-[4px_4px_0px_0px_#7C3AED] group-active:translate-y-0 group-active:shadow-[1px_1px_0px_0px_#7C3AED] transition-all duration-150">
                 {loading === 'expert' ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

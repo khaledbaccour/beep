@@ -73,7 +73,7 @@ export function Navbar({ dict, lang }: Props) {
         <a href={localePath(lang, '/')} className="flex items-center gap-1.5 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
-          <span className="text-[17px] font-body font-extrabold text-ink-900">
+          <span className="text-[17px] font-body font-bold text-ink-900">
             beep<span className="text-brand-500">.tn</span>
           </span>
         </a>
@@ -114,7 +114,7 @@ export function Navbar({ dict, lang }: Props) {
             <>
               <a
                 href={dashboardHref}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
               >
                 <LayoutDashboard size={14} strokeWidth={2.5} />
                 {dict.nav.dashboard}
@@ -137,7 +137,7 @@ export function Navbar({ dict, lang }: Props) {
 
               <a
                 href={localePath(lang, '/register')}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
               >
                 {dict.nav.getStarted}
                 <ArrowRight size={14} strokeWidth={2.5} />
@@ -193,7 +193,7 @@ export function Navbar({ dict, lang }: Props) {
                 <>
                   <a
                     href={dashboardHref}
-                    className="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
+                    className="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
                   >
                     <LayoutDashboard size={14} strokeWidth={2.5} />
                     {dict.nav.dashboard}
@@ -215,7 +215,7 @@ export function Navbar({ dict, lang }: Props) {
                   </a>
                   <a
                     href={localePath(lang, '/register')}
-                    className="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-black rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
+                    className="w-full text-center inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold rounded-full bg-[#FFB088] text-ink-900 border-[2.5px] border-ink-900 shadow-[3px_3px_0px_0px_#141418] hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#141418] active:translate-y-0 active:shadow-[1px_1px_0px_0px_#141418] transition-all duration-150"
                   >
                     {dict.nav.getStarted}
                     <ArrowRight size={14} strokeWidth={2.5} />
