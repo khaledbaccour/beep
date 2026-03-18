@@ -461,7 +461,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           )}
 
           {/* Footer / Navigation */}
-          <div className="px-6 py-4 border-t-2 border-ink-100 bg-cream-50 flex items-center justify-between gap-3">
+          <div className="px-6 py-4 border-t-2 border-ink-100 bg-cream-50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               {currentStep > 1 && (
                 <Button
@@ -483,21 +483,18 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
                 className="rounded-xl text-ink-400 hover:text-ink-600"
               >
                 {savingDraft ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    {dict.onboarding.saving}
-                  </>
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <>
-                    <Save size={16} />
-                    {dict.onboarding.saveAsDraft}
-                  </>
+                  <Save size={16} />
                 )}
+                <span className="hidden sm:inline">
+                  {savingDraft ? dict.onboarding.saving : dict.onboarding.saveAsDraft}
+                </span>
               </Button>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-ink-400 hidden sm:inline">
+            <div className="flex items-center justify-end gap-2">
+              <span className="text-xs font-bold text-ink-400">
                 {currentStep}/{TOTAL_STEPS}
               </span>
 
@@ -527,7 +524,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
                   variant="brand"
                   onClick={handleComplete}
                   disabled={saving || savingDraft}
-                  className="rounded-xl"
+                  className="rounded-xl whitespace-nowrap"
                 >
                   {saving ? (
                     <>
