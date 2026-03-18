@@ -461,15 +461,15 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           )}
 
           {/* Footer / Navigation */}
-          <div className="px-6 py-4 border-t-2 border-ink-100 bg-cream-50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+          <div className="px-6 py-4 border-t-2 border-ink-100 bg-cream-50 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
               {currentStep > 1 && (
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={handleBack}
                   disabled={saving || savingDraft}
-                  className="rounded-xl"
+                  className="rounded-xl shrink-0"
                 >
                   <ArrowLeft size={16} />
                   {dict.onboarding.back}
@@ -480,20 +480,17 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
                 variant="ghost"
                 onClick={handleSaveDraft}
                 disabled={saving || savingDraft}
-                className="rounded-xl text-ink-400 hover:text-ink-600"
+                className="rounded-xl text-ink-400 hover:text-ink-600 shrink-0"
               >
                 {savingDraft ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
                   <Save size={16} />
                 )}
-                <span className="hidden sm:inline">
-                  {savingDraft ? dict.onboarding.saving : dict.onboarding.saveAsDraft}
-                </span>
               </Button>
             </div>
 
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center gap-2 ml-auto">
               <span className="text-xs font-bold text-ink-400">
                 {currentStep}/{TOTAL_STEPS}
               </span>
