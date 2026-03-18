@@ -213,19 +213,20 @@ function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
-/* ── User Upgrade ── */
+/* ── User Profile ── */
 
-export async function upgradeToExpert(): Promise<ApiResponse<AuthResponse>> {
-  const res = await fetch(`${API_BASE}/users/upgrade-to-expert`, {
-    method: 'POST',
+export async function getUserProfile(): Promise<ApiResponse<AuthResponse['user']>> {
+  const res = await fetch(`${API_BASE}/users/me`, {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: 'Upgrade failed' }));
+    const err = await res.json().catch(() => ({ message: 'Failed to get profile' }));
     throw new Error(err.message || `Error ${res.status}`);
   }
   return res.json();
 }
+
+/* ── User Role ── */
 
 export async function revertToClient(): Promise<ApiResponse<AuthResponse>> {
   const res = await fetch(`${API_BASE}/users/revert-to-client`, {
@@ -382,10 +383,22 @@ export interface OnboardingStep4Data {
 export interface OnboardingStatus {
   currentStep: number;
   completed: boolean;
-  step1?: OnboardingStep1Data;
-  step2?: OnboardingStep2Data;
-  step3?: OnboardingStep3Data;
-  step4?: OnboardingStep4Data;
+  profileCompleteness?: number;
+  profile?: {
+    slug?: string;
+    bio?: string;
+    headline?: string;
+    category?: string;
+    tags?: string[];
+    certifications?: { name: string; issuer: string; year: number }[];
+    yearsOfExperience?: number;
+    languages?: string[];
+    sessionPriceMillimes?: number;
+    sessionDurationMinutes?: number;
+    timezone?: string;
+    payoutMethod?: 'BANK_TRANSFER' | 'MOBILE_MONEY';
+    payoutDetails?: Record<string, string>;
+  };
 }
 
 export async function saveOnboardingStep1(data: OnboardingStep1Data): Promise<ApiResponse<OnboardingStatus>> {

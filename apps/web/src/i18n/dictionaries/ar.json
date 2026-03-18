@@ -291,6 +291,8 @@
     "completeYourProfileDesc": "أنهِ إعداد ملفك الشخصي لبدء استقبال الحجوزات. يمكنك تصفح المنصة كعميل في الوقت الحالي.",
     "continueOnboarding": "متابعة الإعداد",
     "stayAsClient": "البقاء كعميل",
+    "abandonDraft": "حذف المسودة",
+    "draftProgress": "التقدم محفوظ",
     "greetingMorning": "صباح الخير",
     "greetingAfternoon": "مساء الخير",
     "greetingEvening": "مساء النور"
@@ -405,6 +407,7 @@
     "valNameFormat": "الاسم يجب أن يحتوي فقط على أحرف ومسافات وشرطات وفواصل عليا",
     "valIbanFormat": "الآيبان يجب أن يبدأ ب TN متبوعا ب 22 رقما (24 حرفا إجمالا)",
     "valPhoneFormat": "أدخل رقما تونسيا صالحا: +216 متبوعا ب 8 أرقام",
+    "saveAsDraft": "حفظ كمسودة",
     "skipForNow": "تخطي الآن — تصفح كعميل",
     "nameHelp": "أحرف ومسافات وشرطات وفواصل عليا فقط",
     "selectBank": "اختر بنكك",

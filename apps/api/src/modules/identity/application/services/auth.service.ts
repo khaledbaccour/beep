@@ -128,16 +128,19 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    if (user.role !== UserRole.EXPERT) {
-      throw new BadRequestException('Only experts can revert to client');
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admins cannot change their own role');
     }
 
-    if (user.onboardingCompleted) {
+    if (user.role === UserRole.EXPERT && user.onboardingCompleted) {
       throw new BadRequestException('Cannot revert after completing onboarding');
     }
 
     // Delete incomplete expert profile to free up reserved slug
     const profile = await this.profileRepository.findByUserId(user.id);
+    if (user.role === UserRole.CLIENT && !profile) {
+      throw new BadRequestException('No draft profile to abandon');
+    }
     if (profile && !profile.onboardingCompleted) {
       await this.profileRepository.delete(profile.id);
     }
