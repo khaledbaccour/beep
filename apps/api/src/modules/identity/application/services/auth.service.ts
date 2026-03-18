@@ -138,6 +138,9 @@ export class AuthService {
 
     // Delete incomplete expert profile to free up reserved slug
     const profile = await this.profileRepository.findByUserId(user.id);
+    if (user.role === UserRole.CLIENT && !profile) {
+      throw new BadRequestException('No draft profile to abandon');
+    }
     if (profile && !profile.onboardingCompleted) {
       await this.profileRepository.delete(profile.id);
     }

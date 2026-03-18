@@ -198,6 +198,10 @@ export class ExpertProfileService {
     currentUser: AuthenticatedUser,
     dto: OnboardingStep1Dto,
   ): Promise<OnboardingStatusResponseDto> {
+    if (currentUser.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admins cannot create expert profiles');
+    }
+
     // Check for existing profile
     const existing = await this.profileRepo.findByUserId(currentUser.id);
     if (existing && existing.onboardingCompleted) {

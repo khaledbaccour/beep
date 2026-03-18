@@ -318,13 +318,47 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
     setError('');
 
     try {
-      // Save current step data (without validation — drafts can be incomplete)
-      if (currentStep === 1 && step1.slug && step1.bio && step1.category) {
+      // Save all completed steps as draft
+      if (step1.slug && step1.bio && step1.category) {
         await saveOnboardingStep1({
           slug: step1.slug,
           bio: step1.bio,
           headline: step1.headline || undefined,
           category: step1.category,
+        });
+      }
+      if (currentStep >= 2 && step2.languages.length > 0) {
+        await saveOnboardingStep2({
+          tags: step2.tags,
+          certifications: step2.certifications,
+          yearsOfExperience: step2.yearsOfExperience,
+          languages: step2.languages,
+        });
+      }
+      if (currentStep >= 3 && step3.priceTND && parseFloat(step3.priceTND) > 0) {
+        await saveOnboardingStep3({
+          sessionPriceMillimes: Math.round(parseFloat(step3.priceTND) * 1000),
+          sessionDurationMinutes: step3.sessionDurationMinutes,
+          timezone: step3.timezone,
+        });
+      }
+      if (currentStep >= 4 && step4.payoutMethod) {
+        await saveOnboardingStep4({
+          payoutMethod: step4.payoutMethod,
+          ...(step4.payoutMethod === 'BANK_TRANSFER'
+            ? {
+                bankTransferDetails: {
+                  accountHolderName: step4.accountHolderName.trim(),
+                  bankName: step4.bankName,
+                  iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+                },
+              }
+            : {
+                mobileMoneyDetails: {
+                  mobileProvider: step4.mobileProvider,
+                  mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
+                },
+              }),
         });
       }
 

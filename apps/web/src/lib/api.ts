@@ -226,19 +226,7 @@ export async function getUserProfile(): Promise<ApiResponse<AuthResponse['user']
   return res.json();
 }
 
-/* ── User Upgrade ── */
-
-export async function upgradeToExpert(): Promise<ApiResponse<AuthResponse>> {
-  const res = await fetch(`${API_BASE}/users/upgrade-to-expert`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: 'Upgrade failed' }));
-    throw new Error(err.message || `Error ${res.status}`);
-  }
-  return res.json();
-}
+/* ── User Role ── */
 
 export async function revertToClient(): Promise<ApiResponse<AuthResponse>> {
   const res = await fetch(`${API_BASE}/users/revert-to-client`, {

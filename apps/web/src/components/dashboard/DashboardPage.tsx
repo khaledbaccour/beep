@@ -207,7 +207,7 @@ export function DashboardPage({ dict, lang }: Props) {
                     {d.completeYourProfileDesc ?? 'Finish setting up your profile to start receiving bookings. You can browse as a client in the meantime.'}
                     {draftStep > 0 && (
                       <span className="block mt-1 text-xs text-ink-400 font-semibold">
-                        {d.draftProgress ?? `Step ${draftStep}/4 completed`}
+                        {d.draftProgress ?? 'Progress saved'} ({draftStep}/4)
                       </span>
                     )}
                   </p>
