@@ -123,7 +123,7 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
             <span className="text-lg font-bold text-ink-900">{parseFloat(data.priceTND).toFixed(2)} TND</span>
           </div>
           <div className="mt-1 text-xs text-ink-400">
-            Timezone: {data.timezone}
+            {dict.onboarding.timezoneLabel}: {data.timezone}
           </div>
         </div>
       )}

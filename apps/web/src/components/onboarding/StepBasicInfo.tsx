@@ -157,11 +157,14 @@ export function StepBasicInfo({ data, onChange, errors, dict }: StepBasicInfoPro
           className="flex h-11 w-full rounded-xl border-2 border-ink-200 bg-white px-3.5 py-2 text-sm text-ink-900 font-medium transition-colors focus-visible:outline-none focus-visible:border-ink-400 focus-visible:ring-2 focus-visible:ring-ink-100"
         >
           <option value="">{dict.onboarding.selectCategory}</option>
-          {CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat.charAt(0) + cat.slice(1).toLowerCase()}
-            </option>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const catKey = `cat${cat.charAt(0) + cat.slice(1).toLowerCase()}` as keyof typeof dict.onboarding;
+            return (
+              <option key={cat} value={cat}>
+                {dict.onboarding[catKey] || cat.charAt(0) + cat.slice(1).toLowerCase()}
+              </option>
+            );
+          })}
         </select>
         {errors.category && <p className="mt-1.5 text-xs font-medium text-red-500">{errors.category}</p>}
       </div>

@@ -177,9 +177,9 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         if (!name) {
           newErrors.accountHolderName = dict.onboarding.valAccountHolder;
         } else if (name.length < 3) {
-          newErrors.accountHolderName = 'Name must be at least 3 characters';
+          newErrors.accountHolderName = dict.onboarding.valNameMin;
         } else if (!/^[a-zA-Z\u00C0-\u024F\s\-']{3,100}$/.test(name)) {
-          newErrors.accountHolderName = 'Name must contain only letters, spaces, hyphens, and apostrophes';
+          newErrors.accountHolderName = dict.onboarding.valNameFormat;
         }
 
         if (!step4.bankName) {
@@ -190,7 +190,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         if (!iban) {
           newErrors.iban = dict.onboarding.valIban;
         } else if (!/^TN\d{22}$/.test(iban)) {
-          newErrors.iban = 'IBAN must start with TN59 followed by 20 digits (24 characters total)';
+          newErrors.iban = dict.onboarding.valIbanFormat;
         }
       } else {
         if (!step4.mobileProvider) {
@@ -201,7 +201,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         if (!phone) {
           newErrors.mobilePhone = dict.onboarding.valPhone;
         } else if (!/^\+216[2-9]\d{7}$/.test(phone)) {
-          newErrors.mobilePhone = 'Enter a valid Tunisian number: +216 followed by 8 digits';
+          newErrors.mobilePhone = dict.onboarding.valPhoneFormat;
         }
       }
     }
@@ -470,7 +470,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
             href={localePath(lang, '/dashboard')}
             className="text-xs text-ink-400 hover:text-ink-600 underline underline-offset-2 transition-colors"
           >
-            Skip for now — browse as a client
+            {dict.onboarding.skipForNow}
           </a>
         </div>
       </div>
