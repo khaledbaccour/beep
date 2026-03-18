@@ -41,13 +41,11 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
-    const normalizedPhone = dto.phone?.replace(/\s+/g, '') || undefined;
+    const normalizedPhone = dto.phone.replace(/\s+/g, '');
 
-    if (normalizedPhone) {
-      const existingPhone = await this.userRepository.findByPhone(normalizedPhone);
-      if (existingPhone) {
-        throw new ConflictException('Phone number already registered');
-      }
+    const existingPhone = await this.userRepository.findByPhone(normalizedPhone);
+    if (existingPhone) {
+      throw new ConflictException('Phone number already registered');
     }
 
     const user = new User();
