@@ -1,9 +1,10 @@
-import { Entity, Column, OneToOne } from 'typeorm';
+import { Entity, Column, OneToOne, Index } from 'typeorm';
 import { UserRole } from '@beep/shared';
 import { BaseEntity } from '../../../../common/domain/base.entity';
 import { ExpertProfile } from '../../../expert-profile/domain/entities/expert-profile.entity';
 
 @Entity('users')
+@Index('UQ_users_phone', ['phone'], { unique: true, where: '"phone" IS NOT NULL' })
 export class User extends BaseEntity {
   @Column({ unique: true })
   email!: string;
@@ -20,7 +21,7 @@ export class User extends BaseEntity {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.CLIENT })
   role!: UserRole;
 
-  @Column({ nullable: true, unique: true })
+  @Column({ nullable: true })
   phone?: string;
 
   @Column({ nullable: true })
