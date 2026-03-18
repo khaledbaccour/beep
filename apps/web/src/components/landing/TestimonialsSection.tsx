@@ -43,9 +43,9 @@ export function TestimonialsSection({ dict, lang }: Props) {
             {dict.testimonials.label}
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-ink-900 tracking-normal">
-            What people{' '}
-            <em className="not-italic text-[#FFB088] italic">love</em>{' '}
-            about us
+            {dict.testimonials.title}{' '}
+            <em className="not-italic text-[#FFB088] italic">{dict.testimonials.titleAccent}</em>
+            {dict.testimonials.titleSuffix ? ` ${dict.testimonials.titleSuffix}` : ''}
           </h2>
         </div>
 

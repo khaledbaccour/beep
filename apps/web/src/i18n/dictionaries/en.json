@@ -73,6 +73,9 @@
     "step3Desc": "Connect face-to-face in your browser. No downloads, no subscriptions. Just click and talk."
   },
   "stats": {
+    "badge": "Numbers",
+    "title": "Trusted by",
+    "titleAccent": "thousands",
     "experts": "500+",
     "expertsLabel": "Verified professionals",
     "expertsSub": "across 8 categories",
@@ -88,7 +91,9 @@
   },
   "testimonials": {
     "label": "Testimonials",
-    "title": "Trusted by thousands",
+    "title": "What people",
+    "titleAccent": "love",
+    "titleSuffix": "about us",
     "t1Name": "Saloua Mokadem",
     "t1Role": "Client",
     "t1Text": "I found an incredible English tutor on Beep in minutes. The video quality was perfect and booking was seamless. My IELTS score went from 6.0 to 7.5 in just 2 months!",

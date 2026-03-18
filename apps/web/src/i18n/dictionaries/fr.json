@@ -73,6 +73,9 @@
     "step3Desc": "Connectez-vous en face a face depuis votre navigateur. Pas de telechargement, pas d'abonnement. Cliquez et parlez."
   },
   "stats": {
+    "badge": "Chiffres",
+    "title": "La confiance de",
+    "titleAccent": "milliers",
     "experts": "500+",
     "expertsLabel": "Professionnels verifies",
     "expertsSub": "dans 8 categories",
@@ -88,7 +91,9 @@
   },
   "testimonials": {
     "label": "Temoignages",
-    "title": "La confiance de milliers de personnes",
+    "title": "Ce que les gens",
+    "titleAccent": "adorent",
+    "titleSuffix": "chez nous",
     "t1Name": "Saloua Mokadem",
     "t1Role": "Cliente",
     "t1Text": "J'ai trouve un professeur d'anglais incroyable sur Beep en quelques minutes. La qualite video etait parfaite et la reservation transparente. Mon score IELTS est passe de 6.0 a 7.5 en seulement 2 mois !",
