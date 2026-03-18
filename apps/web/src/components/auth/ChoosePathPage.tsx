@@ -49,7 +49,6 @@ export function ChoosePathPage({ dict, lang }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<'client' | 'expert' | null>(null);
   const [error, setError] = useState('');
-  const [hoveredCard, setHoveredCard] = useState<'client' | 'expert' | null>(null);
   const t = dict.choosePath;
 
   async function handleClientPath() {
@@ -152,8 +151,6 @@ export function ChoosePathPage({ dict, lang }: Props) {
           <button
             onClick={handleClientPath}
             disabled={loading !== null}
-            onMouseEnter={() => setHoveredCard('client')}
-            onMouseLeave={() => setHoveredCard(null)}
             className="group text-left rounded-2xl border-[2.5px] border-ink-900 bg-white p-7 sm:p-8 shadow-retro hover:-translate-y-2 hover:shadow-retro-lg active:translate-y-0 active:shadow-retro-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 disabled:opacity-70 relative overflow-hidden"
           >
             {/* Decorative corner accent */}
@@ -209,14 +206,12 @@ export function ChoosePathPage({ dict, lang }: Props) {
           <button
             onClick={handleExpertPath}
             disabled={loading !== null}
-            onMouseEnter={() => setHoveredCard('expert')}
-            onMouseLeave={() => setHoveredCard(null)}
             className="group text-left rounded-2xl border-[2.5px] border-ink-900 bg-white p-7 sm:p-8 shadow-retro hover:-translate-y-2 hover:shadow-retro-lg active:translate-y-0 active:shadow-retro-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-peach-400 focus-visible:ring-offset-2 disabled:opacity-70 relative overflow-hidden"
           >
             {/* Decorative corner accent */}
             <div className="absolute -top-8 -right-8 w-24 h-24 bg-peach-50 rounded-full transition-transform duration-500 group-hover:scale-150" />
 
-<div className="relative">
+            <div className="relative">
               {/* Icon */}
               <div className="w-16 h-16 rounded-2xl border-[2.5px] border-ink-900 bg-gradient-to-br from-peach-400 to-peach-600 flex items-center justify-center shadow-retro-sm mb-5 transition-transform duration-300 group-hover:rotate-[4deg] group-hover:scale-105">
                 <Briefcase size={28} className="text-white" strokeWidth={2.5} />
