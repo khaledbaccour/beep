@@ -33,6 +33,9 @@ export function ContactPageContent({ dict, lang }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const subject = encodeURIComponent(`[Beep] ${formState.subject}`);
+    const body = encodeURIComponent(`Name: ${formState.name}\nEmail: ${formState.email}\n\n${formState.message}`);
+    window.open(`mailto:contact@beep.tn?subject=${subject}&body=${body}`, '_self');
     setSubmitted(true);
   };
 
@@ -55,7 +58,7 @@ export function ContactPageContent({ dict, lang }: Props) {
       bg: 'bg-[#FFF5F2]',
       iconBg: 'bg-[#FDE8E4]',
       iconColor: 'text-[#E87C6A]',
-      href: '#',
+      href: undefined,
     },
     {
       title: d.faqTitle,
@@ -165,8 +168,9 @@ export function ContactPageContent({ dict, lang }: Props) {
             <form onSubmit={handleSubmit} className="border-2 border-ink-900 rounded-2xl p-8 sm:p-10 shadow-retro bg-white space-y-6">
               {/* Name */}
               <div>
-                <label className="block text-sm font-bold text-ink-700 mb-2">{d.formName}</label>
+                <label htmlFor="contact-name" className="block text-sm font-bold text-ink-700 mb-2">{d.formName}</label>
                 <input
+                  id="contact-name"
                   type="text"
                   required
                   value={formState.name}
@@ -178,8 +182,9 @@ export function ContactPageContent({ dict, lang }: Props) {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-bold text-ink-700 mb-2">{d.formEmail}</label>
+                <label htmlFor="contact-email" className="block text-sm font-bold text-ink-700 mb-2">{d.formEmail}</label>
                 <input
+                  id="contact-email"
                   type="email"
                   required
                   value={formState.email}
@@ -191,8 +196,9 @@ export function ContactPageContent({ dict, lang }: Props) {
 
               {/* Subject */}
               <div>
-                <label className="block text-sm font-bold text-ink-700 mb-2">{d.formSubject}</label>
+                <label htmlFor="contact-subject" className="block text-sm font-bold text-ink-700 mb-2">{d.formSubject}</label>
                 <select
+                  id="contact-subject"
                   value={formState.subject}
                   onChange={(e) => setFormState({ ...formState, subject: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl border-2 border-ink-200 text-sm text-ink-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all bg-white"
@@ -207,8 +213,9 @@ export function ContactPageContent({ dict, lang }: Props) {
 
               {/* Message */}
               <div>
-                <label className="block text-sm font-bold text-ink-700 mb-2">{d.formMessage}</label>
+                <label htmlFor="contact-message" className="block text-sm font-bold text-ink-700 mb-2">{d.formMessage}</label>
                 <textarea
+                  id="contact-message"
                   required
                   rows={5}
                   value={formState.message}

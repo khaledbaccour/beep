@@ -28,7 +28,9 @@ export function EarningsPageContent({ dict, lang }: Props) {
   const [sessions, setSessions] = useState(8);
   const [price, setPrice] = useState(80);
 
-  const monthlyEarnings = Math.round(sessions * price * 0.85 * 4);
+  const EXPERT_SHARE = 0.85; // Platform takes 15% commission
+  const WEEKS_PER_MONTH = 4;
+  const monthlyEarnings = Math.round(sessions * price * EXPERT_SHARE * WEEKS_PER_MONTH);
 
   const modelSteps = [
     { title: d.modelStep1, desc: d.modelStep1Desc, icon: DollarSign, color: 'text-brand-600', bg: 'bg-brand-100', gradient: 'from-brand-50 to-white' },

@@ -100,8 +100,7 @@ export function AboutPageContent({ dict, lang }: Props) {
                 <Telescope size={26} className="text-[#E87C6A]" strokeWidth={2} />
               </div>
               <span className="text-xs font-bold uppercase tracking-wider text-[#E87C6A] mb-2 block">{d.visionTitle}</span>
-              <h3 className="text-2xl font-bold text-ink-900 mb-4">{d.visionTitle}</h3>
-              <p className="text-base text-ink-500 leading-relaxed">{d.visionDesc}</p>
+              <p className="text-xl font-bold text-ink-900 leading-relaxed">{d.visionDesc}</p>
             </div>
           </div>
         </div>

@@ -256,7 +256,7 @@ export function TermsPageContent({ dict, lang }: Props) {
             href={localePath(lang, '/register')}
             className="inline-flex items-center gap-2 rounded-full bg-[#FFB088] text-ink-900 font-bold text-base px-8 py-4 border-[2.5px] border-ink-900 shadow-retro hover:-translate-y-0.5 hover:shadow-retro-md active:translate-y-0 active:shadow-retro-sm transition-all duration-200"
           >
-            <Sparkles size={18} />
+            {d.contactText}
             <ArrowRight size={18} />
           </a>
         </div>
