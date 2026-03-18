@@ -56,7 +56,7 @@ export function HowItWorksSection({ dict, lang }: Props) {
 
         {/* Heading */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-normal leading-tight">
             {dict.howItWorks.title.split(' ').map((word: string, i: number, arr: string[]) =>
               i === Math.floor(arr.length / 2) ? (
                 <em key={i} className="italic text-[#E8A87C] not-italic font-black" style={{ fontStyle: 'italic' }}>

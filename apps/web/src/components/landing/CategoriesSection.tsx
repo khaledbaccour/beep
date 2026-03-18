@@ -33,7 +33,7 @@ export function CategoriesSection({ dict, lang }: Props) {
             <LayoutGrid size={14} strokeWidth={2.5} />
             {dict.categories.label}
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#141418] tracking-tight leading-[1.15]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141418] tracking-normal leading-[1.15]">
             {dict.categories.title}{' '}
             <em className="not-italic italic" style={{ color: '#FFB088' }}>{dict.categories.titleBreak}</em>
           </h2>

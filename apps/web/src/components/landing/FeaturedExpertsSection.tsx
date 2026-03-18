@@ -29,7 +29,7 @@ export function FeaturedExpertsSection({ dict, lang }: Props) {
             <Users size={14} strokeWidth={2.5} />
             {dict.featured.label}
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#141418] tracking-tight leading-[1.15]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141418] tracking-normal leading-[1.15]">
             {dict.featured.title}
           </h2>
         </div>

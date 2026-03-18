@@ -135,7 +135,7 @@ export function MarketplacePage({ dict, lang }: Props) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-ink-900 tracking-tight mb-1">
+          <h1 className="text-3xl font-display font-bold text-ink-900 tracking-normal mb-1">
             {dict.marketplace.title}
           </h1>
           <p className="text-ink-500 text-sm">{dict.marketplace.subtitle}</p>

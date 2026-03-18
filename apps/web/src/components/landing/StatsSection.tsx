@@ -37,7 +37,7 @@ export function StatsSection({ dict, lang }: Props) {
 
         {/* Heading */}
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-ink-900 tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-ink-900 tracking-normal leading-tight">
             Trusted by <em className="italic text-[#E87C6A]">thousands</em>
           </h2>
         </div>
