@@ -30,6 +30,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
     <div className="border-2 border-ink-900 rounded-2xl overflow-hidden shadow-retro-sm hover:shadow-retro transition-all duration-200">
       <button
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
         className="w-full flex items-center justify-between px-6 py-5 text-left bg-white hover:bg-cream-50 transition-colors"
       >
         <span className="text-base font-bold text-ink-900 pr-4">{question}</span>
@@ -257,7 +258,7 @@ export function HowItWorksPageContent({ dict, lang }: Props) {
           <div className="text-center mb-14">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border-2 border-ink-900 bg-white text-xs font-bold uppercase tracking-wider text-ink-600 shadow-retro-sm mb-6">
               <ShieldCheck size={14} className="text-emerald-600" />
-              {d.guaranteeTitle}
+              {d.badge}
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-ink-900 tracking-tight">
               {d.guaranteeTitle}
@@ -297,8 +298,8 @@ export function HowItWorksPageContent({ dict, lang }: Props) {
           </div>
 
           <div className="space-y-3">
-            {faqs.map((faq, i) => (
-              <FaqItem key={i} question={faq.q} answer={faq.a} />
+            {faqs.map((faq) => (
+              <FaqItem key={faq.q} question={faq.q} answer={faq.a} />
             ))}
           </div>
         </div>
