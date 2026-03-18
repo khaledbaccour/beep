@@ -64,7 +64,7 @@ export class AuthService {
       return this.buildAuthResponse(saved);
     } catch (err) {
       if (err instanceof QueryFailedError) {
-        const detail = (err as Record<string, unknown>).detail as string | undefined;
+        const detail = (err as unknown as Record<string, unknown>).detail as string | undefined;
         if (detail?.includes('phone')) {
           throw new ConflictException('Phone number already registered');
         }

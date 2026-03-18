@@ -8,6 +8,7 @@ import {
   EXPERT_PROFILE_REPOSITORY,
 } from '../../../expert-profile/domain/repositories/expert-profile.repository.interface';
 import { AvailabilitySchedule } from '../../domain/entities/availability-schedule.entity';
+import { DayOfWeek } from '@beep/shared';
 import { SetAvailabilityDto } from '../dtos/set-availability.dto';
 import { AuthenticatedUser } from '../../../identity/domain/interfaces/authenticated-user.interface';
 
@@ -58,7 +59,7 @@ export class AvailabilityService {
       throw new NotFoundException('Expert not found');
     }
 
-    const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const dayNames: DayOfWeek[] = [DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY];
     const dayOfWeek = dayNames[date.getUTCDay()];
 
     const schedules = await this.availabilityRepo.findSchedulesByExpertId(expertProfileId);
@@ -120,7 +121,7 @@ export class AvailabilityService {
     const blackouts = await this.availabilityRepo.findBlackoutDates(expertProfileId, from, to);
     const blackoutSet = new Set(blackouts.map((b) => b.date));
 
-    const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const dayNames: DayOfWeek[] = [DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY];
     const scheduledDays = new Set(schedules.map((s) => s.dayOfWeek));
 
     const availableDates: string[] = [];
