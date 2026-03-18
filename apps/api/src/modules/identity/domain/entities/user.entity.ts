@@ -20,7 +20,7 @@ export class User extends BaseEntity {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.CLIENT })
   role!: UserRole;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   phone?: string;
 
   @Column({ nullable: true })

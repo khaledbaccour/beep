@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { QueryFailedError } from 'typeorm';
 import { User } from '../../domain/entities/user.entity';
 import {
   IUserRepository,
@@ -40,6 +41,15 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
+    const normalizedPhone = dto.phone?.replace(/\s+/g, '') || undefined;
+
+    if (normalizedPhone) {
+      const existingPhone = await this.userRepository.findByPhone(normalizedPhone);
+      if (existingPhone) {
+        throw new ConflictException('Phone number already registered');
+      }
+    }
+
     const user = new User();
     user.email = dto.email;
     user.passwordHash = await bcrypt.hash(dto.password, 12);
@@ -47,10 +57,23 @@ export class AuthService {
     user.lastName = dto.lastName;
     user.role = UserRole.CLIENT;
     user.onboardingCompleted = true;
-    user.phone = dto.phone;
+    user.phone = normalizedPhone;
 
-    const saved = await this.userRepository.save(user);
-    return this.buildAuthResponse(saved);
+    try {
+      const saved = await this.userRepository.save(user);
+      return this.buildAuthResponse(saved);
+    } catch (err) {
+      if (err instanceof QueryFailedError) {
+        const detail = (err as Record<string, unknown>).detail as string | undefined;
+        if (detail?.includes('phone')) {
+          throw new ConflictException('Phone number already registered');
+        }
+        if (detail?.includes('email')) {
+          throw new ConflictException('Email already registered');
+        }
+      }
+      throw err;
+    }
   }
 
   async login(dto: LoginDto): Promise<AuthResponseDto> {
