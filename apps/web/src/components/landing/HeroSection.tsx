@@ -106,7 +106,7 @@ export function HeroSection({ dict, lang }: Props) {
           </div>
 
           {/* MASSIVE headline */}
-          <h1 className="animate-fade-up opacity-0 stagger-1 text-[36px] sm:text-[64px] lg:text-[96px] font-display font-normal uppercase leading-[0.95] tracking-[0.01em] text-ink-900">
+          <h1 className="animate-fade-up opacity-0 stagger-1 text-[36px] sm:text-[64px] lg:text-[96px] font-display font-semibold uppercase leading-[0.95] tracking-[0.01em] text-ink-900">
             {dict.hero.headline}{' '}
             <span className="italic text-[#7C3AED] relative">
               {dict.hero.headlineAccent}

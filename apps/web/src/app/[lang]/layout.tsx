@@ -1,24 +1,24 @@
 import { i18n, type Locale } from '@/i18n';
 import { notFound } from 'next/navigation';
 import {
-  Gasoek_One,
+  Sora,
   Plus_Jakarta_Sans,
   Playfair_Display,
   JetBrains_Mono,
 } from 'next/font/google';
 import '../globals.css';
 
-const display = Gasoek_One({
+const display = Sora({
   subsets: ['latin'],
   variable: '--font-display',
-  weight: '400',
+  weight: ['400', '600', '700'],
   display: 'swap',
 });
 
 const body = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-body',
-  weight: ['300', '400', '500', '600', '700', '800'],
+  weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
 });
 
