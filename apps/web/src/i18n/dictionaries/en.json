@@ -291,6 +291,8 @@
     "completeYourProfileDesc": "Finish setting up your profile to start receiving bookings. You can browse as a client in the meantime.",
     "continueOnboarding": "Continue setup",
     "stayAsClient": "Stay as client",
+    "abandonDraft": "Abandon draft",
+    "draftProgress": "Progress saved",
     "greetingMorning": "Good morning",
     "greetingAfternoon": "Good afternoon",
     "greetingEvening": "Good evening"
@@ -405,6 +407,7 @@
     "valNameFormat": "Name must contain only letters, spaces, hyphens, and apostrophes",
     "valIbanFormat": "IBAN must start with TN followed by 22 digits (24 characters total)",
     "valPhoneFormat": "Enter a valid Tunisian number: +216 followed by 8 digits",
+    "saveAsDraft": "Save as draft",
     "skipForNow": "Skip for now — browse as a client",
     "nameHelp": "Letters, spaces, hyphens and apostrophes only",
     "selectBank": "Select your bank",

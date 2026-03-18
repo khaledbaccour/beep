@@ -6,7 +6,6 @@ import { Search, Briefcase, ArrowRight, Users, Calendar, Video, Star, TrendingUp
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
 import { localePath } from '@/lib/i18n-utils';
-import { upgradeToExpert } from '@/lib/api';
 
 interface Props {
   dict: Dictionary;
@@ -56,18 +55,9 @@ export function ChoosePathPage({ dict, lang }: Props) {
     router.push(localePath(lang, '/marketplace'));
   }
 
-  async function handleExpertPath() {
+  function handleExpertPath() {
     setLoading('expert');
-    setError('');
-    try {
-      const res = await upgradeToExpert();
-      localStorage.setItem('beep_token', res.data.accessToken);
-      localStorage.setItem('beep_user', JSON.stringify(res.data.user));
-      router.push(localePath(lang, '/onboarding'));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.error);
-      setLoading(null);
-    }
+    router.push(localePath(lang, '/onboarding'));
   }
 
   return (

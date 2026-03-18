@@ -12,7 +12,7 @@ import { ProfileTab } from './ProfileTab';
 import { AvailabilityTab } from './AvailabilityTab';
 import { BookingsTab } from './BookingsTab';
 import { ClientDashboard } from './ClientDashboard';
-import { revertToClient } from '@/lib/api';
+import { revertToClient, getOnboardingStatus } from '@/lib/api';
 import type { ExpertProfile } from '@/lib/api';
 
 interface Props {
@@ -41,6 +41,8 @@ export function DashboardPage({ dict, lang }: Props) {
   const [expertProfile, setExpertProfile] = useState<ExpertProfile | null>(null);
   const [slugCopied, setSlugCopied] = useState(false);
   const [onboardingBannerDismissed, setOnboardingBannerDismissed] = useState(false);
+  const [hasDraftProfile, setHasDraftProfile] = useState(false);
+  const [draftStep, setDraftStep] = useState(0);
   const [revertingToClient, setRevertingToClient] = useState(false);
   const [revertError, setRevertError] = useState('');
   const router = useRouter();
@@ -51,11 +53,24 @@ export function DashboardPage({ dict, lang }: Props) {
       router.push(localePath(lang, '/login'));
       return;
     }
-    setUser(JSON.parse(stored));
+    const parsedUser = JSON.parse(stored);
+    setUser(parsedUser);
 
     const storedProfile = localStorage.getItem('beep_expert_profile');
     if (storedProfile) {
       try { setExpertProfile(JSON.parse(storedProfile)); } catch { /* ignore */ }
+    }
+
+    // Check for draft onboarding profile (CLIENT users who started but didn't finish)
+    if (parsedUser.role === 'CLIENT' || (parsedUser.role === 'EXPERT' && parsedUser.onboardingCompleted === false)) {
+      getOnboardingStatus()
+        .then((res) => {
+          if (res.data && !res.data.completed && res.data.currentStep > 0) {
+            setHasDraftProfile(true);
+            setDraftStep(res.data.currentStep);
+          }
+        })
+        .catch(() => { /* No draft */ });
     }
   }, [lang, router]);
 
@@ -63,6 +78,7 @@ export function DashboardPage({ dict, lang }: Props) {
 
   const isExpertWithOnboarding = user.role === 'EXPERT' && user.onboardingCompleted !== false;
   const isIncompleteExpert = user.role === 'EXPERT' && user.onboardingCompleted === false;
+  const hasOnboardingDraft = hasDraftProfile || isIncompleteExpert;
   const isExpert = isExpertWithOnboarding;
   const expertTabs: { key: Tab; label: string }[] = [
     { key: 'overview', label: d.overview },
@@ -89,6 +105,8 @@ export function DashboardPage({ dict, lang }: Props) {
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       setUser(res.data.user as unknown as UserProfile);
+      setHasDraftProfile(false);
+      setOnboardingBannerDismissed(true);
     } catch (err) {
       setRevertError(err instanceof Error ? err.message : 'Failed to revert. Please try again.');
     } finally {
@@ -171,8 +189,8 @@ export function DashboardPage({ dict, lang }: Props) {
           </div>
         </div>
 
-        {/* Incomplete onboarding banner */}
-        {isIncompleteExpert && !onboardingBannerDismissed && (
+        {/* Incomplete onboarding banner (draft or incomplete expert) */}
+        {hasOnboardingDraft && !onboardingBannerDismissed && (
           <div className="mb-8 rounded-2xl border-[2.5px] border-ink-900 bg-gradient-to-r from-brand-50 via-white to-peach-50 overflow-hidden shadow-retro animate-fade-up" style={{ animationDelay: '80ms' }}>
             <div className="px-6 py-5 sm:px-8">
               <div className="flex items-start justify-between gap-4">
@@ -187,6 +205,11 @@ export function DashboardPage({ dict, lang }: Props) {
                   </h3>
                   <p className="text-sm text-ink-500 mb-4">
                     {d.completeYourProfileDesc ?? 'Finish setting up your profile to start receiving bookings. You can browse as a client in the meantime.'}
+                    {draftStep > 0 && (
+                      <span className="block mt-1 text-xs text-ink-400 font-semibold">
+                        {d.draftProgress ?? `Step ${draftStep}/4 completed`}
+                      </span>
+                    )}
                   </p>
                   <div className="flex flex-wrap items-center gap-3">
                     <a
@@ -203,7 +226,7 @@ export function DashboardPage({ dict, lang }: Props) {
                     >
                       {revertingToClient
                         ? (d.loading ?? 'Loading...')
-                        : (d.stayAsClient ?? 'Stay as client')}
+                        : (d.abandonDraft ?? d.stayAsClient ?? 'Abandon draft')}
                     </button>
                   </div>
                   {revertError && (

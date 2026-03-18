@@ -291,6 +291,8 @@
     "completeYourProfileDesc": "Terminez la configuration de votre profil pour commencer a recevoir des reservations. Vous pouvez naviguer en tant que client en attendant.",
     "continueOnboarding": "Continuer la configuration",
     "stayAsClient": "Rester en tant que client",
+    "abandonDraft": "Abandonner le brouillon",
+    "draftProgress": "Progression sauvegardee",
     "greetingMorning": "Bonjour",
     "greetingAfternoon": "Bon apres-midi",
     "greetingEvening": "Bonsoir"
@@ -405,6 +407,7 @@
     "valNameFormat": "Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes",
     "valIbanFormat": "L'IBAN doit commencer par TN suivi de 22 chiffres (24 caracteres au total)",
     "valPhoneFormat": "Entrez un numero tunisien valide : +216 suivi de 8 chiffres",
+    "saveAsDraft": "Sauvegarder le brouillon",
     "skipForNow": "Passer pour le moment — naviguer en tant que client",
     "nameHelp": "Lettres, espaces, tirets et apostrophes uniquement",
     "selectBank": "Selectionnez votre banque",

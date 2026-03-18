@@ -128,11 +128,11 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    if (user.role !== UserRole.EXPERT) {
-      throw new BadRequestException('Only experts can revert to client');
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenException('Admins cannot change their own role');
     }
 
-    if (user.onboardingCompleted) {
+    if (user.role === UserRole.EXPERT && user.onboardingCompleted) {
       throw new BadRequestException('Cannot revert after completing onboarding');
     }
 
