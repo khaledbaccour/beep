@@ -39,11 +39,11 @@ export function LoginPage({ dict, lang }: Props) {
       const res = await loginUser({ email, password });
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
-      setSuccess(`Logged in as ${res.data.user.firstName} ${res.data.user.lastName}`);
+      setSuccess(`${dict.auth.loginSuccess} ${res.data.user.firstName} ${res.data.user.lastName}`);
       const dest = getPostLoginDestination(res.data.user);
       router.push(localePath(lang, dest));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : dict.auth.loginFailed);
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,7 @@ export function LoginPage({ dict, lang }: Props) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={dict.auth.enterPassword}
               required
               data-testid="login-password"
             />

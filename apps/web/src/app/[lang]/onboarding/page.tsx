@@ -11,7 +11,7 @@ export default async function OnboardingPage({ params }: PageProps) {
   return (
     <main className="relative">
       <Navbar dict={dict} lang={params.lang} />
-      <OnboardingWizard lang={params.lang} />
+      <OnboardingWizard lang={params.lang} dict={dict} />
     </main>
   );
 }

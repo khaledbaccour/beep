@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Rocket, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { localePath } from '@/lib/i18n-utils';
 import type { Locale } from '@/i18n';
+import type { Dictionary } from '@/i18n/types';
 import {
   getOnboardingStatus,
   saveOnboardingStep1,
@@ -20,14 +21,16 @@ import { StepExpertise, type StepExpertiseData } from './StepExpertise';
 import { StepPricing, type StepPricingData } from './StepPricing';
 import { StepPayout, type StepPayoutData } from './StepPayout';
 
-const STEP_LABELS = ['Profile', 'Expertise', 'Pricing', 'Payout'];
 const TOTAL_STEPS = 4;
 
 interface OnboardingWizardProps {
   lang: Locale;
+  dict: Dictionary;
 }
 
-export function OnboardingWizard({ lang }: OnboardingWizardProps) {
+export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
+  const STEP_LABELS = [dict.onboarding.stepProfile, dict.onboarding.stepExpertise, dict.onboarding.stepPricing, dict.onboarding.stepPayout];
+
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -147,32 +150,32 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
     const newErrors: Record<string, string> = {};
 
     if (step === 1) {
-      if (!step1.slug || step1.slug.length < 3) newErrors.slug = 'Slug must be at least 3 characters';
-      if (step1.slug.length > 30) newErrors.slug = 'Slug must be at most 30 characters';
+      if (!step1.slug || step1.slug.length < 3) newErrors.slug = dict.onboarding.valSlugMin;
+      if (step1.slug.length > 30) newErrors.slug = dict.onboarding.valSlugMax;
       if (step1.slug && step1.slug.length >= 2 && !/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(step1.slug)) {
-        newErrors.slug = 'Slug must start and end with a letter or number';
+        newErrors.slug = dict.onboarding.valSlugFormat;
       }
-      if (!step1.bio || step1.bio.length < 10) newErrors.bio = 'Bio must be at least 10 characters';
-      if (!step1.category) newErrors.category = 'Please select a category';
+      if (!step1.bio || step1.bio.length < 10) newErrors.bio = dict.onboarding.valBioMin;
+      if (!step1.category) newErrors.category = dict.onboarding.valCategory;
     }
 
     if (step === 2) {
-      if (step2.yearsOfExperience < 0) newErrors.yearsOfExperience = 'Must be 0 or more';
-      if (step2.languages.length === 0) newErrors.languages = 'Add at least one language';
+      if (step2.yearsOfExperience < 0) newErrors.yearsOfExperience = dict.onboarding.valExperienceMin;
+      if (step2.languages.length === 0) newErrors.languages = dict.onboarding.valLanguagesMin;
     }
 
     if (step === 3) {
-      if (!step3.priceTND || parseFloat(step3.priceTND) <= 0) newErrors.priceTND = 'Price must be greater than 0';
-      if (parseFloat(step3.priceTND) > 9999) newErrors.priceTND = 'Price cannot exceed 9999 TND';
-      if (!step3.sessionDurationMinutes) newErrors.sessionDurationMinutes = 'Select a duration';
-      if (!step3.timezone) newErrors.timezone = 'Select a timezone';
+      if (!step3.priceTND || parseFloat(step3.priceTND) <= 0) newErrors.priceTND = dict.onboarding.valPriceMin;
+      if (parseFloat(step3.priceTND) > 9999) newErrors.priceTND = dict.onboarding.valPriceMax;
+      if (!step3.sessionDurationMinutes) newErrors.sessionDurationMinutes = dict.onboarding.valDuration;
+      if (!step3.timezone) newErrors.timezone = dict.onboarding.valTimezone;
     }
 
     if (step === 4) {
       if (step4.payoutMethod === 'BANK_TRANSFER') {
         const name = step4.accountHolderName.trim();
         if (!name) {
-          newErrors.accountHolderName = 'Account holder name is required';
+          newErrors.accountHolderName = dict.onboarding.valAccountHolder;
         } else if (name.length < 3) {
           newErrors.accountHolderName = 'Name must be at least 3 characters';
         } else if (!/^[a-zA-Z\u00C0-\u024F\s\-']{3,100}$/.test(name)) {
@@ -180,23 +183,23 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
         }
 
         if (!step4.bankName) {
-          newErrors.bankName = 'Please select your bank';
+          newErrors.bankName = dict.onboarding.valBankName;
         }
 
         const iban = step4.iban.replace(/\s/g, '').toUpperCase();
         if (!iban) {
-          newErrors.iban = 'IBAN is required';
+          newErrors.iban = dict.onboarding.valIban;
         } else if (!/^TN\d{22}$/.test(iban)) {
           newErrors.iban = 'IBAN must start with TN59 followed by 20 digits (24 characters total)';
         }
       } else {
         if (!step4.mobileProvider) {
-          newErrors.mobileProvider = 'Please select a provider';
+          newErrors.mobileProvider = dict.onboarding.valProvider;
         }
 
         const phone = step4.mobilePhone.replace(/\s/g, '');
         if (!phone) {
-          newErrors.mobilePhone = 'Phone number is required';
+          newErrors.mobilePhone = dict.onboarding.valPhone;
         } else if (!/^\+216[2-9]\d{7}$/.test(phone)) {
           newErrors.mobilePhone = 'Enter a valid Tunisian number: +216 followed by 8 digits';
         }
@@ -259,7 +262,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
         setErrors({});
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : dict.onboarding.error);
     } finally {
       setSaving(false);
     }
@@ -295,7 +298,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
       await completeOnboarding();
       router.push(localePath(lang, '/dashboard?onboarding=complete'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : dict.onboarding.error);
     } finally {
       setSaving(false);
     }
@@ -314,24 +317,24 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex items-center gap-3">
           <div className="w-5 h-5 border-2 border-ink-200 border-t-ink-900 rounded-full animate-spin" />
-          <p className="text-sm text-ink-400">Loading...</p>
+          <p className="text-sm text-ink-400">{dict.onboarding.loading}</p>
         </div>
       </div>
     );
   }
 
   const stepTitles = [
-    'Your Profile',
-    'Your Expertise',
-    'Pricing & Availability',
-    'Payout Setup',
+    dict.onboarding.stepTitleProfile,
+    dict.onboarding.stepTitleExpertise,
+    dict.onboarding.stepTitlePricing,
+    dict.onboarding.stepTitlePayout,
   ];
 
   const stepDescriptions = [
-    'Set up your public profile that clients will see',
-    'Tell us about your skills and qualifications',
-    'Set your session price and duration',
-    'How would you like to receive payments?',
+    dict.onboarding.stepDescProfile,
+    dict.onboarding.stepDescExpertise,
+    dict.onboarding.stepDescPricing,
+    dict.onboarding.stepDescPayout,
   ];
 
   return (
@@ -340,10 +343,10 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-display text-ink-900 mb-2">
-            Become an Expert
+            {dict.onboarding.title}
           </h1>
           <p className="text-sm text-ink-500">
-            Complete these steps to start receiving bookings on Beep
+            {dict.onboarding.subtitle}
           </p>
         </div>
 
@@ -371,16 +374,16 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           {/* Step content */}
           <div className="p-6">
             {currentStep === 1 && (
-              <StepBasicInfo data={step1} onChange={setStep1} errors={errors} />
+              <StepBasicInfo data={step1} onChange={setStep1} errors={errors} dict={dict} />
             )}
             {currentStep === 2 && (
-              <StepExpertise data={step2} onChange={setStep2} errors={errors} category={step1.category} />
+              <StepExpertise data={step2} onChange={setStep2} errors={errors} category={step1.category} dict={dict} />
             )}
             {currentStep === 3 && (
-              <StepPricing data={step3} onChange={setStep3} errors={errors} />
+              <StepPricing data={step3} onChange={setStep3} errors={errors} dict={dict} />
             )}
             {currentStep === 4 && (
-              <StepPayout data={step4} onChange={setStep4} errors={errors} />
+              <StepPayout data={step4} onChange={setStep4} errors={errors} dict={dict} />
             )}
           </div>
 
@@ -403,7 +406,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
                   className="rounded-xl"
                 >
                   <ArrowLeft size={16} />
-                  Back
+                  {dict.onboarding.back}
                 </Button>
               )}
             </div>
@@ -424,11 +427,11 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
                   {saving ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      Saving...
+                      {dict.onboarding.saving}
                     </>
                   ) : (
                     <>
-                      Next
+                      {dict.onboarding.next}
                       <ArrowRight size={16} />
                     </>
                   )}
@@ -444,12 +447,12 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
                   {saving ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      Completing...
+                      {dict.onboarding.completing}
                     </>
                   ) : (
                     <>
                       <Rocket size={16} />
-                      Complete & Go Live
+                      {dict.onboarding.completeAndGoLive}
                     </>
                   )}
                 </Button>
@@ -460,7 +463,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
 
         {/* Bottom note + skip option */}
         <p className="text-center text-xs text-ink-400 mt-6">
-          You can always update your profile details later from your dashboard.
+          {dict.onboarding.bottomNote}
         </p>
         <div className="text-center mt-3">
           <a

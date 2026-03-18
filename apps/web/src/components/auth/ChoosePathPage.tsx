@@ -66,7 +66,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       router.push(localePath(lang, '/onboarding'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : t.error);
       setLoading(null);
     }
   }
@@ -175,9 +175,9 @@ export function ChoosePathPage({ dict, lang }: Props) {
               {/* Feature pills */}
               <div className="flex flex-wrap gap-2 mb-6">
                 {[
-                  { icon: Users, label: 'Browse experts' },
-                  { icon: Video, label: 'Video calls' },
-                  { icon: Shield, label: 'Secure payments' },
+                  { icon: Users, label: t.browseExperts },
+                  { icon: Video, label: t.videoCalls },
+                  { icon: Shield, label: t.securePayments },
                 ].map(({ icon: Icon, label }) => (
                   <span
                     key={label}
@@ -193,7 +193,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
                 {loading === 'client' ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-ink-900 border-t-transparent rounded-full animate-spin" />
-                    Loading...
+                    {t.loading}
                   </span>
                 ) : (
                   <>
@@ -220,7 +220,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
             <div className="absolute top-4 right-4 z-10">
               <span className="inline-flex items-center gap-1 rounded-full border-[2px] border-ink-900 bg-[#FBBF24] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-ink-900 shadow-[2px_2px_0px_0px_#141418] animate-shadow-pulse">
                 <Star size={10} fill="#141418" />
-                Popular
+                {t.popular}
               </span>
             </div>
 
@@ -240,9 +240,9 @@ export function ChoosePathPage({ dict, lang }: Props) {
               {/* Feature pills */}
               <div className="flex flex-wrap gap-2 mb-6">
                 {[
-                  { icon: Calendar, label: 'Your schedule' },
-                  { icon: TrendingUp, label: 'Grow income' },
-                  { icon: Clock, label: '5 min setup' },
+                  { icon: Calendar, label: t.yourSchedule },
+                  { icon: TrendingUp, label: t.growIncome },
+                  { icon: Clock, label: t.quickSetup },
                 ].map(({ icon: Icon, label }) => (
                   <span
                     key={label}
@@ -258,7 +258,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
                 {loading === 'expert' ? (
                   <span className="flex items-center gap-2">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Loading...
+                    {t.loading}
                   </span>
                 ) : (
                   <>
@@ -285,7 +285,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
                 </div>
               ))}
             </div>
-            <span className="text-[11px] font-bold text-ink-600">500+ experts</span>
+            <span className="text-[11px] font-bold text-ink-600">{t.trustExperts}</span>
           </div>
           <div className="inline-flex items-center gap-1.5 rounded-full border-[2px] border-ink-900/15 bg-white/50 backdrop-blur-sm px-4 py-2 shadow-[2px_2px_0px_0px_rgba(20,20,24,0.04)]">
             <div className="flex gap-0.5">
@@ -293,11 +293,11 @@ export function ChoosePathPage({ dict, lang }: Props) {
                 <Star key={s} size={11} fill="#FBBF24" stroke="#141418" strokeWidth={1} />
               ))}
             </div>
-            <span className="text-[11px] font-bold text-ink-600">4.9/5 rating</span>
+            <span className="text-[11px] font-bold text-ink-600">{t.trustRating}</span>
           </div>
           <div className="inline-flex items-center gap-1.5 rounded-full border-[2px] border-ink-900/15 bg-white/50 backdrop-blur-sm px-4 py-2 shadow-[2px_2px_0px_0px_rgba(20,20,24,0.04)]">
             <Shield size={12} className="text-emerald-500" strokeWidth={2.5} />
-            <span className="text-[11px] font-bold text-ink-600">Secure & free to join</span>
+            <span className="text-[11px] font-bold text-ink-600">{t.trustSecure}</span>
           </div>
         </div>
       </div>

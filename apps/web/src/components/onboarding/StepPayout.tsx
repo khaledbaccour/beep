@@ -3,6 +3,7 @@
 import { Banknote, Smartphone } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { TUNISIAN_BANKS, MOBILE_PROVIDERS } from '@beep/shared';
+import type { Dictionary } from '@/i18n/types';
 
 type PayoutMethod = 'BANK_TRANSFER' | 'MOBILE_MONEY';
 
@@ -19,6 +20,7 @@ interface StepPayoutProps {
   data: StepPayoutData;
   onChange: (data: StepPayoutData) => void;
   errors: Record<string, string>;
+  dict: Dictionary;
 }
 
 function formatIbanDisplay(raw: string): string {
@@ -26,7 +28,7 @@ function formatIbanDisplay(raw: string): string {
   return cleaned.replace(/(.{4})/g, '$1 ').trim();
 }
 
-export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
+export function StepPayout({ data, onChange, errors, dict }: StepPayoutProps) {
   function handleIbanChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
     const cleaned = raw.replace(/\s/g, '').toUpperCase();
@@ -51,7 +53,7 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
       {/* Method selector */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-3">
-          Payout Method *
+          {dict.onboarding.payoutMethod}
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
@@ -72,8 +74,8 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
               <Banknote size={20} className={data.payoutMethod === 'BANK_TRANSFER' ? 'text-ink-900' : 'text-ink-500'} />
             </div>
             <div>
-              <p className="font-bold text-sm text-ink-900">Bank Transfer</p>
-              <p className="text-xs text-ink-500 mt-0.5">Receive payments to your bank account</p>
+              <p className="font-bold text-sm text-ink-900">{dict.onboarding.bankTransfer}</p>
+              <p className="text-xs text-ink-500 mt-0.5">{dict.onboarding.bankTransferDesc}</p>
             </div>
           </button>
 
@@ -95,8 +97,8 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
               <Smartphone size={20} className={data.payoutMethod === 'MOBILE_MONEY' ? 'text-white' : 'text-ink-500'} />
             </div>
             <div>
-              <p className="font-bold text-sm text-ink-900">Mobile Money</p>
-              <p className="text-xs text-ink-500 mt-0.5">Receive payments via mobile wallet</p>
+              <p className="font-bold text-sm text-ink-900">{dict.onboarding.mobileMoney}</p>
+              <p className="text-xs text-ink-500 mt-0.5">{dict.onboarding.mobileMoneyDesc}</p>
             </div>
           </button>
         </div>
@@ -107,12 +109,12 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
         <div className="space-y-4 p-4 rounded-xl border-2 border-ink-100 bg-cream-50">
           <div>
             <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-              Account Holder Name *
+              {dict.onboarding.accountHolder}
             </label>
             <Input
               value={data.accountHolderName}
               onChange={handleNameChange}
-              placeholder="Full name as it appears on your account"
+              placeholder={dict.onboarding.accountHolderPlaceholder}
               className="border-2 border-ink-200 rounded-xl"
               maxLength={100}
             />
@@ -124,7 +126,7 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
 
           <div>
             <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-              Bank Name *
+              {dict.onboarding.bankName}
             </label>
             <select
               value={data.bankName}
@@ -143,7 +145,7 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
 
           <div>
             <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-              IBAN *
+              {dict.onboarding.ibanRib}
             </label>
             <Input
               value={formatIbanDisplay(data.iban)}
@@ -167,14 +169,14 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
         <div className="space-y-4 p-4 rounded-xl border-2 border-ink-100 bg-cream-50">
           <div>
             <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-              Provider *
+              {dict.onboarding.provider}
             </label>
             <select
               value={data.mobileProvider}
               onChange={(e) => onChange({ ...data, mobileProvider: e.target.value })}
               className="flex h-11 w-full rounded-xl border-2 border-ink-200 bg-white px-3.5 py-2 text-sm text-ink-900 font-medium transition-colors focus-visible:outline-none focus-visible:border-ink-400 focus-visible:ring-2 focus-visible:ring-ink-100"
             >
-              <option value="">Select provider</option>
+              <option value="">{dict.onboarding.selectProvider}</option>
               {MOBILE_PROVIDERS.map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}
@@ -186,7 +188,7 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
 
           <div>
             <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-              Phone Number *
+              {dict.onboarding.phoneNumber}
             </label>
             <Input
               type="tel"
@@ -207,8 +209,7 @@ export function StepPayout({ data, onChange, errors }: StepPayoutProps) {
       {/* Note */}
       <div className="p-4 rounded-xl border-2 border-peach-300 bg-peach-50">
         <p className="text-sm font-medium text-ink-700">
-          Payments will be processed manually and sent to your account after each completed session.
-          You will receive your payout within 3-5 business days.
+          {dict.onboarding.payoutNote}
         </p>
       </div>
     </div>

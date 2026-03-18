@@ -27,21 +27,11 @@ const TAB_ICONS: Record<Tab, string> = {
   bookings: '📋',
 };
 
-function getGreeting(lang: Locale): string {
+function getGreeting(d: Dictionary['dashboard']): string {
   const h = new Date().getHours();
-  if (lang === 'ar') {
-    if (h < 12) return 'صباح الخير';
-    if (h < 18) return 'مساء الخير';
-    return 'مساء الخير';
-  }
-  if (lang === 'en') {
-    if (h < 12) return 'Good morning';
-    if (h < 18) return 'Good afternoon';
-    return 'Good evening';
-  }
-  if (h < 12) return 'Bonjour';
-  if (h < 18) return 'Bon apres-midi';
-  return 'Bonsoir';
+  if (h < 12) return d.greetingMorning;
+  if (h < 18) return d.greetingAfternoon;
+  return d.greetingEvening;
 }
 
 export function DashboardPage({ dict, lang }: Props) {
@@ -81,7 +71,7 @@ export function DashboardPage({ dict, lang }: Props) {
     { key: 'bookings', label: d.bookings },
   ];
 
-  const greeting = getGreeting(lang);
+  const greeting = getGreeting(d);
   const profileUrl = expertProfile ? `beep.tn/${expertProfile.slug}` : null;
 
   function copySlug() {

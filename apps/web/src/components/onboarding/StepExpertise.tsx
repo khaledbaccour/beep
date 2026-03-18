@@ -5,6 +5,7 @@ import { Plus, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SKILLS_BY_CATEGORY, ALL_SKILLS, ExpertCategory } from '@beep/shared';
+import type { Dictionary } from '@/i18n/types';
 
 interface Certification {
   name: string;
@@ -24,13 +25,20 @@ interface StepExpertiseProps {
   onChange: (data: StepExpertiseData) => void;
   errors: Record<string, string>;
   category?: string;
+  dict: Dictionary;
 }
 
-const COMMON_LANGUAGES = [
-  'Arabic', 'French', 'English', 'Italian', 'German', 'Spanish', 'Turkish',
-];
+export function StepExpertise({ data, onChange, errors, category, dict }: StepExpertiseProps) {
+  const COMMON_LANGUAGES = [
+    { value: 'Arabic', label: dict.onboarding.langArabic },
+    { value: 'French', label: dict.onboarding.langFrench },
+    { value: 'English', label: dict.onboarding.langEnglish },
+    { value: 'Italian', label: dict.onboarding.langItalian },
+    { value: 'German', label: dict.onboarding.langGerman },
+    { value: 'Spanish', label: dict.onboarding.langSpanish },
+    { value: 'Turkish', label: dict.onboarding.langTurkish },
+  ];
 
-export function StepExpertise({ data, onChange, errors, category }: StepExpertiseProps) {
   const [tagInput, setTagInput] = useState('');
   const [langInput, setLangInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -156,7 +164,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
       {/* Tags / Skills */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Skill Tags
+          {dict.onboarding.skillTags}
         </label>
 
         {/* Selected tags */}
@@ -201,7 +209,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
                   }
                 }, 200);
               }}
-              placeholder="Search skills or type your own..."
+              placeholder={dict.onboarding.searchSkills}
               className="border-2 border-ink-200 rounded-xl pl-9"
             />
           </div>
@@ -215,7 +223,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
               {suggestedSkills.length > 0 && (
                 <div className="p-2">
                   <p className="px-2 py-1 text-[10px] font-bold text-ink-400 uppercase tracking-wider">
-                    {tagInput.trim() ? 'Matching skills' : 'Suggested for your category'}
+                    {tagInput.trim() ? dict.onboarding.matchingSkills : dict.onboarding.suggestedSkills}
                   </p>
                   <div className="flex flex-wrap gap-1.5 px-1 py-1">
                     {suggestedSkills.map((skill) => (
@@ -245,7 +253,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
                     className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded-lg hover:bg-brand-100 transition-all duration-150"
                   >
                     <Plus size={12} strokeWidth={3} />
-                    Add custom skill: &ldquo;{tagInput.trim().toLowerCase()}&rdquo;
+                    {dict.onboarding.addCustomSkill} &ldquo;{tagInput.trim().toLowerCase()}&rdquo;
                   </button>
                 </div>
               )}
@@ -254,7 +262,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
         </div>
 
         <p className="mt-1.5 text-xs text-ink-400">
-          Pick from suggestions or type your own. Press Enter to add.
+          {dict.onboarding.skillsHelp}
         </p>
         {errors.tags && <p className="mt-1 text-xs font-medium text-red-500">{errors.tags}</p>}
       </div>
@@ -262,7 +270,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
       {/* Years of Experience */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Years of Experience *
+          {dict.onboarding.yearsOfExperience}
         </label>
         <Input
           type="number"
@@ -270,7 +278,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
           max="50"
           value={data.yearsOfExperience || ''}
           onChange={(e) => onChange({ ...data, yearsOfExperience: parseInt(e.target.value, 10) || 0 })}
-          placeholder="e.g. 5"
+          placeholder={dict.onboarding.yearsPlaceholder}
           className="border-2 border-ink-200 rounded-xl w-32"
         />
         {errors.yearsOfExperience && <p className="mt-1 text-xs font-medium text-red-500">{errors.yearsOfExperience}</p>}
@@ -279,7 +287,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
       {/* Languages */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Languages Spoken *
+          {dict.onboarding.languagesSpoken}
         </label>
         <div className="flex flex-wrap gap-2 mb-2">
           {data.languages.map((lang) => (
@@ -295,14 +303,14 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
           ))}
         </div>
         <div className="flex flex-wrap gap-1.5 mb-2">
-          {COMMON_LANGUAGES.filter((l) => !data.languages.includes(l)).map((lang) => (
+          {COMMON_LANGUAGES.filter((l) => !data.languages.includes(l.value)).map((lang) => (
             <button
-              key={lang}
+              key={lang.value}
               type="button"
-              onClick={() => addLanguage(lang)}
+              onClick={() => addLanguage(lang.value)}
               className="px-2.5 py-1 text-xs font-medium text-ink-500 bg-cream-100 border border-ink-200 rounded-lg hover:border-ink-400 hover:text-ink-700 transition-all"
             >
-              + {lang}
+              + {lang.label}
             </button>
           ))}
         </div>
@@ -311,7 +319,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
           onChange={(e) => setLangInput(e.target.value)}
           onKeyDown={handleLangKeyDown}
           onBlur={() => { if (langInput.trim()) { addLanguage(langInput); setLangInput(''); } }}
-          placeholder="Or type a language and press Enter"
+          placeholder={dict.onboarding.typeLanguage}
           className="border-2 border-ink-200 rounded-xl"
         />
         {errors.languages && <p className="mt-1 text-xs font-medium text-red-500">{errors.languages}</p>}
@@ -320,7 +328,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
       {/* Certifications */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Certifications
+          {dict.onboarding.certifications}
         </label>
         <div className="space-y-3">
           {data.certifications.map((cert, index) => (
@@ -339,13 +347,13 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
                 <Input
                   value={cert.name}
                   onChange={(e) => updateCertification(index, 'name', e.target.value)}
-                  placeholder="Certification name"
+                  placeholder={dict.onboarding.certName}
                   className="border-2 border-ink-200 rounded-xl text-sm"
                 />
                 <Input
                   value={cert.issuer}
                   onChange={(e) => updateCertification(index, 'issuer', e.target.value)}
-                  placeholder="Issuing organization"
+                  placeholder={dict.onboarding.certIssuer}
                   className="border-2 border-ink-200 rounded-xl text-sm"
                 />
                 <Input
@@ -354,7 +362,7 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
                   max={new Date().getFullYear()}
                   value={cert.year || ''}
                   onChange={(e) => { const val = parseInt(e.target.value, 10); if (!isNaN(val)) updateCertification(index, 'year', val); }}
-                  placeholder="Year"
+                  placeholder={dict.onboarding.certYear}
                   className="border-2 border-ink-200 rounded-xl text-sm"
                 />
               </div>
@@ -368,9 +376,9 @@ export function StepExpertise({ data, onChange, errors, category }: StepExpertis
           onClick={addCertification}
           className="mt-3 rounded-xl"
         >
-          <Plus size={14} /> Add Certification
+          <Plus size={14} /> {dict.onboarding.addCertification}
         </Button>
-        <p className="mt-1 text-xs text-ink-400">Optional - add your professional certifications</p>
+        <p className="mt-1 text-xs text-ink-400">{dict.onboarding.certificationsHelp}</p>
       </div>
     </div>
   );

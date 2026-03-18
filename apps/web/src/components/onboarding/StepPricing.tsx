@@ -1,6 +1,7 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
+import type { Dictionary } from '@/i18n/types';
 
 interface StepPricingData {
   priceTND: string;
@@ -12,6 +13,7 @@ interface StepPricingProps {
   data: StepPricingData;
   onChange: (data: StepPricingData) => void;
   errors: Record<string, string>;
+  dict: Dictionary;
 }
 
 const DURATION_OPTIONS = [
@@ -31,13 +33,13 @@ const POPULAR_TIMEZONES = [
   'Asia/Dubai',
 ];
 
-export function StepPricing({ data, onChange, errors }: StepPricingProps) {
+export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) {
   return (
     <div className="space-y-6">
       {/* Price */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Session Price *
+          {dict.onboarding.sessionPrice}
         </label>
         <div className="relative w-48">
           <Input
@@ -57,7 +59,7 @@ export function StepPricing({ data, onChange, errors }: StepPricingProps) {
         </div>
         {data.priceTND && parseFloat(data.priceTND) > 0 && (
           <p className="mt-2 text-xs text-ink-500">
-            Clients will pay <span className="font-bold text-ink-900">{parseFloat(data.priceTND).toFixed(2)} TND</span> per session
+            {dict.onboarding.clientsWillPay} <span className="font-bold text-ink-900">{parseFloat(data.priceTND).toFixed(2)} TND</span> {dict.onboarding.perSession}
           </p>
         )}
         {errors.priceTND && <p className="mt-1 text-xs font-medium text-red-500">{errors.priceTND}</p>}
@@ -66,7 +68,7 @@ export function StepPricing({ data, onChange, errors }: StepPricingProps) {
       {/* Duration */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Session Duration *
+          {dict.onboarding.sessionDuration}
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {DURATION_OPTIONS.map((opt) => (
@@ -83,7 +85,7 @@ export function StepPricing({ data, onChange, errors }: StepPricingProps) {
               `}
             >
               <span className="block text-lg font-bold">{opt.value}</span>
-              <span className="block text-xs text-ink-500">min</span>
+              <span className="block text-xs text-ink-500">{dict.onboarding.min}</span>
             </button>
           ))}
         </div>
@@ -95,7 +97,7 @@ export function StepPricing({ data, onChange, errors }: StepPricingProps) {
       {/* Timezone */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Timezone *
+          {dict.onboarding.timezone}
         </label>
         <select
           value={data.timezone}
@@ -107,7 +109,7 @@ export function StepPricing({ data, onChange, errors }: StepPricingProps) {
           ))}
         </select>
         <p className="mt-1 text-xs text-ink-400">
-          Your available time slots will be displayed in this timezone
+          {dict.onboarding.timezoneHelp}
         </p>
         {errors.timezone && <p className="mt-1 text-xs font-medium text-red-500">{errors.timezone}</p>}
       </div>
@@ -115,9 +117,9 @@ export function StepPricing({ data, onChange, errors }: StepPricingProps) {
       {/* Summary card */}
       {data.priceTND && parseFloat(data.priceTND) > 0 && (
         <div className="p-4 rounded-xl border-[2.5px] border-ink-900 bg-cream-50 shadow-retro-sm">
-          <p className="text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">Session Summary</p>
+          <p className="text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">{dict.onboarding.sessionSummary}</p>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-ink-600">{data.sessionDurationMinutes}-minute session</span>
+            <span className="text-sm text-ink-600">{data.sessionDurationMinutes}{dict.onboarding.minuteSession}</span>
             <span className="text-lg font-bold text-ink-900">{parseFloat(data.priceTND).toFixed(2)} TND</span>
           </div>
           <div className="mt-1 text-xs text-ink-400">
