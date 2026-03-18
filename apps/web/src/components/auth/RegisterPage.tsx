@@ -32,7 +32,7 @@ export function RegisterPage({ dict, lang }: Props) {
     setLoading(true);
 
     try {
-      const res = await registerUser({ email, password, firstName, lastName, phone: phone || undefined });
+      const res = await registerUser({ email, password, firstName, lastName, phone: phone ? `+216${phone}` : undefined });
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       setSuccess(dict.auth.accountCreated);
@@ -95,7 +95,21 @@ export function RegisterPage({ dict, lang }: Props) {
 
           <div>
             <label className="block text-sm font-medium text-ink-700 mb-1.5">{dict.auth.phone}</label>
-            <Input type="tel" placeholder="+216 XX XXX XXX" value={phone} onChange={(e) => setPhone(e.target.value)} data-testid="register-phone" />
+            <div className="flex">
+              <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-ink-200 bg-ink-50 text-sm text-ink-500">+216</span>
+              <Input
+                type="tel"
+                placeholder="XX XXX XXX"
+                value={phone}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  setPhone(digits);
+                }}
+                maxLength={8}
+                className="rounded-l-none"
+                data-testid="register-phone"
+              />
+            </div>
           </div>
 
           <Button variant="brand" size="lg" type="submit" className="w-full" disabled={loading} data-testid="register-submit">
