@@ -18,6 +18,7 @@ export class OnboardingStatusResponseDto {
     sessionDurationMinutes?: number;
     timezone?: string;
     payoutMethod?: PayoutMethod;
+    payoutDetails?: Record<string, string>;
   };
 
   constructor(partial: OnboardingStatusResponseDto) {

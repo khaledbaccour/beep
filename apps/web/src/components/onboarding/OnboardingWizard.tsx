@@ -119,13 +119,15 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           });
         }
         if (status.step4) {
+          const bt = status.step4.bankTransferDetails;
+          const mm = status.step4.mobileMoneyDetails;
           setStep4({
             payoutMethod: status.step4.payoutMethod || 'BANK_TRANSFER',
-            bankName: status.step4.bankName || '',
-            iban: status.step4.iban || '',
-            accountHolderName: status.step4.accountHolderName || '',
-            mobileProvider: status.step4.mobileProvider || '',
-            mobilePhone: status.step4.mobilePhone || '',
+            bankName: bt?.bankName || '',
+            iban: bt?.iban || '',
+            accountHolderName: bt?.accountHolderName || '',
+            mobileProvider: mm?.mobileProvider || '',
+            mobilePhone: mm?.mobilePhone || '+216',
           });
         }
 
@@ -168,12 +170,36 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
 
     if (step === 4) {
       if (step4.payoutMethod === 'BANK_TRANSFER') {
-        if (!step4.accountHolderName.trim()) newErrors.accountHolderName = 'Account holder name is required';
-        if (!step4.bankName.trim()) newErrors.bankName = 'Bank name is required';
-        if (!step4.iban.trim()) newErrors.iban = 'IBAN/RIB is required';
+        const name = step4.accountHolderName.trim();
+        if (!name) {
+          newErrors.accountHolderName = 'Account holder name is required';
+        } else if (name.length < 3) {
+          newErrors.accountHolderName = 'Name must be at least 3 characters';
+        } else if (!/^[a-zA-Z\u00C0-\u024F\s\-']{3,100}$/.test(name)) {
+          newErrors.accountHolderName = 'Name must contain only letters, spaces, hyphens, and apostrophes';
+        }
+
+        if (!step4.bankName) {
+          newErrors.bankName = 'Please select your bank';
+        }
+
+        const iban = step4.iban.replace(/\s/g, '').toUpperCase();
+        if (!iban) {
+          newErrors.iban = 'IBAN is required';
+        } else if (!/^TN\d{22}$/.test(iban)) {
+          newErrors.iban = 'IBAN must start with TN59 followed by 20 digits (24 characters total)';
+        }
       } else {
-        if (!step4.mobileProvider) newErrors.mobileProvider = 'Select a provider';
-        if (!step4.mobilePhone.trim()) newErrors.mobilePhone = 'Phone number is required';
+        if (!step4.mobileProvider) {
+          newErrors.mobileProvider = 'Please select a provider';
+        }
+
+        const phone = step4.mobilePhone.replace(/\s/g, '');
+        if (!phone) {
+          newErrors.mobilePhone = 'Phone number is required';
+        } else if (!/^\+216[2-9]\d{7}$/.test(phone)) {
+          newErrors.mobilePhone = 'Enter a valid Tunisian number: +216 followed by 8 digits';
+        }
       }
     }
 
@@ -213,13 +239,17 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           payoutMethod: step4.payoutMethod,
           ...(step4.payoutMethod === 'BANK_TRANSFER'
             ? {
-                bankName: step4.bankName,
-                iban: step4.iban,
-                accountHolderName: step4.accountHolderName,
+                bankTransferDetails: {
+                  accountHolderName: step4.accountHolderName.trim(),
+                  bankName: step4.bankName,
+                  iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+                },
               }
             : {
-                mobileProvider: step4.mobileProvider,
-                mobilePhone: step4.mobilePhone,
+                mobileMoneyDetails: {
+                  mobileProvider: step4.mobileProvider,
+                  mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
+                },
               }),
         });
       }
@@ -247,13 +277,17 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
         payoutMethod: step4.payoutMethod,
         ...(step4.payoutMethod === 'BANK_TRANSFER'
           ? {
-              bankName: step4.bankName,
-              iban: step4.iban,
-              accountHolderName: step4.accountHolderName,
+              bankTransferDetails: {
+                accountHolderName: step4.accountHolderName.trim(),
+                bankName: step4.bankName,
+                iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+              },
             }
           : {
-              mobileProvider: step4.mobileProvider,
-              mobilePhone: step4.mobilePhone,
+              mobileMoneyDetails: {
+                mobileProvider: step4.mobileProvider,
+                mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
+              },
             }),
       });
 
@@ -424,10 +458,18 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           </div>
         </div>
 
-        {/* Bottom note */}
+        {/* Bottom note + skip option */}
         <p className="text-center text-xs text-ink-400 mt-6">
           You can always update your profile details later from your dashboard.
         </p>
+        <div className="text-center mt-3">
+          <a
+            href={localePath(lang, '/dashboard')}
+            className="text-xs text-ink-400 hover:text-ink-600 underline underline-offset-2 transition-colors"
+          >
+            Skip for now — browse as a client
+          </a>
+        </div>
       </div>
     </div>
   );
