@@ -216,15 +216,7 @@ export function ChoosePathPage({ dict, lang }: Props) {
             {/* Decorative corner accent */}
             <div className="absolute -top-8 -right-8 w-24 h-24 bg-peach-50 rounded-full transition-transform duration-500 group-hover:scale-150" />
 
-            {/* Popular badge */}
-            <div className="absolute top-4 right-4 z-10">
-              <span className="inline-flex items-center gap-1 rounded-full border-[2px] border-ink-900 bg-[#FBBF24] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-ink-900 shadow-[2px_2px_0px_0px_#141418] animate-shadow-pulse">
-                <Star size={10} fill="#141418" />
-                {t.popular}
-              </span>
-            </div>
-
-            <div className="relative">
+<div className="relative">
               {/* Icon */}
               <div className="w-16 h-16 rounded-2xl border-[2.5px] border-ink-900 bg-gradient-to-br from-peach-400 to-peach-600 flex items-center justify-center shadow-retro-sm mb-5 transition-transform duration-300 group-hover:rotate-[4deg] group-hover:scale-105">
                 <Briefcase size={28} className="text-white" strokeWidth={2.5} />
