@@ -9,6 +9,7 @@ import type { Locale } from '@/i18n';
 import {
   getExpertBySlug,
   getAvailableSlots,
+  getAvailableDates,
   createBooking,
   confirmBookingPayment,
   type ExpertProfile,
@@ -59,6 +60,9 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
 
+  const [availableDates, setAvailableDates] = useState<Set<string>>(new Set());
+  const [availableDatesLoading, setAvailableDatesLoading] = useState(false);
+
   const [step, setStep] = useState<BookingStep>('profile');
   const [notes, setNotes] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -102,6 +106,29 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       });
     return () => { cancelled = true; };
   }, [slug, t.error]);
+
+  const fetchAvailableDatesForRange = useCallback(async (start: Date, expertId: string, signal: AbortSignal) => {
+    setAvailableDatesLoading(true);
+    try {
+      const from = toDateString(start);
+      const end = new Date(start);
+      end.setDate(end.getDate() + VISIBLE_DAYS - 1);
+      const to = toDateString(end);
+      const res = await getAvailableDates(expertId, from, to);
+      if (!signal.aborted) setAvailableDates(new Set(res.data));
+    } catch {
+      if (!signal.aborted) setAvailableDates(new Set());
+    } finally {
+      if (!signal.aborted) setAvailableDatesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!expert) return;
+    const controller = new AbortController();
+    fetchAvailableDatesForRange(calendarStart, expert.id, controller.signal);
+    return () => controller.abort();
+  }, [calendarStart, expert, fetchAvailableDatesForRange]);
 
   const fetchSlots = useCallback(async (date: Date, expertId: string) => {
     setSlotsLoading(true);
@@ -195,6 +222,8 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   };
 
   const navigateCalendar = (direction: 'prev' | 'next') => {
+    setSelectedDate(null);
+    setSelectedSlot(null);
     setCalendarStart((prev) => {
       const next = new Date(prev);
       next.setDate(next.getDate() + (direction === 'next' ? VISIBLE_DAYS : -VISIBLE_DAYS));
@@ -284,6 +313,8 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
               <DatePicker
                 calendarStart={calendarStart}
                 selectedDate={selectedDate}
+                availableDates={availableDates}
+                availableDatesLoading={availableDatesLoading}
                 lang={lang}
                 labels={{ selectDate: t.selectDate }}
                 onDateSelect={handleDateSelect}

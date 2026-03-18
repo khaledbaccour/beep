@@ -99,6 +99,47 @@ export class AvailabilityService {
     return slots;
   }
 
+  /**
+   * Returns the list of dates within [from, to] that have at least one available slot.
+   * Used by the frontend DatePicker to visually disable days with no availability.
+   */
+  async getAvailableDates(
+    expertProfileId: string,
+    from: Date,
+    to: Date,
+  ): Promise<string[]> {
+    const profile = await this.profileRepo.findById(expertProfileId);
+    if (!profile) {
+      throw new NotFoundException('Expert not found');
+    }
+
+    const allSchedules = await this.availabilityRepo.findSchedulesByExpertId(expertProfileId);
+    const schedules = allSchedules.filter((s) => s.isActive);
+    if (schedules.length === 0) return [];
+
+    const blackouts = await this.availabilityRepo.findBlackoutDates(expertProfileId, from, to);
+    const blackoutSet = new Set(blackouts.map((b) => b.date));
+
+    const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const scheduledDays = new Set(schedules.map((s) => s.dayOfWeek));
+
+    const availableDates: string[] = [];
+    const current = new Date(from);
+
+    while (current <= to) {
+      const dateStr = current.toISOString().split('T')[0];
+      const dayOfWeek = dayNames[current.getUTCDay()];
+
+      if (scheduledDays.has(dayOfWeek) && !blackoutSet.has(dateStr)) {
+        availableDates.push(dateStr);
+      }
+
+      current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    return availableDates;
+  }
+
   async getSchedules(expertProfileId: string): Promise<AvailabilitySchedule[]> {
     return this.availabilityRepo.findSchedulesByExpertId(expertProfileId);
   }

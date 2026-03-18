@@ -122,6 +122,21 @@ export async function getAvailableSlots(
   return res.json();
 }
 
+export async function getAvailableDates(
+  expertProfileId: string,
+  from: string,
+  to: string,
+): Promise<ApiResponse<string[]>> {
+  const res = await fetch(
+    `${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/available-dates?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to load available dates' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
 /* ── Bookings ── */
 
 export type BookingStatus =
