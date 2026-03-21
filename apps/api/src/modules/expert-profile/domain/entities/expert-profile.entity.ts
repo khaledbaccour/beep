@@ -1,7 +1,8 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToOne, OneToMany, JoinColumn } from 'typeorm';
 import { ExpertCategory, PayoutMethod } from '@beep/shared';
 import type { Certification } from '@beep/shared';
 import { BaseEntity } from '../../../../common/domain/base.entity';
+import { SessionOption } from './session-option.entity';
 import { User } from '../../../identity/domain/entities/user.entity';
 
 @Entity('expert_profiles')
@@ -82,6 +83,12 @@ export class ExpertProfile extends BaseEntity {
   /** Profile completeness percentage (0-100) */
   @Column({ type: 'int', default: 0 })
   profileCompleteness!: number;
+
+  @OneToMany(() => SessionOption, (opt) => opt.expertProfile, {
+    cascade: true,
+    eager: true,
+  })
+  sessionOptions!: SessionOption[];
 
   isSlugValid(slug: string): boolean {
     return /^[a-z0-9-]+$/.test(slug);

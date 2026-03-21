@@ -1,12 +1,23 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min, ValidateNested, IsArray, ArrayMinSize } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateSessionOptionDto } from './session-option.dto';
 
 export class OnboardingStep3Dto {
-  /** Session price in millimes (TND). Minimum 1000 millimes = 1 TND */
+  /** Session options with duration-based pricing */
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CreateSessionOptionDto)
+  @IsOptional()
+  sessionOptions?: CreateSessionOptionDto[];
+
+  /** @deprecated Use sessionOptions instead. Kept for backward compat. */
   @IsInt()
   @Min(1000)
-  sessionPriceMillimes!: number;
+  @IsOptional()
+  sessionPriceMillimes?: number;
 
-  /** Session duration in minutes. Minimum 15 minutes */
+  /** @deprecated Use sessionOptions instead. Kept for backward compat. */
   @IsInt()
   @Min(15)
   @IsOptional()

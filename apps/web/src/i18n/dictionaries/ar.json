@@ -188,7 +188,10 @@
     "goToDashboard": "عرض حجوزاتي",
     "backToProfile": "العودة للملف الشخصي",
     "loginRequired": "سجل الدخول للحجز",
-    "timezone": "المنطقة الزمنية"
+    "timezone": "المنطقة الزمنية",
+    "selectDuration": "اختر المدة",
+    "selectDurationFirst": "اختر مدة لعرض الأوقات المتاحة",
+    "from": "من"
   },
   "auth": {
     "loginTitle": "مرحبا بعودتك",

@@ -188,7 +188,10 @@
     "goToDashboard": "Voir mes reservations",
     "backToProfile": "Retour au profil",
     "loginRequired": "Connectez-vous pour reserver",
-    "timezone": "Fuseau horaire"
+    "timezone": "Fuseau horaire",
+    "selectDuration": "Choisir la duree",
+    "selectDurationFirst": "Selectionnez une duree pour voir les creneaux disponibles",
+    "from": "a partir de"
   },
   "auth": {
     "loginTitle": "Bon retour",

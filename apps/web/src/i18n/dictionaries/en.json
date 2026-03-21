@@ -188,7 +188,10 @@
     "goToDashboard": "View my bookings",
     "backToProfile": "Back to profile",
     "loginRequired": "Log in to book",
-    "timezone": "Timezone"
+    "timezone": "Timezone",
+    "selectDuration": "Choose Duration",
+    "selectDurationFirst": "Select a duration to see available times",
+    "from": "from"
   },
   "auth": {
     "loginTitle": "Welcome back",

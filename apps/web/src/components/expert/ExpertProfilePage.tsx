@@ -13,6 +13,7 @@ import {
   createBooking,
   confirmBookingPayment,
   type ExpertProfile,
+  type SessionOption,
   type AvailableSlot,
   type BookingResponse,
 } from '@/lib/api';
@@ -25,6 +26,7 @@ import {
 } from '@/lib/gammal-tech';
 import { translateError } from '@/lib/i18n-utils';
 import { formatPrice, formatTime, formatDate, toDateString } from './utils';
+import { DurationPicker } from './DurationPicker';
 import { DatePicker } from './DatePicker';
 import { TimeSlotPicker } from './TimeSlotPicker';
 import { BookingConfirmation } from './BookingConfirmation';
@@ -60,6 +62,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
+  const [selectedOption, setSelectedOption] = useState<SessionOption | null>(null);
 
   const [availableDates, setAvailableDates] = useState<Set<string>>(new Set());
   const [availableDatesLoading, setAvailableDatesLoading] = useState(false);
@@ -108,6 +111,16 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     return () => { cancelled = true; };
   }, [slug, t.error]);
 
+  // Auto-select if expert has only one session option
+  useEffect(() => {
+    if (expert) {
+      const options = expert.sessionOptions ?? [];
+      if (options.length === 1) {
+        setSelectedOption(options[0]);
+      }
+    }
+  }, [expert]);
+
   const fetchAvailableDatesForRange = useCallback(async (start: Date, expertId: string, signal: AbortSignal) => {
     setAvailableDatesLoading(true);
     try {
@@ -131,11 +144,11 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     return () => controller.abort();
   }, [calendarStart, expert, fetchAvailableDatesForRange]);
 
-  const fetchSlots = useCallback(async (date: Date, expertId: string) => {
+  const fetchSlots = useCallback(async (date: Date, expertId: string, duration?: number) => {
     setSlotsLoading(true);
     setSelectedSlot(null);
     try {
-      const res = await getAvailableSlots(expertId, toDateString(date));
+      const res = await getAvailableSlots(expertId, toDateString(date), duration);
       setSlots(res.data);
     } catch {
       setSlots([]);
@@ -145,10 +158,16 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   }, []);
 
   useEffect(() => {
-    if (selectedDate && expert) {
-      fetchSlots(selectedDate, expert.id);
+    if (selectedDate && expert && selectedOption) {
+      fetchSlots(selectedDate, expert.id, selectedOption.durationMinutes);
     }
-  }, [selectedDate, expert, fetchSlots]);
+  }, [selectedDate, expert, selectedOption, fetchSlots]);
+
+  const handleOptionSelect = (option: SessionOption) => {
+    setSelectedOption(option);
+    setSelectedSlot(null);
+    setSlots([]);
+  };
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -187,6 +206,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
         {
           expertProfileId: expert.id,
           scheduledStartTime: selectedSlot.startTime,
+          sessionOptionId: selectedOption?.id,
         },
         token,
       );
@@ -196,7 +216,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       setPendingBookingId(pendingBooking.id);
 
       // Step 2: Open Gammal Tech payment popup
-      const amountTND = expert.sessionPriceMillimes / 1000;
+      const amountTND = (selectedOption?.priceMillimes ?? expert.sessionPriceMillimes) / 1000;
       const payment = await payWithCard(
         amountTND,
         `Beep: Session with ${expert.firstName} ${expert.lastName}`,
@@ -241,6 +261,9 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     setBooking(null);
     setNotes('');
     setBookingError(null);
+    if (expert && (expert.sessionOptions ?? []).length > 1) {
+      setSelectedOption(null);
+    }
   };
 
   if (loading) {
@@ -266,7 +289,16 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     );
   }
 
-  const priceTND = formatPrice(expert.sessionPriceMillimes);
+  const options = expert.sessionOptions ?? [];
+  const hasMultipleOptions = options.length > 1;
+  const displayPrice = selectedOption
+    ? formatPrice(selectedOption.priceMillimes)
+    : hasMultipleOptions
+      ? formatPrice(Math.min(...options.map((o) => o.priceMillimes)))
+      : formatPrice(expert.sessionPriceMillimes);
+  const displayDuration = selectedOption
+    ? selectedOption.durationMinutes
+    : expert.sessionDurationMinutes;
 
   if (step === 'success' && booking) {
     return (
@@ -286,6 +318,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
         expert={expert}
         selectedDate={selectedDate}
         selectedSlot={selectedSlot}
+        selectedOption={selectedOption}
         notes={notes}
         loading={bookingLoading}
         error={bookingError}
@@ -311,31 +344,53 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
             </p>
 
             <div className="border-[2.5px] border-[#141418] rounded-xl p-5 shadow-retro">
-              <DatePicker
-                calendarStart={calendarStart}
-                selectedDate={selectedDate}
-                availableDates={availableDates}
-                availableDatesLoading={availableDatesLoading}
-                lang={lang}
-                labels={{ selectDate: t.selectDate }}
-                onDateSelect={handleDateSelect}
-                onNavigate={navigateCalendar}
-              />
-
-              {selectedDate && (
-                <div className="mt-5">
-                  <TimeSlotPicker
-                    slots={slots}
-                    loading={slotsLoading}
-                    selectedSlot={selectedSlot}
-                    labels={{
-                      selectTime: t.selectTime,
-                      loadingSlots: t.loadingSlots,
-                      noSlots: t.noSlots,
-                    }}
-                    onSlotSelect={setSelectedSlot}
+              {/* Duration picker */}
+              {hasMultipleOptions && (
+                <div className="mb-5">
+                  <DurationPicker
+                    options={options}
+                    selected={selectedOption}
+                    onSelect={handleOptionSelect}
+                    label={t.selectDuration}
                   />
                 </div>
+              )}
+
+              {selectedOption && (
+                <>
+                  <DatePicker
+                    calendarStart={calendarStart}
+                    selectedDate={selectedDate}
+                    availableDates={availableDates}
+                    availableDatesLoading={availableDatesLoading}
+                    lang={lang}
+                    labels={{ selectDate: t.selectDate }}
+                    onDateSelect={handleDateSelect}
+                    onNavigate={navigateCalendar}
+                  />
+
+                  {selectedDate && (
+                    <div className="mt-5">
+                      <TimeSlotPicker
+                        slots={slots}
+                        loading={slotsLoading}
+                        selectedSlot={selectedSlot}
+                        labels={{
+                          selectTime: t.selectTime,
+                          loadingSlots: t.loadingSlots,
+                          noSlots: t.noSlots,
+                        }}
+                        onSlotSelect={setSelectedSlot}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              {!selectedOption && hasMultipleOptions && (
+                <p className="text-sm text-ink-400 text-center py-4">
+                  {t.selectDurationFirst}
+                </p>
               )}
 
               {expert.timezone && (
@@ -353,11 +408,14 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
                 {t.sessionPrice}
               </p>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl font-display font-bold text-ink-900">{priceTND}</span>
+                {hasMultipleOptions && !selectedOption && (
+                  <span className="text-sm text-ink-400 mr-1">{t.from}</span>
+                )}
+                <span className="text-3xl font-display font-bold text-ink-900">{displayPrice}</span>
                 <span className="text-sm text-ink-400">{dict.common.tnd}</span>
               </div>
               <p className="text-xs text-ink-400 mb-5">
-                {expert.sessionDurationMinutes} min &middot; {t.perSession}
+                {displayDuration} min &middot; {t.perSession}
               </p>
 
               <Button

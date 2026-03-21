@@ -53,11 +53,14 @@ export class AvailabilityService {
   async getAvailableSlots(
     expertProfileId: string,
     date: Date,
+    durationMinutes?: number,
   ): Promise<AvailableSlot[]> {
     const profile = await this.profileRepo.findById(expertProfileId);
     if (!profile) {
       throw new NotFoundException(ErrorCode.EXPERT_NOT_FOUND);
     }
+
+    const slotDuration = durationMinutes ?? profile.sessionDurationMinutes;
 
     const dayNames: DayOfWeek[] = [DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY];
     const dayOfWeek = dayNames[date.getUTCDay()];
@@ -75,7 +78,7 @@ export class AvailabilityService {
     }
 
     const slots: AvailableSlot[] = [];
-    const durationMs = profile.sessionDurationMinutes * 60 * 1000;
+    const durationMs = slotDuration * 60 * 1000;
 
     for (const schedule of daySchedules) {
       const [startHour, startMin] = schedule.startTime.split(':').map(Number);

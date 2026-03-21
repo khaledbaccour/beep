@@ -60,9 +60,26 @@ export class BookingService {
       throw new BadRequestException(ErrorCode.CANNOT_BOOK_IN_PAST);
     }
 
-    const endTime = new Date(
-      startTime.getTime() + profile.sessionDurationMinutes * 60 * 1000,
-    );
+    let durationMinutes: number;
+    let priceMillimes: number;
+    let sessionOptionId: string | undefined;
+
+    if (dto.sessionOptionId) {
+      const sessionOption = (profile.sessionOptions ?? []).find(
+        (opt) => opt.id === dto.sessionOptionId && opt.isActive,
+      );
+      if (!sessionOption) {
+        throw new BadRequestException('Invalid or inactive session option');
+      }
+      durationMinutes = sessionOption.durationMinutes;
+      priceMillimes = sessionOption.priceMillimes;
+      sessionOptionId = sessionOption.id;
+    } else {
+      durationMinutes = profile.sessionDurationMinutes;
+      priceMillimes = profile.sessionPriceMillimes ?? 0;
+    }
+
+    const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
 
     const conflict = await this.bookingRepo.findConflicting(
       profile.id,
@@ -78,7 +95,9 @@ export class BookingService {
     booking.expertProfileId = profile.id;
     booking.scheduledStartTime = startTime;
     booking.scheduledEndTime = endTime;
-    booking.amountMillimes = profile.sessionPriceMillimes ?? 0;
+    booking.amountMillimes = priceMillimes;
+    booking.durationMinutes = durationMinutes;
+    booking.sessionOptionId = sessionOptionId;
     booking.status = BookingStatus.PENDING_PAYMENT;
     booking.sessionRoomId = uuidv4();
 
@@ -213,6 +232,7 @@ export class BookingService {
       refundAmountMillimes: booking.refundAmountMillimes,
       refundEligibility: booking.getRefundEligibility(),
       sessionRoomId: booking.sessionRoomId,
+      durationMinutes: booking.durationMinutes,
     });
   }
 }
