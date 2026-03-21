@@ -14,6 +14,7 @@ export type Tab = 'overview' | 'profile' | 'availability' | 'bookings';
 
 export interface TabProps {
   d: Dictionary['dashboard'];
+  dict: Dictionary;
   lang: Locale;
 }
 

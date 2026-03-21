@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Rocket, Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import type { Locale } from '@/i18n';
 import type { Dictionary } from '@/i18n/types';
 import {
@@ -255,7 +255,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         setErrors({});
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : dict.onboarding.error);
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.onboarding.error);
     } finally {
       setSaving(false);
     }
@@ -307,7 +307,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
 
       router.push(localePath(lang, '/dashboard?onboarding=complete'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : dict.onboarding.error);
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.onboarding.error);
     } finally {
       setSaving(false);
     }
@@ -364,7 +364,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
 
       router.push(localePath(lang, '/dashboard'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : dict.onboarding.error);
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.onboarding.error);
     } finally {
       setSavingDraft(false);
     }

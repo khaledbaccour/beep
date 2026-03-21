@@ -8,7 +8,7 @@ import {
   EXPERT_PROFILE_REPOSITORY,
 } from '../../../expert-profile/domain/repositories/expert-profile.repository.interface';
 import { AvailabilitySchedule } from '../../domain/entities/availability-schedule.entity';
-import { DayOfWeek } from '@beep/shared';
+import { DayOfWeek, ErrorCode } from '@beep/shared';
 import { SetAvailabilityDto } from '../dtos/set-availability.dto';
 import { AuthenticatedUser } from '../../../identity/domain/interfaces/authenticated-user.interface';
 
@@ -32,7 +32,7 @@ export class AvailabilityService {
   ): Promise<AvailabilitySchedule[]> {
     const profile = await this.profileRepo.findByUserId(currentUser.id);
     if (!profile) {
-      throw new NotFoundException('Expert profile not found');
+      throw new NotFoundException(ErrorCode.EXPERT_PROFILE_NOT_FOUND);
     }
 
     await this.availabilityRepo.deleteSchedulesByExpertId(profile.id);
@@ -56,7 +56,7 @@ export class AvailabilityService {
   ): Promise<AvailableSlot[]> {
     const profile = await this.profileRepo.findById(expertProfileId);
     if (!profile) {
-      throw new NotFoundException('Expert not found');
+      throw new NotFoundException(ErrorCode.EXPERT_NOT_FOUND);
     }
 
     const dayNames: DayOfWeek[] = [DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY];
@@ -111,7 +111,7 @@ export class AvailabilityService {
   ): Promise<string[]> {
     const profile = await this.profileRepo.findById(expertProfileId);
     if (!profile) {
-      throw new NotFoundException('Expert not found');
+      throw new NotFoundException(ErrorCode.EXPERT_NOT_FOUND);
     }
 
     const allSchedules = await this.availabilityRepo.findSchedulesByExpertId(expertProfileId);

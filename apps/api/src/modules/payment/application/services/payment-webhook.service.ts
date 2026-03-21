@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { ErrorCode } from '@beep/shared';
 import { ConfigService } from '@nestjs/config';
 import { WebhookPayloadDto } from '../../infrastructure/controllers/payment-webhook.controller';
 
@@ -16,7 +17,7 @@ export class PaymentWebhookService {
     signature: string,
   ): Promise<void> {
     if (!this.verifySignature(payload, signature)) {
-      throw new BadRequestException('Invalid webhook signature');
+      throw new BadRequestException(ErrorCode.INVALID_WEBHOOK_SIGNATURE);
     }
 
     switch (payload.event) {

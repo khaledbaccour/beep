@@ -6,7 +6,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { BookingStatus, UserRole } from '@beep/shared';
+import { BookingStatus, UserRole, ErrorCode } from '@beep/shared';
 import { Booking } from '../../domain/entities/booking.entity';
 import {
   IBookingRepository,
@@ -48,16 +48,16 @@ export class BookingService {
   ): Promise<BookingResponseDto> {
     const profile = await this.profileRepo.findById(dto.expertProfileId);
     if (!profile) {
-      throw new NotFoundException('Expert not found');
+      throw new NotFoundException(ErrorCode.EXPERT_NOT_FOUND);
     }
 
     if (profile.userId === currentUser.id) {
-      throw new BadRequestException('Cannot book yourself');
+      throw new BadRequestException(ErrorCode.CANNOT_BOOK_YOURSELF);
     }
 
     const startTime = new Date(dto.scheduledStartTime);
     if (startTime <= new Date()) {
-      throw new BadRequestException('Cannot book in the past');
+      throw new BadRequestException(ErrorCode.CANNOT_BOOK_IN_PAST);
     }
 
     const endTime = new Date(
@@ -70,7 +70,7 @@ export class BookingService {
       endTime,
     );
     if (conflict) {
-      throw new ConflictException('Time slot is already booked');
+      throw new ConflictException(ErrorCode.TIME_SLOT_ALREADY_BOOKED);
     }
 
     const booking = new Booking();
@@ -97,17 +97,15 @@ export class BookingService {
   ): Promise<BookingResponseDto> {
     const booking = await this.bookingRepo.findById(bookingId);
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException(ErrorCode.BOOKING_NOT_FOUND);
     }
 
     if (booking.clientId !== currentUser.id) {
-      throw new ForbiddenException('Only the booking client can confirm payment');
+      throw new ForbiddenException(ErrorCode.ONLY_CLIENT_CAN_CONFIRM_PAYMENT);
     }
 
     if (booking.status !== BookingStatus.PENDING_PAYMENT) {
-      throw new BadRequestException(
-        `Booking is not awaiting payment (status: ${booking.status})`,
-      );
+      throw new BadRequestException(ErrorCode.BOOKING_NOT_AWAITING_PAYMENT);
     }
 
     const result = await this.paymentGateway.recordPayment({
@@ -119,9 +117,7 @@ export class BookingService {
     });
 
     if (!result.success) {
-      throw new BadRequestException(
-        result.errorMessage ?? 'Failed to record payment',
-      );
+      throw new BadRequestException(ErrorCode.PAYMENT_RECORDING_FAILED);
     }
 
     booking.paymentId = dto.transactionId;
@@ -138,14 +134,14 @@ export class BookingService {
   ): Promise<BookingResponseDto> {
     const booking = await this.bookingRepo.findById(bookingId);
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException(ErrorCode.BOOKING_NOT_FOUND);
     }
 
     const isClient = booking.clientId === currentUser.id;
     const isExpert = booking.expertProfile?.userId === currentUser.id;
 
     if (!isClient && !isExpert && currentUser.role !== UserRole.ADMIN) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     if (isClient) {
@@ -173,13 +169,13 @@ export class BookingService {
   ): Promise<BookingResponseDto> {
     const booking = await this.bookingRepo.findById(bookingId);
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException(ErrorCode.BOOKING_NOT_FOUND);
     }
 
     const isClient = booking.clientId === currentUser.id;
     const isExpert = booking.expertProfile?.userId === currentUser.id;
     if (!isClient && !isExpert && currentUser.role !== UserRole.ADMIN) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     return this.toResponseDto(booking);
@@ -197,7 +193,7 @@ export class BookingService {
   ): Promise<BookingResponseDto[]> {
     const profile = await this.profileRepo.findByUserId(currentUser.id);
     if (!profile) {
-      throw new NotFoundException('Expert profile not found');
+      throw new NotFoundException(ErrorCode.EXPERT_PROFILE_NOT_FOUND);
     }
     const bookings = await this.bookingRepo.findByExpertProfileId(profile.id);
     return bookings.map((b) => this.toResponseDto(b));
