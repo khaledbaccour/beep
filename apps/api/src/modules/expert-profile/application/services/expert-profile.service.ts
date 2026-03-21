@@ -6,7 +6,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { UserRole, OnboardingStep, PayoutMethod } from '@beep/shared';
+import { UserRole, OnboardingStep, PayoutMethod, ErrorCode } from '@beep/shared';
 import { ExpertProfile } from '../../domain/entities/expert-profile.entity';
 import {
   IExpertProfileRepository,
@@ -77,16 +77,16 @@ export class ExpertProfileService {
   ): Promise<ExpertProfileResponseDto> {
     const existingProfile = await this.profileRepo.findByUserId(currentUser.id);
     if (existingProfile) {
-      throw new ConflictException('Expert profile already exists');
+      throw new ConflictException(ErrorCode.EXPERT_PROFILE_ALREADY_EXISTS);
     }
 
     if (await this.profileRepo.slugExists(dto.slug)) {
-      throw new ConflictException('Slug already taken');
+      throw new ConflictException(ErrorCode.SLUG_ALREADY_TAKEN);
     }
 
     const user = await this.userRepo.findById(currentUser.id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     await this.userRepo.update(user.id, { role: UserRole.EXPERT });
@@ -109,7 +109,7 @@ export class ExpertProfileService {
   async getBySlug(slug: string): Promise<ExpertProfileResponseDto> {
     const profile = await this.profileRepo.findBySlug(slug);
     if (!profile) {
-      throw new NotFoundException('Expert not found');
+      throw new NotFoundException(ErrorCode.EXPERT_NOT_FOUND);
     }
     return this.toResponseDto(
       profile,
@@ -148,18 +148,18 @@ export class ExpertProfileService {
   ): Promise<ExpertProfileResponseDto> {
     const profile = await this.profileRepo.findByUserId(currentUser.id);
     if (!profile) {
-      throw new NotFoundException('Expert profile not found');
+      throw new NotFoundException(ErrorCode.EXPERT_PROFILE_NOT_FOUND);
     }
     if (profile.userId !== currentUser.id) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     if (dto.slug && dto.slug !== profile.slug) {
       if (RESERVED_SLUGS.includes(dto.slug)) {
-        throw new ConflictException('This slug is reserved');
+        throw new ConflictException(ErrorCode.SLUG_RESERVED);
       }
       if (await this.profileRepo.slugExists(dto.slug)) {
-        throw new ConflictException('Slug already taken');
+        throw new ConflictException(ErrorCode.SLUG_ALREADY_TAKEN);
       }
     }
 
@@ -199,13 +199,13 @@ export class ExpertProfileService {
     dto: OnboardingStep1Dto,
   ): Promise<OnboardingStatusResponseDto> {
     if (currentUser.role === UserRole.ADMIN) {
-      throw new ForbiddenException('Admins cannot create expert profiles');
+      throw new ForbiddenException(ErrorCode.ADMINS_CANNOT_CREATE_PROFILE);
     }
 
     // Check for existing profile
     const existing = await this.profileRepo.findByUserId(currentUser.id);
     if (existing && existing.onboardingCompleted) {
-      throw new ConflictException('Onboarding already completed');
+      throw new ConflictException(ErrorCode.ONBOARDING_ALREADY_COMPLETED);
     }
 
     // Validate slug availability
@@ -213,13 +213,13 @@ export class ExpertProfileService {
     if (!slugCheck.available) {
       // Allow if it's the same user's existing slug
       if (!existing || existing.slug !== dto.slug) {
-        throw new ConflictException('Slug is not available');
+        throw new ConflictException(ErrorCode.SLUG_NOT_AVAILABLE);
       }
     }
 
     const user = await this.userRepo.findById(currentUser.id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     const profile = existing ?? new ExpertProfile();
@@ -244,7 +244,7 @@ export class ExpertProfileService {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
     if (profile.onboardingStep < OnboardingStep.BASIC_INFO) {
-      throw new BadRequestException('Complete step 1 first');
+      throw new BadRequestException(ErrorCode.COMPLETE_STEP_1_FIRST);
     }
 
     profile.tags = dto.tags;
@@ -265,7 +265,7 @@ export class ExpertProfileService {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
     if (profile.onboardingStep < OnboardingStep.EXPERTISE) {
-      throw new BadRequestException('Complete step 2 first');
+      throw new BadRequestException(ErrorCode.COMPLETE_STEP_2_FIRST);
     }
 
     profile.sessionPriceMillimes = dto.sessionPriceMillimes;
@@ -285,7 +285,7 @@ export class ExpertProfileService {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
     if (profile.onboardingStep < OnboardingStep.PRICING) {
-      throw new BadRequestException('Complete step 3 first');
+      throw new BadRequestException(ErrorCode.COMPLETE_STEP_3_FIRST);
     }
 
     profile.payoutMethod = dto.payoutMethod;
@@ -321,15 +321,13 @@ export class ExpertProfileService {
     if (!profile.payoutMethod) missingFields.push('payoutMethod');
 
     if (missingFields.length > 0) {
-      throw new BadRequestException(
-        `Missing required fields: ${missingFields.join(', ')}`,
-      );
+      throw new BadRequestException(ErrorCode.MISSING_REQUIRED_FIELDS);
     }
 
     // Update user role to EXPERT and mark user-level onboarding complete
     const user = await this.userRepo.findById(currentUser.id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
     await this.userRepo.update(user.id, { role: UserRole.EXPERT, onboardingCompleted: true });
 
@@ -362,12 +360,10 @@ export class ExpertProfileService {
   private async getOnboardingProfile(userId: string): Promise<ExpertProfile> {
     const profile = await this.profileRepo.findByUserId(userId);
     if (!profile) {
-      throw new NotFoundException(
-        'Expert profile not found. Complete step 1 first.',
-      );
+      throw new NotFoundException(ErrorCode.COMPLETE_STEP_1_FIRST);
     }
     if (profile.onboardingCompleted) {
-      throw new ConflictException('Onboarding already completed');
+      throw new ConflictException(ErrorCode.ONBOARDING_ALREADY_COMPLETED);
     }
     return profile;
   }

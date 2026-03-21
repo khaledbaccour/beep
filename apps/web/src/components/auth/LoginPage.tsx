@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import { loginUser } from '@/lib/api';
 
 interface Props {
@@ -43,7 +43,7 @@ export function LoginPage({ dict, lang }: Props) {
       const dest = getPostLoginDestination(res.data.user);
       router.push(localePath(lang, dest));
     } catch (err) {
-      setError(err instanceof Error ? err.message : dict.auth.loginFailed);
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.auth.loginFailed);
     } finally {
       setLoading(false);
     }

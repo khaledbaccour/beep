@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import { registerUser } from '@/lib/api';
 
 interface Props {
@@ -38,7 +38,7 @@ export function RegisterPage({ dict, lang }: Props) {
       setSuccess(dict.auth.accountCreated);
       router.push(localePath(lang, '/choose-path'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.apiErrors.UNKNOWN_ERROR);
     } finally {
       setLoading(false);
     }

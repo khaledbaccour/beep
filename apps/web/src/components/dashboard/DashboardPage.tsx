@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Sparkles, Copy, Check, ExternalLink, ArrowRight, X } from 'lucide-react';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import type { UserProfile, Tab } from './types';
 import { OverviewTab } from './OverviewTab';
 import { ProfileTab } from './ProfileTab';
@@ -108,7 +108,7 @@ export function DashboardPage({ dict, lang }: Props) {
       setHasDraftProfile(false);
       setOnboardingBannerDismissed(true);
     } catch (err) {
-      setRevertError(err instanceof Error ? err.message : 'Failed to revert. Please try again.');
+      setRevertError(err instanceof Error ? translateError(err.message, dict) : dict.apiErrors.UNKNOWN_ERROR);
     } finally {
       setRevertingToClient(false);
     }
@@ -269,13 +269,13 @@ export function DashboardPage({ dict, lang }: Props) {
         <div className="animate-fade-up" style={{ animationDelay: '150ms' }}>
           {isExpert ? (
             <>
-              {tab === 'overview' && <OverviewTab d={d} lang={lang} />}
-              {tab === 'profile' && <ProfileTab d={d} lang={lang} />}
-              {tab === 'availability' && <AvailabilityTab d={d} lang={lang} />}
-              {tab === 'bookings' && <BookingsTab d={d} lang={lang} isExpert />}
+              {tab === 'overview' && <OverviewTab d={d} dict={dict} lang={lang} />}
+              {tab === 'profile' && <ProfileTab d={d} dict={dict} lang={lang} />}
+              {tab === 'availability' && <AvailabilityTab d={d} dict={dict} lang={lang} />}
+              {tab === 'bookings' && <BookingsTab d={d} dict={dict} lang={lang} isExpert />}
             </>
           ) : (
-            <ClientDashboard d={d} lang={lang} />
+            <ClientDashboard d={d} dict={dict} lang={lang} />
           )}
         </div>
       </div>

@@ -23,6 +23,7 @@ import {
   getPendingBookingId,
   clearPendingBookingId,
 } from '@/lib/gammal-tech';
+import { translateError } from '@/lib/i18n-utils';
 import { formatPrice, formatTime, formatDate, toDateString } from './utils';
 import { DatePicker } from './DatePicker';
 import { TimeSlotPicker } from './TimeSlotPicker';
@@ -99,7 +100,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
         if (!cancelled) setExpert(res.data);
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : t.error);
+        if (!cancelled) setError(err instanceof Error ? translateError(err.message, dict) : t.error);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -212,9 +213,9 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       setBooking(confirmedRes.data);
       setStep('success');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t.paymentFailed;
-      if (message !== 'Payment cancelled') {
-        setBookingError(message);
+      const rawMessage = err instanceof Error ? err.message : '';
+      if (rawMessage !== 'Payment cancelled') {
+        setBookingError(rawMessage ? translateError(rawMessage, dict) : t.paymentFailed);
       }
     } finally {
       setBookingLoading(false);

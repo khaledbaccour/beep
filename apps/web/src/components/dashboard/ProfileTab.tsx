@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ExternalLink, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import {
   type ExpertProfile,
   type CreateExpertProfileBody,
@@ -14,7 +14,7 @@ import {
 import type { TabProps } from './types';
 import { CATEGORIES } from './types';
 
-export function ProfileTab({ d, lang }: TabProps) {
+export function ProfileTab({ d, dict, lang }: TabProps) {
   const [profile, setProfile] = useState<ExpertProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -82,7 +82,7 @@ export function ProfileTab({ d, lang }: TabProps) {
       setMessage(d.profileSaved);
     } catch (err) {
       setIsError(true);
-      setMessage(d.profileError + (err instanceof Error ? ': ' + err.message : ''));
+      setMessage(d.profileError + (err instanceof Error ? ': ' + translateError(err.message, dict) : ''));
     } finally {
       setSaving(false);
     }

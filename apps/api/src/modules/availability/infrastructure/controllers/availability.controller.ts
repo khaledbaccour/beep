@@ -7,7 +7,7 @@ import { RolesGuard } from '../../../../common/guards/roles.guard';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../../identity/domain/interfaces/authenticated-user.interface';
-import { UserRole } from '@beep/shared';
+import { UserRole, ErrorCode } from '@beep/shared';
 import { ApiResponseDto } from '../../../../common/application/dtos/api-response.dto';
 import { AvailabilitySchedule } from '../../domain/entities/availability-schedule.entity';
 
@@ -47,11 +47,11 @@ export class AvailabilityController {
     const from = new Date(fromStr);
     const to = new Date(toStr);
     if (isNaN(from.getTime()) || isNaN(to.getTime())) {
-      throw new BadRequestException('Invalid date parameters');
+      throw new BadRequestException(ErrorCode.INVALID_DATE_PARAMETERS);
     }
     const diffDays = (to.getTime() - from.getTime()) / 86_400_000;
     if (diffDays < 0 || diffDays > 31) {
-      throw new BadRequestException('Date range must be between 0 and 31 days');
+      throw new BadRequestException(ErrorCode.DATE_RANGE_TOO_LARGE);
     }
     const dates = await this.availabilityService.getAvailableDates(expertProfileId, from, to);
     return ApiResponseDto.ok(dates);
