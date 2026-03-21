@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AvailabilityService, AvailableSlot } from '../../application/services/availability.service';
 import { AvailabilityReminderService } from '../../application/services/availability-reminder.service';
@@ -21,6 +22,7 @@ export class AvailabilityController {
   constructor(
     private readonly availabilityService: AvailabilityService,
     private readonly reminderService: AvailabilityReminderService,
+    private readonly configService: ConfigService,
   ) {}
 
   /** Save recurring weekly template */
@@ -86,7 +88,13 @@ export class AvailabilityController {
 
   /** Trigger weekly availability reminders (called by cron-job.org) */
   @Post('send-reminders')
-  async sendReminders(): Promise<ApiResponseDto<{ sent: number }>> {
+  async sendReminders(
+    @Query('key') key?: string,
+  ): Promise<ApiResponseDto<{ sent: number }>> {
+    const expected = this.configService.get<string>('REMINDER_API_KEY');
+    if (!expected || key !== expected) {
+      throw new ForbiddenException('Invalid API key');
+    }
     const sent = await this.reminderService.sendWeeklyReminders();
     return ApiResponseDto.ok({ sent });
   }

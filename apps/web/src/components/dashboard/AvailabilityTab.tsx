@@ -37,10 +37,6 @@ function addDays(date: Date, days: number): Date {
   return d;
 }
 
-function formatDateShort(date: Date): string {
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', timeZone: 'UTC' });
-}
-
 function formatWeekRange(monday: Date): string {
   const sunday = addDays(monday, 6);
   const monthStart = monday.toLocaleDateString('fr-FR', { month: 'long', timeZone: 'UTC' });
@@ -224,6 +220,7 @@ export function AvailabilityTab({ d }: TabProps) {
     const newMonday = addDays(monday, direction * 7);
     setMonday(newMonday);
     setMessage('');
+    setIsError(false);
     await loadWeek(newMonday, profileId, template, recurrence);
   }
 
@@ -291,7 +288,7 @@ export function AvailabilityTab({ d }: TabProps) {
     setIsError(false);
     try {
       const slots = scheduleToWeekSlots(schedule, monday);
-      await setWeekAvailability(slots);
+      await setWeekAvailability(toDateStr(monday), slots);
       setIsFromTemplate(false);
       setMessage(d.scheduleSaved);
     } catch {

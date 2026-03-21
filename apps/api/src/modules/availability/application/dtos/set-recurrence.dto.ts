@@ -1,10 +1,11 @@
-import { IsBoolean, IsOptional, IsDateString } from 'class-validator';
+import { IsBoolean, IsOptional, IsDateString, ValidateIf } from 'class-validator';
 
 export class SetRecurrenceDto {
   @IsBoolean()
   isRecurring!: boolean;
 
   @IsOptional()
+  @ValidateIf((o) => o.recurringUntil !== null && o.recurringUntil !== undefined)
   @IsDateString()
   recurringUntil?: string | null;
 }

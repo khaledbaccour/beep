@@ -18,5 +18,5 @@ export interface IAvailabilityRepository {
   findWeekSlotsByDate(expertProfileId: string, date: string): Promise<WeeklyAvailabilitySlot[]>;
   saveWeekSlots(slots: WeeklyAvailabilitySlot[]): Promise<WeeklyAvailabilitySlot[]>;
   deleteWeekSlotsByDates(expertProfileId: string, dates: string[]): Promise<void>;
-  findExpertsWithoutWeekSlots(dates: string[]): Promise<string[]>;
+  findExpertsWithoutWeekSlots(dates: string[]): Promise<{ id: string; userId: string }[]>;
 }

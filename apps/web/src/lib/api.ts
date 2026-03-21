@@ -335,11 +335,11 @@ export interface WeekSlot {
   endTime: string;
 }
 
-export async function setWeekAvailability(slots: WeekSlot[]): Promise<ApiResponse<WeekSlot[]>> {
+export async function setWeekAvailability(weekStart: string, slots: WeekSlot[]): Promise<ApiResponse<WeekSlot[]>> {
   const res = await fetch(`${API_BASE}/availability/week`, {
     method: 'PUT',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ slots }),
+    body: JSON.stringify({ weekStart, slots }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: 'Failed to save week availability' }));

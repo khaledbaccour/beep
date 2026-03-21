@@ -80,7 +80,7 @@ export class TypeOrmAvailabilityRepository implements IAvailabilityRepository {
     await this.weekSlotRepo.delete({ expertProfileId, date: In(dates) });
   }
 
-  async findExpertsWithoutWeekSlots(dates: string[]): Promise<string[]> {
+  async findExpertsWithoutWeekSlots(dates: string[]): Promise<{ id: string; userId: string }[]> {
     if (dates.length === 0) return [];
 
     const qb = this.weekSlotRepo.manager

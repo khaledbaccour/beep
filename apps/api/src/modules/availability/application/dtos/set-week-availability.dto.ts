@@ -15,6 +15,9 @@ export class WeekSlotDto {
 }
 
 export class SetWeekAvailabilityDto {
+  @IsDateString()
+  weekStart!: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => WeekSlotDto)

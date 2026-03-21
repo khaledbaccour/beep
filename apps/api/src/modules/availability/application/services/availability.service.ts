@@ -64,8 +64,9 @@ export class AvailabilityService {
       throw new NotFoundException(ErrorCode.EXPERT_PROFILE_NOT_FOUND);
     }
 
-    const dates = [...new Set(dto.slots.map((s) => s.date))];
-    await this.availabilityRepo.deleteWeekSlotsByDates(profile.id, dates);
+    // Delete all 7 days of the week to clear stale slots from disabled days
+    const weekDates = this.getWeekDates(dto.weekStart);
+    await this.availabilityRepo.deleteWeekSlotsByDates(profile.id, weekDates);
 
     if (dto.slots.length === 0) return [];
 
