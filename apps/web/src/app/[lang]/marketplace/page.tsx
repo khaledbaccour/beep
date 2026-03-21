@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getDictionary, type Locale } from '@/i18n';
 import { Navbar } from '@/components/layout/Navbar';
 import { MarketplacePage } from '@/components/marketplace/MarketplacePage';
@@ -14,7 +15,9 @@ export default async function Marketplace({ params }: PageProps) {
   return (
     <main className="relative">
       <Navbar dict={dict} lang={lang} />
-      <MarketplacePage dict={dict} lang={lang} />
+      <Suspense>
+        <MarketplacePage dict={dict} lang={lang} />
+      </Suspense>
       <Footer dict={dict} lang={lang} />
     </main>
   );
