@@ -31,6 +31,12 @@ export interface BookingConfirmedExpertData {
   lang: string;
 }
 
+export interface AvailabilityReminderData {
+  expertFirstName: string;
+  weekStartDate: string;
+  appUrl: string;
+}
+
 export interface ReminderData {
   recipientFirstName: string;
   otherPartyName: string;
@@ -286,6 +292,55 @@ export class EmailTemplatesService {
         `Time: ${timeStr}`,
         '',
         `Join your session: ${link}`,
+      ].join('\n'),
+    };
+  }
+
+  availabilityReminder(data: AvailabilityReminderData): EmailContent {
+    const weekDate = new Date(data.weekStartDate + 'T00:00:00Z');
+    const weekLabel = weekDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'Africa/Tunis',
+    });
+    const dashboardLink = `${data.appUrl}/fr/dashboard?tab=availability`;
+
+    return {
+      subject: `Planifiez vos disponibilités pour la semaine du ${weekLabel}`,
+      html: this.layout(`
+        <h1 style="color:#FF6B35;margin:0 0 8px;font-size:24px;font-family:'Space Grotesk',sans-serif;">Planifiez votre semaine</h1>
+        <p style="color:#94a3b8;margin:0 0 24px;font-size:14px;">
+          Bonjour <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,
+          vous n'avez pas encore défini vos disponibilités pour la semaine du <strong style="color:#FF6B35;">${weekLabel}</strong>.
+        </p>
+
+        <p style="color:#94a3b8;margin:0 0 24px;font-size:14px;">
+          Sans disponibilités, les clients ne pourront pas réserver de sessions avec vous.
+          Prenez un moment pour planifier votre semaine.
+        </p>
+
+        <div style="text-align:center;margin-bottom:24px;">
+          <a href="${dashboardLink}" style="display:inline-block;background:#FF6B35;color:#0f172a;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;border:2px solid #0f172a;">
+            Planifier mes disponibilités
+          </a>
+        </div>
+
+        <p style="color:#64748b;font-size:12px;margin:0;text-align:center;">
+          Astuce : activez la planification récurrente pour ne plus recevoir ce rappel.
+        </p>
+      `),
+      text: [
+        `Planifiez votre semaine`,
+        '',
+        `Bonjour ${data.expertFirstName},`,
+        '',
+        `Vous n'avez pas encore défini vos disponibilités pour la semaine du ${weekLabel}.`,
+        `Sans disponibilités, les clients ne pourront pas réserver de sessions avec vous.`,
+        '',
+        `Planifier mes disponibilités: ${dashboardLink}`,
+        '',
+        `Astuce : activez la planification récurrente pour ne plus recevoir ce rappel.`,
       ].join('\n'),
     };
   }

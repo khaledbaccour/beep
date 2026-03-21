@@ -84,6 +84,14 @@ export class ExpertProfile extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   profileCompleteness!: number;
 
+  /** Whether the recurring weekly template is active */
+  @Column({ default: false })
+  availabilityRecurring!: boolean;
+
+  /** End date for recurring schedule (null = forever) */
+  @Column({ type: 'date', nullable: true })
+  availabilityRecurringUntil!: string | null;
+
   @OneToMany(() => SessionOption, (opt) => opt.expertProfile, {
     cascade: true,
     eager: true,

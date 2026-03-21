@@ -329,6 +329,57 @@ export async function getSchedules(expertProfileId: string): Promise<ApiResponse
   return res.json();
 }
 
+export interface WeekSlot {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+export async function setWeekAvailability(slots: WeekSlot[]): Promise<ApiResponse<WeekSlot[]>> {
+  const res = await fetch(`${API_BASE}/availability/week`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ slots }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to save week availability' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getWeekSlots(expertProfileId: string, weekStart: string): Promise<ApiResponse<WeekSlot[]>> {
+  const res = await fetch(
+    `${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/week-slots?weekStart=${encodeURIComponent(weekStart)}`,
+  );
+  if (!res.ok) throw new Error(`Error ${res.status}`);
+  return res.json();
+}
+
+export interface RecurrenceConfig {
+  isRecurring: boolean;
+  recurringUntil: string | null;
+}
+
+export async function setRecurrence(config: RecurrenceConfig): Promise<ApiResponse<RecurrenceConfig>> {
+  const res = await fetch(`${API_BASE}/availability/recurrence`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(config),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to save recurrence' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getRecurrence(expertProfileId: string): Promise<ApiResponse<RecurrenceConfig>> {
+  const res = await fetch(`${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/recurrence`);
+  if (!res.ok) throw new Error(`Error ${res.status}`);
+  return res.json();
+}
+
 /* ── Dashboard: Bookings ── */
 
 export async function getMyBookings(): Promise<ApiResponse<BookingResponse[]>> {

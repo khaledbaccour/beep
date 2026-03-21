@@ -1,7 +1,10 @@
-import { Controller, Get, Put, Body, Param, Query, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AvailabilityService, AvailableSlot } from '../../application/services/availability.service';
+import { AvailabilityReminderService } from '../../application/services/availability-reminder.service';
 import { SetAvailabilityDto } from '../../application/dtos/set-availability.dto';
+import { SetWeekAvailabilityDto } from '../../application/dtos/set-week-availability.dto';
+import { SetRecurrenceDto } from '../../application/dtos/set-recurrence.dto';
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../../common/guards/roles.guard';
 import { Roles } from '../../../../common/decorators/roles.decorator';
@@ -10,12 +13,17 @@ import { AuthenticatedUser } from '../../../identity/domain/interfaces/authentic
 import { UserRole, ErrorCode } from '@beep/shared';
 import { ApiResponseDto } from '../../../../common/application/dtos/api-response.dto';
 import { AvailabilitySchedule } from '../../domain/entities/availability-schedule.entity';
+import { WeeklyAvailabilitySlot } from '../../domain/entities/weekly-availability-slot.entity';
 
 @ApiTags('Availability')
 @Controller('availability')
 export class AvailabilityController {
-  constructor(private readonly availabilityService: AvailabilityService) {}
+  constructor(
+    private readonly availabilityService: AvailabilityService,
+    private readonly reminderService: AvailabilityReminderService,
+  ) {}
 
+  /** Save recurring weekly template */
   @Put()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.EXPERT)
@@ -26,6 +34,61 @@ export class AvailabilityController {
   ): Promise<ApiResponseDto<AvailabilitySchedule[]>> {
     const result = await this.availabilityService.setAvailability(user, dto);
     return ApiResponseDto.ok(result);
+  }
+
+  /** Save date-specific week slots */
+  @Put('week')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.EXPERT)
+  @ApiBearerAuth()
+  async setWeekAvailability(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: SetWeekAvailabilityDto,
+  ): Promise<ApiResponseDto<WeeklyAvailabilitySlot[]>> {
+    const result = await this.availabilityService.setWeekAvailability(user, dto);
+    return ApiResponseDto.ok(result);
+  }
+
+  /** Update recurrence settings */
+  @Put('recurrence')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.EXPERT)
+  @ApiBearerAuth()
+  async setRecurrence(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: SetRecurrenceDto,
+  ): Promise<ApiResponseDto<{ isRecurring: boolean; recurringUntil: string | null }>> {
+    const result = await this.availabilityService.setRecurrence(user, dto);
+    return ApiResponseDto.ok(result);
+  }
+
+  /** Get date-specific slots for a week */
+  @Get(':expertProfileId/week-slots')
+  async getWeekSlots(
+    @Param('expertProfileId') expertProfileId: string,
+    @Query('weekStart') weekStart: string,
+  ): Promise<ApiResponseDto<WeeklyAvailabilitySlot[]>> {
+    if (!weekStart) {
+      throw new BadRequestException('weekStart query parameter is required');
+    }
+    const slots = await this.availabilityService.getWeekSlots(expertProfileId, weekStart);
+    return ApiResponseDto.ok(slots);
+  }
+
+  /** Get recurrence settings */
+  @Get(':expertProfileId/recurrence')
+  async getRecurrence(
+    @Param('expertProfileId') expertProfileId: string,
+  ): Promise<ApiResponseDto<{ isRecurring: boolean; recurringUntil: string | null }>> {
+    const result = await this.availabilityService.getRecurrence(expertProfileId);
+    return ApiResponseDto.ok(result);
+  }
+
+  /** Trigger weekly availability reminders (called by cron-job.org) */
+  @Post('send-reminders')
+  async sendReminders(): Promise<ApiResponseDto<{ sent: number }>> {
+    const sent = await this.reminderService.sendWeeklyReminders();
+    return ApiResponseDto.ok({ sent });
   }
 
   @Get(':expertProfileId/slots')
