@@ -1,11 +1,14 @@
 import {
   Injectable,
   Inject,
+  Logger,
   NotFoundException,
   ConflictException,
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 import { BookingStatus, UserRole, ErrorCode } from '@beep/shared';
 import { Booking } from '../../domain/entities/booking.entity';
 import {
@@ -26,9 +29,17 @@ import { CancelBookingDto } from '../dtos/cancel-booking.dto';
 import { BookingResponseDto } from '../dtos/booking-response.dto';
 import { AuthenticatedUser } from '../../../identity/domain/interfaces/authenticated-user.interface';
 import { v4 as uuidv4 } from 'uuid';
+import { BookingEmailService } from './booking-email.service';
+import {
+  BOOKING_REMINDER_QUEUE,
+  BookingReminderJobName,
+} from '../../domain/constants/queue.constants';
+import { BookingReminderJobData } from '../../domain/interfaces/booking-reminder-job.interface';
 
 @Injectable()
 export class BookingService {
+  private readonly logger = new Logger(BookingService.name);
+
   constructor(
     @Inject(BOOKING_REPOSITORY)
     private readonly bookingRepo: IBookingRepository,
@@ -36,6 +47,9 @@ export class BookingService {
     private readonly profileRepo: IExpertProfileRepository,
     @Inject(PAYMENT_GATEWAY)
     private readonly paymentGateway: IPaymentGateway,
+    private readonly bookingEmailService: BookingEmailService,
+    @InjectQueue(BOOKING_REMINDER_QUEUE)
+    private readonly reminderQueue: Queue<BookingReminderJobData>,
   ) {}
 
   /**
@@ -143,7 +157,67 @@ export class BookingService {
     booking.confirm();
 
     const saved = await this.bookingRepo.save(booking);
+
+    // Load full relations for emails (findById loads client + expertProfile.user)
+    const fullBooking = await this.bookingRepo.findById(saved.id);
+    if (fullBooking) {
+      void this.sendConfirmationEmails(fullBooking);
+      void this.scheduleReminders(fullBooking);
+    }
+
     return this.toResponseDto(saved);
+  }
+
+  private async sendConfirmationEmails(booking: Booking): Promise<void> {
+    try {
+      await this.bookingEmailService.sendBookingConfirmedToClient(booking);
+      await this.bookingEmailService.sendBookingConfirmedToExpert(booking);
+    } catch (err) {
+      this.logger.error('Failed to send booking confirmation emails', err);
+    }
+  }
+
+  private async scheduleReminders(booking: Booking): Promise<void> {
+    try {
+      const startMs = booking.scheduledStartTime.getTime();
+      const nowMs = Date.now();
+
+      const reminders: Array<{
+        name: BookingReminderJobName;
+        hoursUntil: 24 | 1;
+        recipientType: 'client' | 'expert';
+      }> = [
+        { name: BookingReminderJobName.REMIND_CLIENT, hoursUntil: 24, recipientType: 'client' },
+        { name: BookingReminderJobName.REMIND_EXPERT, hoursUntil: 24, recipientType: 'expert' },
+        { name: BookingReminderJobName.REMIND_CLIENT, hoursUntil: 1, recipientType: 'client' },
+        { name: BookingReminderJobName.REMIND_EXPERT, hoursUntil: 1, recipientType: 'expert' },
+      ];
+
+      for (const reminder of reminders) {
+        const fireAtMs = startMs - reminder.hoursUntil * 60 * 60 * 1000;
+        const delay = fireAtMs - nowMs;
+        if (delay <= 0) continue;
+
+        await this.reminderQueue.add(
+          reminder.name,
+          {
+            bookingId: booking.id,
+            hoursUntil: reminder.hoursUntil,
+            recipientType: reminder.recipientType,
+          },
+          {
+            delay,
+            jobId: `reminder-${booking.id}-${reminder.recipientType}-${reminder.hoursUntil}h`,
+            removeOnComplete: true,
+            removeOnFail: false,
+          },
+        );
+      }
+
+      this.logger.log(`Scheduled reminders for booking ${booking.id}`);
+    } catch (err) {
+      this.logger.error('Failed to schedule reminders', err);
+    }
   }
 
   async cancelBooking(

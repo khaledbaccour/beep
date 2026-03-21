@@ -13,12 +13,13 @@ import { NotificationModule } from './modules/notification/notification.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import jwtConfig from './config/jwt.config';
+import smtpConfig from './config/smtp.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, redisConfig, jwtConfig],
+      load: [databaseConfig, redisConfig, jwtConfig, smtpConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],

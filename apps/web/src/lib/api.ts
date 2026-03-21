@@ -519,3 +519,28 @@ export async function searchExperts(
   }
   return res.json();
 }
+
+// --- Session Access ---
+
+export interface SessionAccessResponse {
+  allowed: boolean;
+  reason?: 'TOO_EARLY' | 'EXPIRED' | 'NOT_FOUND' | 'FORBIDDEN';
+  scheduledStartTime?: string;
+  scheduledEndTime?: string;
+  expertName?: string;
+  clientName?: string;
+  minutesUntilStart?: number;
+}
+
+export async function checkSessionAccess(
+  roomId: string,
+  token: string,
+): Promise<ApiResponse<SessionAccessResponse>> {
+  const res = await fetch(`${API_BASE}/session/${roomId}/access`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}`);
+  }
+  return res.json();
+}

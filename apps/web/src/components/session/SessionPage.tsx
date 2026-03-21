@@ -12,6 +12,8 @@ import { UserInfo, ChatMessage, SessionStatus } from './types';
 interface SessionPageProps {
   roomId: string;
   lang: string;
+  scheduledStartTime?: Date;
+  scheduledEndTime?: Date;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
@@ -23,7 +25,7 @@ const PEERJS_SECURE = PEERJS_HOST !== 'localhost';
 const DEFAULT_DURATION_MIN = 60;
 const GRACE_PERIOD_MIN = 5;
 
-export function SessionPage({ roomId, lang }: SessionPageProps) {
+export function SessionPage({ roomId, lang, scheduledStartTime, scheduledEndTime }: SessionPageProps) {
   const router = useRouter();
 
   const [user, setUser] = useState<UserInfo | null>(null);
@@ -260,8 +262,12 @@ export function SessionPage({ roomId, lang }: SessionPageProps) {
       <div className="flex-1 flex flex-col relative">
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
           <SessionTimer
-            startTime={sessionStart}
-            durationMin={DEFAULT_DURATION_MIN}
+            startTime={scheduledStartTime ?? sessionStart}
+            durationMin={
+              scheduledStartTime && scheduledEndTime
+                ? Math.round((scheduledEndTime.getTime() - scheduledStartTime.getTime()) / 60000)
+                : DEFAULT_DURATION_MIN
+            }
             graceMin={GRACE_PERIOD_MIN}
             onExpired={handleSessionExpired}
           />

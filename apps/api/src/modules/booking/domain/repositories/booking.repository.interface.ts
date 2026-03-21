@@ -5,6 +5,7 @@ export const BOOKING_REPOSITORY = Symbol('BOOKING_REPOSITORY');
 
 export interface IBookingRepository {
   findById(id: string): Promise<Booking | null>;
+  findBySessionRoomId(sessionRoomId: string): Promise<Booking | null>;
   findByClientId(clientId: string, status?: BookingStatus): Promise<Booking[]>;
   findByExpertProfileId(expertProfileId: string, status?: BookingStatus): Promise<Booking[]>;
   findConflicting(expertProfileId: string, startTime: Date, endTime: Date): Promise<Booking | null>;
