@@ -576,6 +576,7 @@ export function AvailabilityTab({ d }: TabProps) {
                 <input
                   type="date"
                   value={recurrence.recurringUntil || ''}
+                  min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => handleRecurrenceUntilChange(e.target.value)}
                   className="h-9 px-3 rounded-lg border-2 border-ink-200 text-sm font-bold text-ink-900 focus:outline-none focus:border-brand-500 bg-white"
                   placeholder={d.forever || 'Forever'}

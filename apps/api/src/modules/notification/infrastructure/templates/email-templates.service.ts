@@ -35,6 +35,7 @@ export interface AvailabilityReminderData {
   expertFirstName: string;
   weekStartDate: string;
   appUrl: string;
+  lang: string;
 }
 
 export interface ReminderData {
@@ -297,50 +298,88 @@ export class EmailTemplatesService {
   }
 
   availabilityReminder(data: AvailabilityReminderData): EmailContent {
+    const lang = data.lang || 'fr';
+    const locale = lang === 'ar' ? 'ar-TN' : lang === 'en' ? 'en-US' : 'fr-FR';
     const weekDate = new Date(data.weekStartDate + 'T00:00:00Z');
-    const weekLabel = weekDate.toLocaleDateString('en-US', {
+    const weekLabel = weekDate.toLocaleDateString(locale, {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
       timeZone: 'Africa/Tunis',
     });
-    const dashboardLink = `${data.appUrl}/fr/dashboard?tab=availability`;
+    const dashboardLink = `${data.appUrl}/${lang}/dashboard?tab=availability`;
+
+    const t = {
+      fr: {
+        subject: `Planifiez vos disponibilités pour la semaine du ${weekLabel}`,
+        title: 'Planifiez votre semaine',
+        greeting: `Bonjour <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,`,
+        body: `vous n'avez pas encore défini vos disponibilités pour la semaine du <strong style="color:#FF6B35;">${weekLabel}</strong>.`,
+        cta_detail: 'Sans disponibilités, les clients ne pourront pas réserver de sessions avec vous. Prenez un moment pour planifier votre semaine.',
+        cta: 'Planifier mes disponibilités',
+        tip: 'Astuce : activez la planification récurrente pour ne plus recevoir ce rappel.',
+      },
+      en: {
+        subject: `Plan your availability for the week of ${weekLabel}`,
+        title: 'Plan your week',
+        greeting: `Hi <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,`,
+        body: `you haven't set your availability for the week of <strong style="color:#FF6B35;">${weekLabel}</strong> yet.`,
+        cta_detail: 'Without availability, clients won\'t be able to book sessions with you. Take a moment to plan your week.',
+        cta: 'Plan my availability',
+        tip: 'Tip: enable recurring scheduling to stop receiving this reminder.',
+      },
+      ar: {
+        subject: `خطط لتوفرك لأسبوع ${weekLabel}`,
+        title: 'خطط لأسبوعك',
+        greeting: `مرحبا <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>،`,
+        body: `لم تحدد بعد توفرك لأسبوع <strong style="color:#FF6B35;">${weekLabel}</strong>.`,
+        cta_detail: 'بدون توفر، لن يتمكن العملاء من حجز جلسات معك. خذ لحظة للتخطيط لأسبوعك.',
+        cta: 'تخطيط توفري',
+        tip: 'نصيحة: فعّل الجدولة المتكررة لعدم تلقي هذا التذكير.',
+      },
+    }[lang] ?? {
+      subject: `Planifiez vos disponibilités pour la semaine du ${weekLabel}`,
+      title: 'Planifiez votre semaine',
+      greeting: `Bonjour <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,`,
+      body: `vous n'avez pas encore défini vos disponibilités pour la semaine du <strong style="color:#FF6B35;">${weekLabel}</strong>.`,
+      cta_detail: 'Sans disponibilités, les clients ne pourront pas réserver de sessions avec vous.',
+      cta: 'Planifier mes disponibilités',
+      tip: 'Astuce : activez la planification récurrente pour ne plus recevoir ce rappel.',
+    };
 
     return {
-      subject: `Planifiez vos disponibilités pour la semaine du ${weekLabel}`,
+      subject: t.subject,
       html: this.layout(`
-        <h1 style="color:#FF6B35;margin:0 0 8px;font-size:24px;font-family:'Space Grotesk',sans-serif;">Planifiez votre semaine</h1>
+        <h1 style="color:#FF6B35;margin:0 0 8px;font-size:24px;font-family:'Space Grotesk',sans-serif;">${t.title}</h1>
         <p style="color:#94a3b8;margin:0 0 24px;font-size:14px;">
-          Bonjour <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,
-          vous n'avez pas encore défini vos disponibilités pour la semaine du <strong style="color:#FF6B35;">${weekLabel}</strong>.
+          ${t.greeting} ${t.body}
         </p>
 
         <p style="color:#94a3b8;margin:0 0 24px;font-size:14px;">
-          Sans disponibilités, les clients ne pourront pas réserver de sessions avec vous.
-          Prenez un moment pour planifier votre semaine.
+          ${t.cta_detail}
         </p>
 
         <div style="text-align:center;margin-bottom:24px;">
           <a href="${dashboardLink}" style="display:inline-block;background:#FF6B35;color:#0f172a;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;border:2px solid #0f172a;">
-            Planifier mes disponibilités
+            ${t.cta}
           </a>
         </div>
 
         <p style="color:#64748b;font-size:12px;margin:0;text-align:center;">
-          Astuce : activez la planification récurrente pour ne plus recevoir ce rappel.
+          ${t.tip}
         </p>
       `),
       text: [
-        `Planifiez votre semaine`,
+        t.title,
         '',
-        `Bonjour ${data.expertFirstName},`,
+        t.greeting.replace(/<[^>]*>/g, ''),
+        t.body.replace(/<[^>]*>/g, ''),
         '',
-        `Vous n'avez pas encore défini vos disponibilités pour la semaine du ${weekLabel}.`,
-        `Sans disponibilités, les clients ne pourront pas réserver de sessions avec vous.`,
+        t.cta_detail,
         '',
-        `Planifier mes disponibilités: ${dashboardLink}`,
+        `${t.cta}: ${dashboardLink}`,
         '',
-        `Astuce : activez la planification récurrente pour ne plus recevoir ce rappel.`,
+        t.tip,
       ].join('\n'),
     };
   }
