@@ -143,7 +143,14 @@
     "loading": "Chargement des experts...",
     "noResults": "Aucun expert trouve. Essayez une autre recherche ou categorie.",
     "loadMore": "Charger plus",
-    "error": "Impossible de charger les experts. Veuillez reessayer."
+    "error": "Impossible de charger les experts. Veuillez reessayer.",
+    "category": "Categorie",
+    "priceRange": "Fourchette de prix",
+    "minPrice": "Min",
+    "maxPrice": "Max",
+    "apply": "Appliquer",
+    "reset": "Reinitialiser",
+    "activeFilters": "filtres actifs"
   },
   "expertProfile": {
     "verified": "Verifie",

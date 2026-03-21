@@ -143,7 +143,14 @@
     "loading": "Loading experts...",
     "noResults": "No experts found. Try a different search or category.",
     "loadMore": "Load more",
-    "error": "Failed to load experts. Please try again."
+    "error": "Failed to load experts. Please try again.",
+    "category": "Category",
+    "priceRange": "Price range",
+    "minPrice": "Min",
+    "maxPrice": "Max",
+    "apply": "Apply",
+    "reset": "Reset",
+    "activeFilters": "active filters"
   },
   "expertProfile": {
     "verified": "Verified",
