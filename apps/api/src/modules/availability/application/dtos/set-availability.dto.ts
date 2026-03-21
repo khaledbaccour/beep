@@ -7,11 +7,11 @@ export class AvailabilitySlotDto {
   dayOfWeek!: DayOfWeek;
 
   @IsString()
-  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, { message: 'startTime must be HH:mm format' })
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, { message: 'startTime must be HH:mm or HH:mm:ss format' })
   startTime!: string;
 
   @IsString()
-  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, { message: 'endTime must be HH:mm format' })
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, { message: 'endTime must be HH:mm or HH:mm:ss format' })
   endTime!: string;
 
   @IsBoolean()
