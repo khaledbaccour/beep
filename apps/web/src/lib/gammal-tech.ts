@@ -12,8 +12,15 @@
 const SDK_URL =
   process.env.NEXT_PUBLIC_GAMMAL_TECH_SDK_URL ?? 'https://api.gammal.tech/sdk-web.js';
 
-/** When true, skip Gammal Tech SDK entirely and auto-succeed payments. */
-const DEV_PAYMENT = process.env.NEXT_PUBLIC_DEV_PAYMENT === 'true';
+/**
+ * When true, skip Gammal Tech SDK entirely and auto-succeed payments.
+ * Auto-enabled on Vercel preview/development deployments and when
+ * NEXT_PUBLIC_DEV_PAYMENT is explicitly set.
+ */
+const DEV_PAYMENT =
+  process.env.NEXT_PUBLIC_DEV_PAYMENT === 'true' ||
+  (!!process.env.NEXT_PUBLIC_VERCEL_ENV &&
+    process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production');
 
 /* ── SDK type definitions (from SDK v3.0.2 source) ─────── */
 
