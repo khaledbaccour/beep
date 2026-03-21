@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search, Star, SlidersHorizontal, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,10 @@ const GRADIENT_BY_CATEGORY: Record<string, string> = {
   LANGUAGES: 'from-amber-400 to-yellow-400',
 };
 
+const ENUM_TO_CATEGORY: Record<string, string> = Object.fromEntries(
+  Object.entries(CATEGORY_TO_ENUM).map(([key, value]) => [value, key]),
+);
+
 const PAGE_SIZE = 20;
 
 function getInitials(firstName: string, lastName: string): string {
@@ -49,7 +54,15 @@ function formatPrice(millimes: number): number {
 }
 
 export function MarketplacePage({ dict, lang }: Props) {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const searchParams = useSearchParams();
+  const initialCategory = useMemo(() => {
+    const param = searchParams.get('category');
+    if (!param) return 'all';
+    const lower = param.toLowerCase();
+    // Support both enum values (?category=LAW) and lowercase keys (?category=law)
+    return ENUM_TO_CATEGORY[param.toUpperCase()] ?? (categoryKeys.includes(lower as typeof categoryKeys[number]) ? lower : 'all');
+  }, [searchParams]);
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [search, setSearch] = useState('');
   const [experts, setExperts] = useState<ExpertProfile[]>([]);
   const [page, setPage] = useState(1);
