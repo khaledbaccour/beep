@@ -1,5 +1,6 @@
 import { ExpertCategory, PayoutMethod } from '@beep/shared';
 import type { Certification } from '@beep/shared';
+import { SessionOptionResponseDto } from './session-option.dto';
 
 export class OnboardingStatusResponseDto {
   currentStep: number;
@@ -19,6 +20,7 @@ export class OnboardingStatusResponseDto {
     timezone?: string;
     payoutMethod?: PayoutMethod;
     payoutDetails?: Record<string, string>;
+    sessionOptions?: SessionOptionResponseDto[];
   };
 
   constructor(partial: OnboardingStatusResponseDto) {

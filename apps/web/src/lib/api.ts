@@ -16,6 +16,15 @@ interface PaginatedResponse<T> {
   meta: PaginationMeta;
 }
 
+export interface SessionOption {
+  id: string;
+  durationMinutes: number;
+  priceMillimes: number;
+  label?: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 export interface ExpertProfile {
   id: string;
   slug: string;
@@ -31,6 +40,7 @@ export interface ExpertProfile {
   timezone: string;
   averageRating: number;
   totalSessions: number;
+  sessionOptions: SessionOption[];
 }
 
 export interface MarketplaceSearchParams {
@@ -111,10 +121,13 @@ export interface AvailableSlot {
 export async function getAvailableSlots(
   expertProfileId: string,
   date: string,
+  durationMinutes?: number,
 ): Promise<ApiResponse<AvailableSlot[]>> {
-  const res = await fetch(
-    `${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/slots?date=${encodeURIComponent(date)}`,
-  );
+  let url = `${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/slots?date=${encodeURIComponent(date)}`;
+  if (durationMinutes) {
+    url += `&duration=${durationMinutes}`;
+  }
+  const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: 'Failed to load slots' }));
     throw new Error(err.message || `Error ${res.status}`);
@@ -159,11 +172,12 @@ export interface BookingResponse {
   scheduledEndTime: string;
   status: BookingStatus;
   amountMillimes: number;
+  durationMinutes?: number;
   sessionRoomId?: string;
 }
 
 export async function createBooking(
-  body: { expertProfileId: string; scheduledStartTime: string },
+  body: { expertProfileId: string; scheduledStartTime: string; sessionOptionId?: string },
   token: string,
 ): Promise<ApiResponse<BookingResponse>> {
   const res = await fetch(`${API_BASE}/bookings`, {
@@ -258,6 +272,7 @@ export interface CreateExpertProfileBody {
   sessionPriceMillimes: number;
   sessionDurationMinutes?: number;
   timezone?: string;
+  sessionOptions?: SessionOptionInput[];
 }
 
 export async function createExpertProfile(body: CreateExpertProfileBody): Promise<ApiResponse<ExpertProfile>> {
@@ -361,10 +376,18 @@ export interface OnboardingStep2Data {
   languages: string[];
 }
 
+export interface SessionOptionInput {
+  durationMinutes: number;
+  priceMillimes: number;
+  label?: string;
+  sortOrder?: number;
+}
+
 export interface OnboardingStep3Data {
-  sessionPriceMillimes: number;
-  sessionDurationMinutes: number;
+  sessionOptions: SessionOptionInput[];
   timezone: string;
+  sessionPriceMillimes?: number;
+  sessionDurationMinutes?: number;
 }
 
 export interface OnboardingStep4Data {
@@ -396,6 +419,7 @@ export interface OnboardingStatus {
     sessionPriceMillimes?: number;
     sessionDurationMinutes?: number;
     timezone?: string;
+    sessionOptions?: { id: string; durationMinutes: number; priceMillimes: number; label?: string; isActive: boolean; sortOrder: number }[];
     payoutMethod?: 'BANK_TRANSFER' | 'MOBILE_MONEY';
     payoutDetails?: Record<string, string>;
   };

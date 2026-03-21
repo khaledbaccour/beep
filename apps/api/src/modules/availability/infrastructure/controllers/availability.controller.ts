@@ -32,9 +32,11 @@ export class AvailabilityController {
   async getSlots(
     @Param('expertProfileId') expertProfileId: string,
     @Query('date') dateStr: string,
+    @Query('duration') durationStr?: string,
   ): Promise<ApiResponseDto<AvailableSlot[]>> {
     const date = new Date(dateStr);
-    const slots = await this.availabilityService.getAvailableSlots(expertProfileId, date);
+    const duration = durationStr ? parseInt(durationStr, 10) : undefined;
+    const slots = await this.availabilityService.getAvailableSlots(expertProfileId, date, duration);
     return ApiResponseDto.ok(slots);
   }
 

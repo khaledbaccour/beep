@@ -6,8 +6,11 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UserRole, OnboardingStep, PayoutMethod, ErrorCode } from '@beep/shared';
 import { ExpertProfile } from '../../domain/entities/expert-profile.entity';
+import { SessionOption } from '../../domain/entities/session-option.entity';
 import {
   IExpertProfileRepository,
   EXPERT_PROFILE_REPOSITORY,
@@ -25,6 +28,7 @@ import { OnboardingStep3Dto } from '../dtos/onboarding-step-3.dto';
 import { OnboardingStep4Dto } from '../dtos/onboarding-step-4.dto';
 import { OnboardingStatusResponseDto } from '../dtos/onboarding-status-response.dto';
 import { SlugAvailabilityResponseDto } from '../dtos/slug-availability-response.dto';
+import { SessionOptionResponseDto, CreateSessionOptionDto } from '../dtos/session-option.dto';
 import { AuthenticatedUser } from '../../../identity/domain/interfaces/authenticated-user.interface';
 import { PaginationMeta } from '@beep/shared';
 
@@ -69,6 +73,8 @@ export class ExpertProfileService {
     private readonly profileRepo: IExpertProfileRepository,
     @Inject(USER_REPOSITORY)
     private readonly userRepo: IUserRepository,
+    @InjectRepository(SessionOption)
+    private readonly sessionOptionRepo: Repository<SessionOption>,
   ) {}
 
   async createProfile(
@@ -144,7 +150,7 @@ export class ExpertProfileService {
 
   async updateProfile(
     currentUser: AuthenticatedUser,
-    dto: Partial<CreateExpertProfileDto>,
+    dto: Partial<CreateExpertProfileDto> & { sessionOptions?: CreateSessionOptionDto[] },
   ): Promise<ExpertProfileResponseDto> {
     const profile = await this.profileRepo.findByUserId(currentUser.id);
     if (!profile) {
@@ -161,6 +167,11 @@ export class ExpertProfileService {
       if (await this.profileRepo.slugExists(dto.slug)) {
         throw new ConflictException(ErrorCode.SLUG_ALREADY_TAKEN);
       }
+    }
+
+    if (dto.sessionOptions) {
+      await this.replaceSessionOptions(profile, dto.sessionOptions);
+      delete dto.sessionOptions;
     }
 
     Object.assign(profile, dto);
@@ -268,12 +279,10 @@ export class ExpertProfileService {
       throw new BadRequestException(ErrorCode.COMPLETE_STEP_2_FIRST);
     }
 
-    profile.sessionPriceMillimes = dto.sessionPriceMillimes;
-    profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
     profile.timezone = dto.timezone ?? 'Africa/Tunis';
+    await this.upsertSessionOptions(profile, dto);
     profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PRICING);
     profile.profileCompleteness = profile.calculateCompleteness();
-
     const saved = await this.profileRepo.save(profile);
     return this.toOnboardingStatus(saved);
   }
@@ -316,7 +325,8 @@ export class ExpertProfileService {
     if (!profile.slug) missingFields.push('slug');
     if (!profile.bio) missingFields.push('bio');
     if (!profile.category) missingFields.push('category');
-    if (!profile.sessionPriceMillimes) missingFields.push('sessionPriceMillimes');
+    const hasSessionOptions = profile.sessionOptions && profile.sessionOptions.length > 0;
+    if (!profile.sessionPriceMillimes && !hasSessionOptions) missingFields.push('sessionPriceMillimes');
     if (!profile.languages || profile.languages.length === 0) missingFields.push('languages');
     if (!profile.payoutMethod) missingFields.push('payoutMethod');
 
@@ -368,6 +378,69 @@ export class ExpertProfileService {
     return profile;
   }
 
+  private async upsertSessionOptions(
+    profile: ExpertProfile,
+    dto: OnboardingStep3Dto,
+  ): Promise<void> {
+    if (dto.sessionOptions && dto.sessionOptions.length > 0) {
+      await this.replaceSessionOptions(profile, dto.sessionOptions);
+      const first = dto.sessionOptions[0];
+      profile.sessionPriceMillimes = first.priceMillimes;
+      profile.sessionDurationMinutes = first.durationMinutes;
+    } else if (dto.sessionPriceMillimes) {
+      const optionDto: CreateSessionOptionDto = {
+        durationMinutes: dto.sessionDurationMinutes ?? 60,
+        priceMillimes: dto.sessionPriceMillimes,
+        sortOrder: 0,
+      };
+      await this.replaceSessionOptions(profile, [optionDto]);
+      profile.sessionPriceMillimes = dto.sessionPriceMillimes;
+      profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
+    }
+  }
+
+  private async replaceSessionOptions(
+    profile: ExpertProfile,
+    options: CreateSessionOptionDto[],
+  ): Promise<void> {
+    await this.sessionOptionRepo.delete({ expertProfileId: profile.id });
+    const entities = options.map((opt, index) => {
+      const entity = new SessionOption();
+      entity.expertProfileId = profile.id;
+      entity.durationMinutes = opt.durationMinutes;
+      entity.priceMillimes = opt.priceMillimes;
+      entity.label = opt.label;
+      entity.sortOrder = opt.sortOrder ?? index;
+      entity.isActive = true;
+      return entity;
+    });
+    await this.sessionOptionRepo.save(entities);
+    profile.sessionOptions = entities;
+    if (entities.length > 0) {
+      const first = entities.sort((a, b) => a.sortOrder - b.sortOrder)[0];
+      profile.sessionPriceMillimes = first.priceMillimes;
+      profile.sessionDurationMinutes = first.durationMinutes;
+    }
+  }
+
+  private toSessionOptionResponseDtos(profile: ExpertProfile): SessionOptionResponseDto[] {
+    const options = profile.sessionOptions ?? [];
+    return options
+      .filter((opt) => opt.isActive)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(
+        (opt) =>
+          new SessionOptionResponseDto({
+            id: opt.id,
+            durationMinutes: opt.durationMinutes,
+            priceMillimes: opt.priceMillimes,
+            label: opt.label,
+            isActive: opt.isActive,
+            sortOrder: opt.sortOrder,
+          }),
+      );
+  }
+
   private toOnboardingStatus(profile: ExpertProfile): OnboardingStatusResponseDto {
     return new OnboardingStatusResponseDto({
       currentStep: profile.onboardingStep,
@@ -387,6 +460,7 @@ export class ExpertProfileService {
         timezone: profile.timezone,
         payoutMethod: profile.payoutMethod,
         payoutDetails: profile.payoutDetails ?? undefined,
+        sessionOptions: this.toSessionOptionResponseDtos(profile),
       },
     });
   }
@@ -412,6 +486,7 @@ export class ExpertProfileService {
       timezone: profile.timezone,
       averageRating: Number(profile.averageRating),
       totalSessions: profile.totalSessions,
+      sessionOptions: this.toSessionOptionResponseDtos(profile),
     });
   }
 }

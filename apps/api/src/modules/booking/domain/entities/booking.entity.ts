@@ -6,6 +6,7 @@ import {
   PARTIAL_REFUND_PERCENTAGE,
 } from '@beep/shared';
 import { BaseEntity } from '../../../../common/domain/base.entity';
+import { SessionOption } from '../../../expert-profile/domain/entities/session-option.entity';
 import { User } from '../../../identity/domain/entities/user.entity';
 import { ExpertProfile } from '../../../expert-profile/domain/entities/expert-profile.entity';
 
@@ -56,6 +57,18 @@ export class Booking extends BaseEntity {
 
   @Column({ nullable: true })
   sessionRoomId?: string;
+
+  /** Reference to the selected session option */
+  @Column({ nullable: true })
+  sessionOptionId?: string;
+
+  @ManyToOne(() => SessionOption, { nullable: true })
+  @JoinColumn({ name: 'sessionOptionId' })
+  sessionOption?: SessionOption;
+
+  /** Denormalized duration snapshot at booking time */
+  @Column({ type: 'int', nullable: true })
+  durationMinutes?: number;
 
   // --- Domain Logic ---
 

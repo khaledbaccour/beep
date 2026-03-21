@@ -1,6 +1,6 @@
 import { ArrowLeft, Shield, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { ExpertProfile, AvailableSlot } from '@/lib/api';
+import type { ExpertProfile, AvailableSlot, SessionOption } from '@/lib/api';
 import type { Dictionary } from '@/i18n/types';
 import { formatDate, formatTime, formatPrice } from './utils';
 
@@ -8,6 +8,7 @@ interface BookingConfirmationProps {
   expert: ExpertProfile;
   selectedDate: Date;
   selectedSlot: AvailableSlot;
+  selectedOption: SessionOption | null;
   notes: string;
   loading: boolean;
   error: string | null;
@@ -22,6 +23,7 @@ export function BookingConfirmation({
   expert,
   selectedDate,
   selectedSlot,
+  selectedOption,
   notes,
   loading,
   error,
@@ -32,7 +34,9 @@ export function BookingConfirmation({
   onConfirm,
 }: BookingConfirmationProps) {
   const t = dict.expertProfile;
-  const priceTND = formatPrice(expert.sessionPriceMillimes);
+  const priceMillimes = selectedOption?.priceMillimes ?? expert.sessionPriceMillimes;
+  const durationMinutes = selectedOption?.durationMinutes ?? expert.sessionDurationMinutes;
+  const priceTND = formatPrice(priceMillimes);
 
   const trustItems = [
     { icon: Shield, text: t.refundPolicy },
@@ -60,7 +64,10 @@ export function BookingConfirmation({
               label={t.time}
               value={`${formatTime(selectedSlot.startTime)} - ${formatTime(selectedSlot.endTime)}`}
             />
-            <SummaryRow label={t.duration} value={`${expert.sessionDurationMinutes} min`} />
+            <SummaryRow label={t.duration} value={`${durationMinutes} min`} />
+            {selectedOption?.label && (
+              <SummaryRow label="Session" value={selectedOption.label} />
+            )}
             <div className="border-t border-ink-100 pt-3 flex justify-between">
               <span className="font-bold text-ink-900">{t.price}</span>
               <span className="font-bold text-ink-900">{priceTND} {dict.common.tnd}</span>
