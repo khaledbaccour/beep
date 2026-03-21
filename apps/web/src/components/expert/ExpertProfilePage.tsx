@@ -361,7 +361,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
 
               <Button
                 variant="brand"
-                className="w-full"
+                className="w-full whitespace-normal text-sm px-4"
                 size="lg"
                 disabled={!selectedSlot}
                 onClick={handleContinueToConfirm}
