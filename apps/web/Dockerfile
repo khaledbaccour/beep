@@ -11,6 +11,15 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_PEERJS_HOST
+ARG NEXT_PUBLIC_PEERJS_PORT=9000
+ARG NEXT_PUBLIC_PEERJS_PATH=/peer
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_PEERJS_HOST=$NEXT_PUBLIC_PEERJS_HOST
+ENV NEXT_PUBLIC_PEERJS_PORT=$NEXT_PUBLIC_PEERJS_PORT
+ENV NEXT_PUBLIC_PEERJS_PATH=$NEXT_PUBLIC_PEERJS_PATH
+ENV NEXT_OUTPUT=standalone
 RUN npm run build --workspace=packages/shared
 RUN npm run build --workspace=apps/web
 

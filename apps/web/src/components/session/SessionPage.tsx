@@ -16,7 +16,7 @@ interface SessionPageProps {
   scheduledEndTime?: Date;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003').replace('/api/v1', '');
 const PEERJS_HOST = process.env.NEXT_PUBLIC_PEERJS_HOST || 'localhost';
 const PEERJS_PORT = Number(process.env.NEXT_PUBLIC_PEERJS_PORT || '9000');
 const PEERJS_PATH = process.env.NEXT_PUBLIC_PEERJS_PATH || '/peer';

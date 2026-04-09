@@ -26,8 +26,7 @@ import smtpConfig from './config/smtp.config';
       useFactory: (config: ConfigService) => {
         const databaseUrl = config.get<string>('database.url');
         const needsSsl =
-          config.get<string>('NODE_ENV') === 'production' ||
-          (databaseUrl && !databaseUrl.includes('localhost'));
+          !!(databaseUrl && !databaseUrl.includes('localhost'));
 
         const baseConfig = {
           type: 'postgres' as const,
