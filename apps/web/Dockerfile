@@ -8,7 +8,7 @@ COPY packages/shared/package.json ./packages/shared/
 RUN npm install
 
 FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/ ./
 COPY . .
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_PEERJS_HOST
