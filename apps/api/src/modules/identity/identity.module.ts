@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -10,11 +10,13 @@ import { AuthService } from './application/services/auth.service';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
 import { AuthController } from './infrastructure/controllers/auth.controller';
 import { UsersController } from './infrastructure/controllers/users.controller';
+import { ExpertProfileModule } from '../expert-profile/expert-profile.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
+    forwardRef(() => ExpertProfileModule),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

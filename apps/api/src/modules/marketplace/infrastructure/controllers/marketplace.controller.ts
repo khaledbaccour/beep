@@ -2,9 +2,9 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ExpertProfileService } from '../../../expert-profile/application/services/expert-profile.service';
 import { ExpertProfileResponseDto } from '../../../expert-profile/application/dtos/expert-profile-response.dto';
-import { ExpertCategory } from '@beep/shared';
+import { ExpertCategory, SKILLS_BY_CATEGORY, ALL_SKILLS } from '@beep/shared';
 import { ApiResponseDto } from '../../../../common/application/dtos/api-response.dto';
-import { IsEnum, IsInt, IsOptional, IsString, Min, Max } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Min, Max, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class MarketplaceSearchDto {
@@ -41,6 +41,17 @@ export class MarketplaceSearchDto {
   limit?: number;
 }
 
+export class SkillsQueryDto {
+  @IsEnum(ExpertCategory)
+  @IsOptional()
+  category?: ExpertCategory;
+
+  @IsString()
+  @MaxLength(100)
+  @IsOptional()
+  search?: string;
+}
+
 @ApiTags('Marketplace')
 @Controller('marketplace')
 export class MarketplaceController {
@@ -61,6 +72,24 @@ export class MarketplaceController {
       query.limit ?? 20,
     );
     return ApiResponseDto.paginated(data, meta);
+  }
+
+  @Get('skills')
+  async skills(
+    @Query() query: SkillsQueryDto,
+  ): Promise<ApiResponseDto<string[]>> {
+    let skills: string[];
+
+    if (query.search) {
+      const q = query.search.trim().toLowerCase();
+      skills = ALL_SKILLS.filter((s) => s.includes(q)).slice(0, 20);
+    } else if (query.category) {
+      skills = SKILLS_BY_CATEGORY[query.category];
+    } else {
+      skills = ALL_SKILLS;
+    }
+
+    return ApiResponseDto.ok(skills);
   }
 
   @Get('featured')

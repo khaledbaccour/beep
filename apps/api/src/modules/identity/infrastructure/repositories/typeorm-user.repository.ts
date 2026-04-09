@@ -19,6 +19,11 @@ export class TypeOrmUserRepository implements IUserRepository {
     return this.repo.findOne({ where: { email } });
   }
 
+  async findByPhone(phone: string): Promise<User | null> {
+    if (!phone) return null;
+    return this.repo.findOne({ where: { phone } });
+  }
+
   async save(user: User): Promise<User> {
     return this.repo.save(user);
   }

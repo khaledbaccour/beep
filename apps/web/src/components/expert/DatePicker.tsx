@@ -1,11 +1,13 @@
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
-import { getDaysArray, getLocaleString, isToday } from './utils';
+import { getDaysArray, getLocaleString, isToday, toDateString } from './utils';
 
 const VISIBLE_DAYS = 7;
 
 interface DatePickerProps {
   calendarStart: Date;
   selectedDate: Date | null;
+  availableDates: Set<string>;
+  availableDatesLoading: boolean;
   lang: string;
   labels: {
     selectDate: string;
@@ -17,6 +19,8 @@ interface DatePickerProps {
 export function DatePicker({
   calendarStart,
   selectedDate,
+  availableDates,
+  availableDatesLoading,
   lang,
   labels,
   onDateSelect,
@@ -51,15 +55,22 @@ export function DatePicker({
 
       <div className="grid grid-cols-7 gap-2">
         {calendarDays.map((day) => {
+          const dateStr = toDateString(day);
           const isSelected = selectedDate?.toDateString() === day.toDateString();
+          const isAvailable = availableDatesLoading || availableDates.has(dateStr);
+          const isDisabled = !isAvailable;
+
           return (
             <button
               key={day.toISOString()}
               onClick={() => onDateSelect(day)}
+              disabled={isDisabled}
               className={`flex flex-col items-center py-2.5 px-1 rounded-lg border-[2px] text-xs font-medium transition-all ${
                 isSelected
                   ? 'border-[#141418] bg-[#FFB088] text-[#141418] shadow-retro-sm -translate-y-0.5'
-                  : 'border-ink-200 text-ink-700 hover:border-ink-300 hover:bg-ink-50'
+                  : isDisabled
+                    ? 'border-ink-100 text-ink-300 cursor-not-allowed opacity-40'
+                    : 'border-ink-200 text-ink-700 hover:border-ink-300 hover:bg-ink-50'
               }`}
             >
               <span className="text-[10px] uppercase text-ink-400">

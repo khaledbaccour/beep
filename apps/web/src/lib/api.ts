@@ -16,6 +16,15 @@ interface PaginatedResponse<T> {
   meta: PaginationMeta;
 }
 
+export interface SessionOption {
+  id: string;
+  durationMinutes: number;
+  priceMillimes: number;
+  label?: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 export interface ExpertProfile {
   id: string;
   slug: string;
@@ -31,6 +40,7 @@ export interface ExpertProfile {
   timezone: string;
   averageRating: number;
   totalSessions: number;
+  sessionOptions: SessionOption[];
 }
 
 export interface MarketplaceSearchParams {
@@ -111,12 +121,30 @@ export interface AvailableSlot {
 export async function getAvailableSlots(
   expertProfileId: string,
   date: string,
+  durationMinutes?: number,
 ): Promise<ApiResponse<AvailableSlot[]>> {
-  const res = await fetch(
-    `${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/slots?date=${encodeURIComponent(date)}`,
-  );
+  let url = `${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/slots?date=${encodeURIComponent(date)}`;
+  if (durationMinutes) {
+    url += `&duration=${durationMinutes}`;
+  }
+  const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: 'Failed to load slots' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getAvailableDates(
+  expertProfileId: string,
+  from: string,
+  to: string,
+): Promise<ApiResponse<string[]>> {
+  const res = await fetch(
+    `${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/available-dates?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to load available dates' }));
     throw new Error(err.message || `Error ${res.status}`);
   }
   return res.json();
@@ -144,11 +172,12 @@ export interface BookingResponse {
   scheduledEndTime: string;
   status: BookingStatus;
   amountMillimes: number;
+  durationMinutes?: number;
   sessionRoomId?: string;
 }
 
 export async function createBooking(
-  body: { expertProfileId: string; scheduledStartTime: string },
+  body: { expertProfileId: string; scheduledStartTime: string; sessionOptionId?: string },
   token: string,
 ): Promise<ApiResponse<BookingResponse>> {
   const res = await fetch(`${API_BASE}/bookings`, {
@@ -198,15 +227,28 @@ function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
-/* ── User Upgrade ── */
+/* ── User Profile ── */
 
-export async function upgradeToExpert(): Promise<ApiResponse<AuthResponse>> {
-  const res = await fetch(`${API_BASE}/users/upgrade-to-expert`, {
+export async function getUserProfile(): Promise<ApiResponse<AuthResponse['user']>> {
+  const res = await fetch(`${API_BASE}/users/me`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to get profile' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+/* ── User Role ── */
+
+export async function revertToClient(): Promise<ApiResponse<AuthResponse>> {
+  const res = await fetch(`${API_BASE}/users/revert-to-client`, {
     method: 'POST',
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: 'Upgrade failed' }));
+    const err = await res.json().catch(() => ({ message: 'Revert failed' }));
     throw new Error(err.message || `Error ${res.status}`);
   }
   return res.json();
@@ -230,6 +272,7 @@ export interface CreateExpertProfileBody {
   sessionPriceMillimes: number;
   sessionDurationMinutes?: number;
   timezone?: string;
+  sessionOptions?: SessionOptionInput[];
 }
 
 export async function createExpertProfile(body: CreateExpertProfileBody): Promise<ApiResponse<ExpertProfile>> {
@@ -286,6 +329,57 @@ export async function getSchedules(expertProfileId: string): Promise<ApiResponse
   return res.json();
 }
 
+export interface WeekSlot {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+export async function setWeekAvailability(weekStart: string, slots: WeekSlot[]): Promise<ApiResponse<WeekSlot[]>> {
+  const res = await fetch(`${API_BASE}/availability/week`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ weekStart, slots }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to save week availability' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getWeekSlots(expertProfileId: string, weekStart: string): Promise<ApiResponse<WeekSlot[]>> {
+  const res = await fetch(
+    `${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/week-slots?weekStart=${encodeURIComponent(weekStart)}`,
+  );
+  if (!res.ok) throw new Error(`Error ${res.status}`);
+  return res.json();
+}
+
+export interface RecurrenceConfig {
+  isRecurring: boolean;
+  recurringUntil: string | null;
+}
+
+export async function setRecurrence(config: RecurrenceConfig): Promise<ApiResponse<RecurrenceConfig>> {
+  const res = await fetch(`${API_BASE}/availability/recurrence`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(config),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to save recurrence' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getRecurrence(expertProfileId: string): Promise<ApiResponse<RecurrenceConfig>> {
+  const res = await fetch(`${API_BASE}/availability/${encodeURIComponent(expertProfileId)}/recurrence`);
+  if (!res.ok) throw new Error(`Error ${res.status}`);
+  return res.json();
+}
+
 /* ── Dashboard: Bookings ── */
 
 export async function getMyBookings(): Promise<ApiResponse<BookingResponse[]>> {
@@ -333,28 +427,53 @@ export interface OnboardingStep2Data {
   languages: string[];
 }
 
+export interface SessionOptionInput {
+  durationMinutes: number;
+  priceMillimes: number;
+  label?: string;
+  sortOrder?: number;
+}
+
 export interface OnboardingStep3Data {
-  sessionPriceMillimes: number;
-  sessionDurationMinutes: number;
+  sessionOptions: SessionOptionInput[];
   timezone: string;
+  sessionPriceMillimes?: number;
+  sessionDurationMinutes?: number;
 }
 
 export interface OnboardingStep4Data {
   payoutMethod: 'BANK_TRANSFER' | 'MOBILE_MONEY';
-  bankName?: string;
-  iban?: string;
-  accountHolderName?: string;
-  mobileProvider?: string;
-  mobilePhone?: string;
+  bankTransferDetails?: {
+    accountHolderName: string;
+    bankName: string;
+    iban: string;
+  };
+  mobileMoneyDetails?: {
+    mobileProvider: string;
+    mobilePhone: string;
+  };
 }
 
 export interface OnboardingStatus {
   currentStep: number;
   completed: boolean;
-  step1?: OnboardingStep1Data;
-  step2?: OnboardingStep2Data;
-  step3?: OnboardingStep3Data;
-  step4?: OnboardingStep4Data;
+  profileCompleteness?: number;
+  profile?: {
+    slug?: string;
+    bio?: string;
+    headline?: string;
+    category?: string;
+    tags?: string[];
+    certifications?: { name: string; issuer: string; year: number }[];
+    yearsOfExperience?: number;
+    languages?: string[];
+    sessionPriceMillimes?: number;
+    sessionDurationMinutes?: number;
+    timezone?: string;
+    sessionOptions?: { id: string; durationMinutes: number; priceMillimes: number; label?: string; isActive: boolean; sortOrder: number }[];
+    payoutMethod?: 'BANK_TRANSFER' | 'MOBILE_MONEY';
+    payoutDetails?: Record<string, string>;
+  };
 }
 
 export async function saveOnboardingStep1(data: OnboardingStep1Data): Promise<ApiResponse<OnboardingStatus>> {
@@ -446,6 +565,31 @@ export async function searchExperts(
   if (params.limit != null) query.set('limit', String(params.limit));
 
   const res = await fetch(`${API_BASE}/marketplace?${query.toString()}`);
+  if (!res.ok) {
+    throw new Error(`Error ${res.status}`);
+  }
+  return res.json();
+}
+
+// --- Session Access ---
+
+export interface SessionAccessResponse {
+  allowed: boolean;
+  reason?: 'TOO_EARLY' | 'EXPIRED' | 'NOT_FOUND' | 'FORBIDDEN';
+  scheduledStartTime?: string;
+  scheduledEndTime?: string;
+  expertName?: string;
+  clientName?: string;
+  minutesUntilStart?: number;
+}
+
+export async function checkSessionAccess(
+  roomId: string,
+  token: string,
+): Promise<ApiResponse<SessionAccessResponse>> {
+  const res = await fetch(`${API_BASE}/session/${roomId}/access`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!res.ok) {
     throw new Error(`Error ${res.status}`);
   }

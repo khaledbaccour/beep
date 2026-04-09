@@ -13,6 +13,7 @@ export class BookingResponseDto {
   refundAmountMillimes: number;
   refundEligibility: RefundEligibility;
   sessionRoomId?: string;
+  durationMinutes?: number;
 
   constructor(partial: BookingResponseDto) {
     this.id = partial.id;
@@ -27,5 +28,6 @@ export class BookingResponseDto {
     this.refundAmountMillimes = partial.refundAmountMillimes;
     this.refundEligibility = partial.refundEligibility;
     this.sessionRoomId = partial.sessionRoomId;
+    this.durationMinutes = partial.durationMinutes;
   }
 }

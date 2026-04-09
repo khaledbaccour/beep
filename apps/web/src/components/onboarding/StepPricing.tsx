@@ -1,10 +1,18 @@
 'use client';
 
+import { Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import type { Dictionary } from '@/i18n/types';
 
-interface StepPricingData {
+export interface SessionOptionRow {
+  durationMinutes: number;
   priceTND: string;
-  sessionDurationMinutes: number;
+  label: string;
+}
+
+export interface StepPricingData {
+  sessionOptions: SessionOptionRow[];
   timezone: string;
 }
 
@@ -12,13 +20,16 @@ interface StepPricingProps {
   data: StepPricingData;
   onChange: (data: StepPricingData) => void;
   errors: Record<string, string>;
+  dict: Dictionary;
 }
 
-const DURATION_OPTIONS = [
-  { value: 30, label: '30 minutes' },
-  { value: 45, label: '45 minutes' },
-  { value: 60, label: '60 minutes' },
-  { value: 90, label: '90 minutes' },
+const DURATION_CHOICES = [
+  { value: 15, label: '15 min' },
+  { value: 30, label: '30 min' },
+  { value: 45, label: '45 min' },
+  { value: 60, label: '60 min' },
+  { value: 90, label: '90 min' },
+  { value: 120, label: '120 min' },
 ];
 
 const POPULAR_TIMEZONES = [
@@ -31,71 +42,150 @@ const POPULAR_TIMEZONES = [
   'Asia/Dubai',
 ];
 
-export function StepPricing({ data, onChange, errors }: StepPricingProps) {
+const MAX_OPTIONS = 6;
+
+export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) {
+  const options = data.sessionOptions;
+
+  function updateOption(index: number, patch: Partial<SessionOptionRow>) {
+    const updated = options.map((opt, i) => (i === index ? { ...opt, ...patch } : opt));
+    onChange({ ...data, sessionOptions: updated });
+  }
+
+  function addOption() {
+    if (options.length >= MAX_OPTIONS) return;
+    onChange({
+      ...data,
+      sessionOptions: [
+        ...options,
+        { durationMinutes: 60, priceTND: '', label: '' },
+      ],
+    });
+  }
+
+  function removeOption(index: number) {
+    if (options.length <= 1) return;
+    onChange({
+      ...data,
+      sessionOptions: options.filter((_, i) => i !== index),
+    });
+  }
+
   return (
     <div className="space-y-6">
-      {/* Price */}
+      {/* Session options */}
       <div>
-        <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Session Price *
+        <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-3">
+          {dict.onboarding.sessionPrice || 'Session Options'}
         </label>
-        <div className="relative w-48">
-          <Input
-            type="number"
-            min="1"
-            max="9999"
-            step="0.5"
-            value={data.priceTND}
-            onChange={(e) => onChange({ ...data, priceTND: e.target.value })}
-            placeholder="50"
-            required
-            className="border-2 border-ink-200 rounded-xl pr-14 text-lg font-bold"
-          />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-ink-400">
-            TND
-          </span>
-        </div>
-        {data.priceTND && parseFloat(data.priceTND) > 0 && (
-          <p className="mt-2 text-xs text-ink-500">
-            Clients will pay <span className="font-bold text-ink-900">{parseFloat(data.priceTND).toFixed(2)} TND</span> per session
-          </p>
-        )}
-        {errors.priceTND && <p className="mt-1 text-xs font-medium text-red-500">{errors.priceTND}</p>}
-      </div>
 
-      {/* Duration */}
-      <div>
-        <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Session Duration *
-        </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {DURATION_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onChange({ ...data, sessionDurationMinutes: opt.value })}
-              className={`
-                p-3 rounded-xl border-[2.5px] text-center transition-all duration-200
-                ${data.sessionDurationMinutes === opt.value
-                  ? 'border-ink-900 bg-peach-100 shadow-retro-sm font-bold text-ink-900'
-                  : 'border-ink-200 bg-white hover:border-ink-400 text-ink-600'
-                }
-              `}
+        <div className="space-y-4">
+          {options.map((opt, idx) => (
+            <div
+              key={idx}
+              className="p-4 rounded-xl border-[2.5px] border-ink-200 bg-white space-y-3"
             >
-              <span className="block text-lg font-bold">{opt.value}</span>
-              <span className="block text-xs text-ink-500">min</span>
-            </button>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-ink-500 uppercase">
+                  Option {idx + 1}
+                </span>
+                {options.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeOption(idx)}
+                    className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {/* Duration dropdown */}
+                <div>
+                  <label className="block text-xs text-ink-500 mb-1">
+                    {dict.onboarding.sessionDuration || 'Duration'}
+                  </label>
+                  <select
+                    value={opt.durationMinutes}
+                    onChange={(e) =>
+                      updateOption(idx, { durationMinutes: parseInt(e.target.value, 10) })
+                    }
+                    className="flex h-11 w-full rounded-xl border-2 border-ink-200 bg-white px-3.5 py-2 text-sm text-ink-900 font-medium transition-colors focus-visible:outline-none focus-visible:border-ink-400 focus-visible:ring-2 focus-visible:ring-ink-100"
+                  >
+                    {DURATION_CHOICES.map((d) => (
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Price input */}
+                <div>
+                  <label className="block text-xs text-ink-500 mb-1">
+                    {dict.onboarding.sessionPrice || 'Price'}
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      min="1"
+                      max="9999"
+                      step="0.5"
+                      value={opt.priceTND}
+                      onChange={(e) => updateOption(idx, { priceTND: e.target.value })}
+                      placeholder="50"
+                      className="border-2 border-ink-200 rounded-xl pr-14"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-400">
+                      TND
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Optional label */}
+              <div>
+                <label className="block text-xs text-ink-500 mb-1">
+                  Label (optional)
+                </label>
+                <Input
+                  value={opt.label}
+                  onChange={(e) => updateOption(idx, { label: e.target.value })}
+                  placeholder="e.g. Quick consultation, Full session..."
+                  className="border-2 border-ink-200 rounded-xl"
+                  maxLength={60}
+                />
+              </div>
+
+              {errors[`option_${idx}`] && (
+                <p className="text-xs font-medium text-red-500">{errors[`option_${idx}`]}</p>
+              )}
+            </div>
           ))}
         </div>
-        {errors.sessionDurationMinutes && (
-          <p className="mt-1 text-xs font-medium text-red-500">{errors.sessionDurationMinutes}</p>
+
+        {options.length < MAX_OPTIONS && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={addOption}
+            className="mt-3 rounded-xl text-sm text-ink-500 hover:text-ink-700"
+          >
+            <Plus size={16} />
+            Add option
+          </Button>
+        )}
+
+        {errors.sessionOptions && (
+          <p className="mt-1 text-xs font-medium text-red-500">{errors.sessionOptions}</p>
         )}
       </div>
 
       {/* Timezone */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Timezone *
+          {dict.onboarding.timezone}
         </label>
         <select
           value={data.timezone}
@@ -103,30 +193,44 @@ export function StepPricing({ data, onChange, errors }: StepPricingProps) {
           className="flex h-11 w-full rounded-xl border-2 border-ink-200 bg-white px-3.5 py-2 text-sm text-ink-900 font-mono transition-colors focus-visible:outline-none focus-visible:border-ink-400 focus-visible:ring-2 focus-visible:ring-ink-100"
         >
           {POPULAR_TIMEZONES.map((tz) => (
-            <option key={tz} value={tz}>{tz}</option>
+            <option key={tz} value={tz}>
+              {tz}
+            </option>
           ))}
         </select>
-        <p className="mt-1 text-xs text-ink-400">
-          Your available time slots will be displayed in this timezone
-        </p>
-        {errors.timezone && <p className="mt-1 text-xs font-medium text-red-500">{errors.timezone}</p>}
+        <p className="mt-1 text-xs text-ink-400">{dict.onboarding.timezoneHelp}</p>
+        {errors.timezone && (
+          <p className="mt-1 text-xs font-medium text-red-500">{errors.timezone}</p>
+        )}
       </div>
 
       {/* Summary card */}
-      {data.priceTND && parseFloat(data.priceTND) > 0 && (
+      {options.some((o) => o.priceTND && parseFloat(o.priceTND) > 0) && (
         <div className="p-4 rounded-xl border-[2.5px] border-ink-900 bg-cream-50 shadow-retro-sm">
-          <p className="text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">Session Summary</p>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-ink-600">{data.sessionDurationMinutes}-minute session</span>
-            <span className="text-lg font-bold text-ink-900">{parseFloat(data.priceTND).toFixed(2)} TND</span>
+          <p className="text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
+            {dict.onboarding.sessionSummary}
+          </p>
+          <div className="space-y-2">
+            {options
+              .filter((o) => o.priceTND && parseFloat(o.priceTND) > 0)
+              .map((o, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-sm text-ink-600">
+                    {o.durationMinutes}
+                    {dict.onboarding.minuteSession}
+                    {o.label ? ` — ${o.label}` : ''}
+                  </span>
+                  <span className="text-lg font-bold text-ink-900">
+                    {parseFloat(o.priceTND).toFixed(2)} TND
+                  </span>
+                </div>
+              ))}
           </div>
-          <div className="mt-1 text-xs text-ink-400">
-            Timezone: {data.timezone}
+          <div className="mt-2 text-xs text-ink-400">
+            {dict.onboarding.timezoneLabel}: {data.timezone}
           </div>
         </div>
       )}
     </div>
   );
 }
-
-export type { StepPricingData };

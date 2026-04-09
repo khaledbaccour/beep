@@ -1,4 +1,4 @@
-import { IsString, IsDateString } from 'class-validator';
+import { IsString, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateBookingDto {
   @IsString()
@@ -6,4 +6,9 @@ export class CreateBookingDto {
 
   @IsDateString()
   scheduledStartTime!: string;
+
+  /** ID of the selected session option (duration + price) */
+  @IsString()
+  @IsOptional()
+  sessionOptionId?: string;
 }

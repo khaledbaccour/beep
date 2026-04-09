@@ -19,4 +19,5 @@ export interface IExpertProfileRepository {
   save(profile: ExpertProfile): Promise<ExpertProfile>;
   update(id: string, partial: Partial<ExpertProfile>): Promise<void>;
   slugExists(slug: string): Promise<boolean>;
+  delete(id: string): Promise<void>;
 }

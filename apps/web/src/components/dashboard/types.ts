@@ -7,12 +7,14 @@ export interface UserProfile {
   lastName: string;
   email: string;
   role: 'CLIENT' | 'EXPERT' | 'ADMIN';
+  onboardingCompleted?: boolean;
 }
 
 export type Tab = 'overview' | 'profile' | 'availability' | 'bookings';
 
 export interface TabProps {
   d: Dictionary['dashboard'];
+  dict: Dictionary;
   lang: Locale;
 }
 

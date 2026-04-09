@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, X, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { checkSlugAvailability } from '@/lib/api';
+import type { Dictionary } from '@/i18n/types';
 
 const CATEGORIES = [
   'FITNESS', 'EDUCATION', 'LAW', 'BUSINESS', 'TECHNOLOGY',
@@ -21,9 +22,10 @@ interface StepBasicInfoProps {
   data: StepBasicInfoData;
   onChange: (data: StepBasicInfoData) => void;
   errors: Record<string, string>;
+  dict: Dictionary;
 }
 
-export function StepBasicInfo({ data, onChange, errors }: StepBasicInfoProps) {
+export function StepBasicInfo({ data, onChange, errors, dict }: StepBasicInfoProps) {
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -63,7 +65,7 @@ export function StepBasicInfo({ data, onChange, errors }: StepBasicInfoProps) {
       {/* Slug */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Your Link *
+          {dict.onboarding.yourLink}
         </label>
         <div className="flex items-center gap-0">
           <span className="h-11 px-3.5 flex items-center text-sm font-bold text-ink-400 bg-cream-100 border-2 border-r-0 border-ink-200 rounded-l-xl whitespace-nowrap">
@@ -92,13 +94,13 @@ export function StepBasicInfo({ data, onChange, errors }: StepBasicInfoProps) {
           </div>
         </div>
         {slugStatus === 'available' && (
-          <p className="mt-1.5 text-xs font-medium text-success-600">This link is available!</p>
+          <p className="mt-1.5 text-xs font-medium text-success-600">{dict.onboarding.linkAvailable}</p>
         )}
         {slugStatus === 'taken' && (
-          <p className="mt-1.5 text-xs font-medium text-red-500">This link is already taken.</p>
+          <p className="mt-1.5 text-xs font-medium text-red-500">{dict.onboarding.linkTaken}</p>
         )}
         {data.slug.length > 0 && data.slug.length < 3 && (
-          <p className="mt-1.5 text-xs font-medium text-ink-400">Minimum 3 characters</p>
+          <p className="mt-1.5 text-xs font-medium text-ink-400">{dict.onboarding.linkMinChars}</p>
         )}
         {errors.slug && <p className="mt-1.5 text-xs font-medium text-red-500">{errors.slug}</p>}
       </div>
@@ -106,26 +108,26 @@ export function StepBasicInfo({ data, onChange, errors }: StepBasicInfoProps) {
       {/* Headline */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Headline
+          {dict.onboarding.headlineLabel}
         </label>
         <Input
           value={data.headline}
           onChange={(e) => onChange({ ...data, headline: e.target.value })}
-          placeholder="e.g. Certified Personal Trainer & Nutrition Coach"
+          placeholder={dict.onboarding.headlinePlaceholder}
           className="border-2 border-ink-200 rounded-xl"
         />
-        <p className="mt-1 text-xs text-ink-400">A short tagline that describes what you do</p>
+        <p className="mt-1 text-xs text-ink-400">{dict.onboarding.headlineHelp}</p>
       </div>
 
       {/* Bio */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Bio *
+          {dict.onboarding.bio}
         </label>
         <textarea
           value={data.bio}
           onChange={(e) => onChange({ ...data, bio: e.target.value })}
-          placeholder="Tell potential clients about yourself, your experience, and what they can expect from a session..."
+          placeholder={dict.onboarding.bioPlaceholder}
           required
           minLength={10}
           rows={4}
@@ -135,7 +137,7 @@ export function StepBasicInfo({ data, onChange, errors }: StepBasicInfoProps) {
           {errors.bio ? (
             <p className="text-xs font-medium text-red-500">{errors.bio}</p>
           ) : (
-            <p className="text-xs text-ink-400">Minimum 10 characters</p>
+            <p className="text-xs text-ink-400">{dict.onboarding.bioMinChars}</p>
           )}
           <span className={`text-xs font-mono ${data.bio.length < 10 ? 'text-ink-400' : 'text-success-600'}`}>
             {data.bio.length}
@@ -146,7 +148,7 @@ export function StepBasicInfo({ data, onChange, errors }: StepBasicInfoProps) {
       {/* Category */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
-          Category *
+          {dict.onboarding.category}
         </label>
         <select
           value={data.category}
@@ -154,12 +156,15 @@ export function StepBasicInfo({ data, onChange, errors }: StepBasicInfoProps) {
           required
           className="flex h-11 w-full rounded-xl border-2 border-ink-200 bg-white px-3.5 py-2 text-sm text-ink-900 font-medium transition-colors focus-visible:outline-none focus-visible:border-ink-400 focus-visible:ring-2 focus-visible:ring-ink-100"
         >
-          <option value="">Select a category</option>
-          {CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat.charAt(0) + cat.slice(1).toLowerCase()}
-            </option>
-          ))}
+          <option value="">{dict.onboarding.selectCategory}</option>
+          {CATEGORIES.map((cat) => {
+            const catKey = `cat${cat.charAt(0) + cat.slice(1).toLowerCase()}` as keyof typeof dict.onboarding;
+            return (
+              <option key={cat} value={cat}>
+                {dict.onboarding[catKey] || cat.charAt(0) + cat.slice(1).toLowerCase()}
+              </option>
+            );
+          })}
         </select>
         {errors.category && <p className="mt-1.5 text-xs font-medium text-red-500">{errors.category}</p>}
       </div>

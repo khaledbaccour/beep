@@ -12,6 +12,16 @@
 const SDK_URL =
   process.env.NEXT_PUBLIC_GAMMAL_TECH_SDK_URL ?? 'https://api.gammal.tech/sdk-web.js';
 
+/**
+ * When true, skip Gammal Tech SDK entirely and auto-succeed payments.
+ * Auto-enabled on Vercel preview/development deployments and when
+ * NEXT_PUBLIC_DEV_PAYMENT is explicitly set.
+ */
+const DEV_PAYMENT =
+  process.env.NEXT_PUBLIC_DEV_PAYMENT === 'true' ||
+  (!!process.env.NEXT_PUBLIC_VERCEL_ENV &&
+    process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production');
+
 /* ── SDK type definitions (from SDK v3.0.2 source) ─────── */
 
 interface PayCardDelivery {
@@ -128,6 +138,8 @@ export function clearPendingBookingId(): void {
 /* ── Auth helpers ────────────────────────────────────────── */
 
 export async function ensureGammalTechLogin(): Promise<string> {
+  if (DEV_PAYMENT) return 'dev_token';
+
   await loadGammalTechSDK();
   const sdk = getSDK();
   if (!sdk) throw new Error('Gammal Tech SDK not available');
@@ -140,6 +152,7 @@ export async function ensureGammalTechLogin(): Promise<string> {
 }
 
 export function isGammalTechLoggedIn(): boolean {
+  if (DEV_PAYMENT) return true;
   const sdk = getSDK();
   return sdk?.isLoggedIn() ?? false;
 }
@@ -149,6 +162,9 @@ export function isGammalTechLoggedIn(): boolean {
 /**
  * Opens the Gammal Tech card payment popup.
  *
+ * When NEXT_PUBLIC_DEV_PAYMENT=true, skips the SDK popup entirely
+ * and returns a fake successful transaction for development/testing.
+ *
  * @param amountTND  Amount in TND (NOT millimes).
  * @param description  Human-readable description shown on receipt.
  * @returns The transaction details on success.
@@ -157,6 +173,13 @@ export async function payWithCard(
   amountTND: number,
   description: string,
 ): Promise<{ txn: string; amount: number }> {
+  if (DEV_PAYMENT) {
+    return {
+      txn: `dev_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      amount: amountTND,
+    };
+  }
+
   await loadGammalTechSDK();
 
   const sdk = getSDK();
@@ -194,6 +217,8 @@ export async function settlePendingPayments(): Promise<{
   amount?: number;
   description?: string;
 }> {
+  if (DEV_PAYMENT) return { recovered: false };
+
   await loadGammalTechSDK();
 
   const sdk = getSDK();

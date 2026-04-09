@@ -42,10 +42,10 @@ export function TestimonialsSection({ dict, lang }: Props) {
           <span className="inline-block px-4 py-1.5 rounded-full bg-ink-900 text-white text-xs font-bold uppercase tracking-wider mb-6">
             {dict.testimonials.label}
           </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-ink-900 tracking-tight">
-            What people{' '}
-            <em className="not-italic text-[#FFB088] italic">love</em>{' '}
-            about us
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-ink-900 tracking-normal">
+            {dict.testimonials.title}{' '}
+            <em className="not-italic text-[#FFB088] italic">{dict.testimonials.titleAccent}</em>
+            {dict.testimonials.titleSuffix ? ` ${dict.testimonials.titleSuffix}` : ''}
           </h2>
         </div>
 
@@ -71,12 +71,12 @@ export function TestimonialsSection({ dict, lang }: Props) {
               {/* Person */}
               <div className="flex items-center gap-3 pt-5 border-t-2 border-ink-900/10">
                 <div
-                  className={`w-10 h-10 rounded-full border-2 border-ink-900 bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-xs font-black`}
+                  className={`w-10 h-10 rounded-full border-2 border-ink-900 bg-gradient-to-br ${t.gradient} flex items-center justify-center text-white text-xs font-bold`}
                 >
                   {t.initials}
                 </div>
                 <div>
-                  <div className="text-sm font-black text-ink-900">{t.name}</div>
+                  <div className="text-sm font-bold text-ink-900">{t.name}</div>
                   <div className="text-xs text-ink-500 font-medium">{t.role}</div>
                 </div>
               </div>

@@ -9,9 +9,11 @@ import type { Locale } from '@/i18n';
 import {
   getExpertBySlug,
   getAvailableSlots,
+  getAvailableDates,
   createBooking,
   confirmBookingPayment,
   type ExpertProfile,
+  type SessionOption,
   type AvailableSlot,
   type BookingResponse,
 } from '@/lib/api';
@@ -22,7 +24,9 @@ import {
   getPendingBookingId,
   clearPendingBookingId,
 } from '@/lib/gammal-tech';
+import { translateError } from '@/lib/i18n-utils';
 import { formatPrice, formatTime, formatDate, toDateString } from './utils';
+import { DurationPicker } from './DurationPicker';
 import { DatePicker } from './DatePicker';
 import { TimeSlotPicker } from './TimeSlotPicker';
 import { BookingConfirmation } from './BookingConfirmation';
@@ -58,6 +62,10 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
+  const [selectedOption, setSelectedOption] = useState<SessionOption | null>(null);
+
+  const [availableDates, setAvailableDates] = useState<Set<string>>(new Set());
+  const [availableDatesLoading, setAvailableDatesLoading] = useState(false);
 
   const [step, setStep] = useState<BookingStep>('profile');
   const [notes, setNotes] = useState('');
@@ -95,7 +103,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
         if (!cancelled) setExpert(res.data);
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : t.error);
+        if (!cancelled) setError(err instanceof Error ? translateError(err.message, dict) : t.error);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -103,11 +111,44 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     return () => { cancelled = true; };
   }, [slug, t.error]);
 
-  const fetchSlots = useCallback(async (date: Date, expertId: string) => {
+  // Auto-select if expert has only one session option
+  useEffect(() => {
+    if (expert) {
+      const options = expert.sessionOptions ?? [];
+      if (options.length === 1) {
+        setSelectedOption(options[0]);
+      }
+    }
+  }, [expert]);
+
+  const fetchAvailableDatesForRange = useCallback(async (start: Date, expertId: string, signal: AbortSignal) => {
+    setAvailableDatesLoading(true);
+    try {
+      const from = toDateString(start);
+      const end = new Date(start);
+      end.setDate(end.getDate() + VISIBLE_DAYS - 1);
+      const to = toDateString(end);
+      const res = await getAvailableDates(expertId, from, to);
+      if (!signal.aborted) setAvailableDates(new Set(res.data));
+    } catch {
+      if (!signal.aborted) setAvailableDates(new Set());
+    } finally {
+      if (!signal.aborted) setAvailableDatesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!expert) return;
+    const controller = new AbortController();
+    fetchAvailableDatesForRange(calendarStart, expert.id, controller.signal);
+    return () => controller.abort();
+  }, [calendarStart, expert, fetchAvailableDatesForRange]);
+
+  const fetchSlots = useCallback(async (date: Date, expertId: string, duration?: number) => {
     setSlotsLoading(true);
     setSelectedSlot(null);
     try {
-      const res = await getAvailableSlots(expertId, toDateString(date));
+      const res = await getAvailableSlots(expertId, toDateString(date), duration);
       setSlots(res.data);
     } catch {
       setSlots([]);
@@ -117,10 +158,16 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   }, []);
 
   useEffect(() => {
-    if (selectedDate && expert) {
-      fetchSlots(selectedDate, expert.id);
+    if (selectedDate && expert && selectedOption) {
+      fetchSlots(selectedDate, expert.id, selectedOption.durationMinutes);
     }
-  }, [selectedDate, expert, fetchSlots]);
+  }, [selectedDate, expert, selectedOption, fetchSlots]);
+
+  const handleOptionSelect = (option: SessionOption) => {
+    setSelectedOption(option);
+    setSelectedSlot(null);
+    setSlots([]);
+  };
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -159,6 +206,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
         {
           expertProfileId: expert.id,
           scheduledStartTime: selectedSlot.startTime,
+          sessionOptionId: selectedOption?.id,
         },
         token,
       );
@@ -168,7 +216,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       setPendingBookingId(pendingBooking.id);
 
       // Step 2: Open Gammal Tech payment popup
-      const amountTND = expert.sessionPriceMillimes / 1000;
+      const amountTND = (selectedOption?.priceMillimes ?? expert.sessionPriceMillimes) / 1000;
       const payment = await payWithCard(
         amountTND,
         `Beep: Session with ${expert.firstName} ${expert.lastName}`,
@@ -185,9 +233,9 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       setBooking(confirmedRes.data);
       setStep('success');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t.paymentFailed;
-      if (message !== 'Payment cancelled') {
-        setBookingError(message);
+      const rawMessage = err instanceof Error ? err.message : '';
+      if (rawMessage !== 'Payment cancelled') {
+        setBookingError(rawMessage ? translateError(rawMessage, dict) : t.paymentFailed);
       }
     } finally {
       setBookingLoading(false);
@@ -195,6 +243,8 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   };
 
   const navigateCalendar = (direction: 'prev' | 'next') => {
+    setSelectedDate(null);
+    setSelectedSlot(null);
     setCalendarStart((prev) => {
       const next = new Date(prev);
       next.setDate(next.getDate() + (direction === 'next' ? VISIBLE_DAYS : -VISIBLE_DAYS));
@@ -211,6 +261,9 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     setBooking(null);
     setNotes('');
     setBookingError(null);
+    if (expert && (expert.sessionOptions ?? []).length > 1) {
+      setSelectedOption(null);
+    }
   };
 
   if (loading) {
@@ -236,7 +289,16 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
     );
   }
 
-  const priceTND = formatPrice(expert.sessionPriceMillimes);
+  const options = expert.sessionOptions ?? [];
+  const hasMultipleOptions = options.length > 1;
+  const displayPrice = selectedOption
+    ? formatPrice(selectedOption.priceMillimes)
+    : hasMultipleOptions
+      ? formatPrice(Math.min(...options.map((o) => o.priceMillimes)))
+      : formatPrice(expert.sessionPriceMillimes);
+  const displayDuration = selectedOption
+    ? selectedOption.durationMinutes
+    : expert.sessionDurationMinutes;
 
   if (step === 'success' && booking) {
     return (
@@ -256,6 +318,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
         expert={expert}
         selectedDate={selectedDate}
         selectedSlot={selectedSlot}
+        selectedOption={selectedOption}
         notes={notes}
         loading={bookingLoading}
         error={bookingError}
@@ -281,29 +344,53 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
             </p>
 
             <div className="border-[2.5px] border-[#141418] rounded-xl p-5 shadow-retro">
-              <DatePicker
-                calendarStart={calendarStart}
-                selectedDate={selectedDate}
-                lang={lang}
-                labels={{ selectDate: t.selectDate }}
-                onDateSelect={handleDateSelect}
-                onNavigate={navigateCalendar}
-              />
-
-              {selectedDate && (
-                <div className="mt-5">
-                  <TimeSlotPicker
-                    slots={slots}
-                    loading={slotsLoading}
-                    selectedSlot={selectedSlot}
-                    labels={{
-                      selectTime: t.selectTime,
-                      loadingSlots: t.loadingSlots,
-                      noSlots: t.noSlots,
-                    }}
-                    onSlotSelect={setSelectedSlot}
+              {/* Duration picker */}
+              {hasMultipleOptions && (
+                <div className="mb-5">
+                  <DurationPicker
+                    options={options}
+                    selected={selectedOption}
+                    onSelect={handleOptionSelect}
+                    label={t.selectDuration}
                   />
                 </div>
+              )}
+
+              {selectedOption && (
+                <>
+                  <DatePicker
+                    calendarStart={calendarStart}
+                    selectedDate={selectedDate}
+                    availableDates={availableDates}
+                    availableDatesLoading={availableDatesLoading}
+                    lang={lang}
+                    labels={{ selectDate: t.selectDate }}
+                    onDateSelect={handleDateSelect}
+                    onNavigate={navigateCalendar}
+                  />
+
+                  {selectedDate && (
+                    <div className="mt-5">
+                      <TimeSlotPicker
+                        slots={slots}
+                        loading={slotsLoading}
+                        selectedSlot={selectedSlot}
+                        labels={{
+                          selectTime: t.selectTime,
+                          loadingSlots: t.loadingSlots,
+                          noSlots: t.noSlots,
+                        }}
+                        onSlotSelect={setSelectedSlot}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              {!selectedOption && hasMultipleOptions && (
+                <p className="text-sm text-ink-400 text-center py-4">
+                  {t.selectDurationFirst}
+                </p>
               )}
 
               {expert.timezone && (
@@ -321,16 +408,19 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
                 {t.sessionPrice}
               </p>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl font-display font-bold text-ink-900">{priceTND}</span>
+                {hasMultipleOptions && !selectedOption && (
+                  <span className="text-sm text-ink-400 mr-1">{t.from}</span>
+                )}
+                <span className="text-3xl font-display font-bold text-ink-900">{displayPrice}</span>
                 <span className="text-sm text-ink-400">{dict.common.tnd}</span>
               </div>
               <p className="text-xs text-ink-400 mb-5">
-                {expert.sessionDurationMinutes} min &middot; {t.perSession}
+                {displayDuration} min &middot; {t.perSession}
               </p>
 
               <Button
                 variant="brand"
-                className="w-full"
+                className="w-full whitespace-normal text-sm px-4"
                 size="lg"
                 disabled={!selectedSlot}
                 onClick={handleContinueToConfirm}

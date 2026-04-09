@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import { loginUser } from '@/lib/api';
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
 
 function getPostLoginDestination(user: { role: string; onboardingCompleted?: boolean }): string {
   if (user.role === 'EXPERT') {
-    return user.onboardingCompleted ? '/dashboard' : '/onboarding';
+    return '/dashboard';
   }
   return '/marketplace';
 }
@@ -39,11 +39,11 @@ export function LoginPage({ dict, lang }: Props) {
       const res = await loginUser({ email, password });
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
-      setSuccess(`Logged in as ${res.data.user.firstName} ${res.data.user.lastName}`);
+      setSuccess(`${dict.auth.loginSuccess} ${res.data.user.firstName} ${res.data.user.lastName}`);
       const dest = getPostLoginDestination(res.data.user);
       router.push(localePath(lang, dest));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.auth.loginFailed);
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ export function LoginPage({ dict, lang }: Props) {
         <a href={localePath(lang, '/')} className="flex items-center justify-center gap-1.5 mb-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
-          <span className="text-[17px] font-body font-extrabold text-ink-900">
+          <span className="text-[17px] font-body font-bold text-ink-900">
             beep<span className="text-brand-500">.tn</span>
           </span>
         </a>
@@ -94,7 +94,7 @@ export function LoginPage({ dict, lang }: Props) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={dict.auth.enterPassword}
               required
               data-testid="login-password"
             />

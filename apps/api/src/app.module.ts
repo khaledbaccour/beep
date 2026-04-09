@@ -13,26 +13,26 @@ import { NotificationModule } from './modules/notification/notification.module';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import jwtConfig from './config/jwt.config';
+import smtpConfig from './config/smtp.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, redisConfig, jwtConfig],
+      load: [databaseConfig, redisConfig, jwtConfig, smtpConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const databaseUrl = config.get<string>('database.url');
-        const isProduction = config.get<string>('NODE_ENV') === 'production';
+        const needsSsl =
+          !!(databaseUrl && !databaseUrl.includes('localhost'));
 
         const baseConfig = {
           type: 'postgres' as const,
           autoLoadEntities: true,
           synchronize: true,
-          ...(isProduction && {
-            ssl: { rejectUnauthorized: false },
-          }),
+          ...(needsSsl ? { ssl: { rejectUnauthorized: false } } : {}),
         };
 
         if (databaseUrl) {
@@ -49,36 +49,32 @@ import jwtConfig from './config/jwt.config';
         };
       },
     }),
-    ...(process.env.REDIS_URL
-      ? [
-          BullModule.forRootAsync({
-            inject: [ConfigService],
-            useFactory: (config: ConfigService) => {
-              const redisUrl = config.get<string>('redis.url');
-              if (redisUrl) {
-                const parsed = new URL(redisUrl);
-                const useTls = parsed.protocol === 'rediss:';
-                return {
-                  redis: {
-                    host: parsed.hostname,
-                    port: parseInt(parsed.port || '6379', 10),
-                    password: parsed.password || undefined,
-                    username: parsed.username || 'default',
-                    ...(useTls ? { tls: { rejectUnauthorized: false } } : {}),
-                  },
-                };
-              }
-              return {
-                redis: {
-                  host: config.get<string>('redis.host'),
-                  port: config.get<number>('redis.port'),
-                  password: config.get<string>('redis.password'),
-                },
-              };
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const redisUrl = config.get<string>('redis.url');
+        if (redisUrl) {
+          const parsed = new URL(redisUrl);
+          const useTls = parsed.protocol === 'rediss:';
+          return {
+            redis: {
+              host: parsed.hostname,
+              port: parseInt(parsed.port || '6379', 10),
+              password: parsed.password || undefined,
+              username: parsed.username || 'default',
+              ...(useTls ? { tls: { rejectUnauthorized: false } } : {}),
             },
-          }),
-        ]
-      : []),
+          };
+        }
+        return {
+          redis: {
+            host: config.get<string>('redis.host'),
+            port: config.get<number>('redis.port'),
+            password: config.get<string>('redis.password'),
+          },
+        };
+      },
+    }),
     IdentityModule,
     ExpertProfileModule,
     AvailabilityModule,

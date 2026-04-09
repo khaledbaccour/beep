@@ -15,27 +15,27 @@ export function Footer({ dict, lang }: Props) {
       title: dict.footer.platform,
       links: [
         { label: dict.footer.marketplace, href: localePath(lang, '/marketplace') },
-        { label: dict.footer.categoriesLink, href: '#categories' },
-        { label: dict.footer.howItWorksLink, href: '#how-it-works' },
-        { label: dict.footer.pricing, href: '#' },
+        { label: dict.footer.categoriesLink, href: localePath(lang, '/categories') },
+        { label: dict.footer.howItWorksLink, href: localePath(lang, '/how-it-works') },
+        { label: dict.footer.pricing, href: localePath(lang, '/pricing') },
       ],
     },
     {
       title: dict.footer.forExperts,
       links: [
         { label: dict.footer.becomeExpert, href: localePath(lang, '/register') + '?role=expert' },
-        { label: dict.footer.dashboard, href: '#' },
-        { label: dict.footer.earnings, href: '#' },
-        { label: dict.footer.support, href: '#' },
+        { label: dict.footer.dashboard, href: localePath(lang, '/dashboard') },
+        { label: dict.footer.earnings, href: localePath(lang, '/earnings') },
+        { label: dict.footer.support, href: localePath(lang, '/support') },
       ],
     },
     {
       title: dict.footer.company,
       links: [
-        { label: dict.footer.about, href: '#' },
-        { label: dict.footer.privacy, href: '#' },
-        { label: dict.footer.terms, href: '#' },
-        { label: dict.footer.contact, href: '#' },
+        { label: dict.footer.about, href: localePath(lang, '/about') },
+        { label: dict.footer.privacy, href: localePath(lang, '/privacy') },
+        { label: dict.footer.terms, href: localePath(lang, '/terms') },
+        { label: dict.footer.contact, href: localePath(lang, '/contact') },
       ],
     },
   ];
@@ -50,7 +50,7 @@ export function Footer({ dict, lang }: Props) {
             <div className="flex items-center gap-1.5 mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.svg" alt="Beep" className="w-9 h-9" />
-              <span className="text-lg font-body font-extrabold text-white">
+              <span className="text-lg font-body font-bold text-white">
                 beep<span className="text-brand-400">.tn</span>
               </span>
             </div>
@@ -125,8 +125,8 @@ export function Footer({ dict, lang }: Props) {
             &copy; {new Date().getFullYear()} {dict.footer.copyright}
           </p>
           <div className="flex items-center gap-5 text-xs text-ink-500">
-            <a href="#" className="hover:text-white transition-colors">{dict.footer.privacyPolicy}</a>
-            <a href="#" className="hover:text-white transition-colors">{dict.footer.termsOfService}</a>
+            <a href={localePath(lang, '/privacy')} className="hover:text-white transition-colors">{dict.footer.privacyPolicy}</a>
+            <a href={localePath(lang, '/terms')} className="hover:text-white transition-colors">{dict.footer.termsOfService}</a>
           </div>
         </div>
       </div>

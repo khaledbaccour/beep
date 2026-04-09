@@ -4,31 +4,31 @@ import { UnderConstructionPage } from '@/components/UnderConstructionPage';
 
 const UNDER_CONSTRUCTION = true;
 import {
-  Gasoek_One,
-  Plus_Jakarta_Sans,
-  Playfair_Display,
+  Space_Grotesk,
+  DM_Sans,
+  Instrument_Serif,
   JetBrains_Mono,
 } from 'next/font/google';
 import '../globals.css';
 
-const display = Gasoek_One({
+const display = Space_Grotesk({
   subsets: ['latin'],
   variable: '--font-display',
-  weight: '400',
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
 });
 
-const body = Plus_Jakarta_Sans({
+const body = DM_Sans({
   subsets: ['latin'],
   variable: '--font-body',
-  weight: ['300', '400', '500', '600', '700', '800'],
+  weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
 });
 
-const accent = Playfair_Display({
+const accent = Instrument_Serif({
   subsets: ['latin'],
   variable: '--font-accent',
-  weight: ['400', '500', '600', '700'],
+  weight: '400',
   style: ['normal', 'italic'],
   display: 'swap',
 });

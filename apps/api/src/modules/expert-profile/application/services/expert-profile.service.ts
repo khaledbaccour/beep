@@ -6,8 +6,11 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { UserRole, OnboardingStep } from '@beep/shared';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserRole, OnboardingStep, PayoutMethod, ErrorCode } from '@beep/shared';
 import { ExpertProfile } from '../../domain/entities/expert-profile.entity';
+import { SessionOption } from '../../domain/entities/session-option.entity';
 import {
   IExpertProfileRepository,
   EXPERT_PROFILE_REPOSITORY,
@@ -25,6 +28,7 @@ import { OnboardingStep3Dto } from '../dtos/onboarding-step-3.dto';
 import { OnboardingStep4Dto } from '../dtos/onboarding-step-4.dto';
 import { OnboardingStatusResponseDto } from '../dtos/onboarding-status-response.dto';
 import { SlugAvailabilityResponseDto } from '../dtos/slug-availability-response.dto';
+import { SessionOptionResponseDto, CreateSessionOptionDto } from '../dtos/session-option.dto';
 import { AuthenticatedUser } from '../../../identity/domain/interfaces/authenticated-user.interface';
 import { PaginationMeta } from '@beep/shared';
 
@@ -69,6 +73,8 @@ export class ExpertProfileService {
     private readonly profileRepo: IExpertProfileRepository,
     @Inject(USER_REPOSITORY)
     private readonly userRepo: IUserRepository,
+    @InjectRepository(SessionOption)
+    private readonly sessionOptionRepo: Repository<SessionOption>,
   ) {}
 
   async createProfile(
@@ -77,16 +83,16 @@ export class ExpertProfileService {
   ): Promise<ExpertProfileResponseDto> {
     const existingProfile = await this.profileRepo.findByUserId(currentUser.id);
     if (existingProfile) {
-      throw new ConflictException('Expert profile already exists');
+      throw new ConflictException(ErrorCode.EXPERT_PROFILE_ALREADY_EXISTS);
     }
 
     if (await this.profileRepo.slugExists(dto.slug)) {
-      throw new ConflictException('Slug already taken');
+      throw new ConflictException(ErrorCode.SLUG_ALREADY_TAKEN);
     }
 
     const user = await this.userRepo.findById(currentUser.id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     await this.userRepo.update(user.id, { role: UserRole.EXPERT });
@@ -109,7 +115,7 @@ export class ExpertProfileService {
   async getBySlug(slug: string): Promise<ExpertProfileResponseDto> {
     const profile = await this.profileRepo.findBySlug(slug);
     if (!profile) {
-      throw new NotFoundException('Expert not found');
+      throw new NotFoundException(ErrorCode.EXPERT_NOT_FOUND);
     }
     return this.toResponseDto(
       profile,
@@ -144,23 +150,28 @@ export class ExpertProfileService {
 
   async updateProfile(
     currentUser: AuthenticatedUser,
-    dto: Partial<CreateExpertProfileDto>,
+    dto: Partial<CreateExpertProfileDto> & { sessionOptions?: CreateSessionOptionDto[] },
   ): Promise<ExpertProfileResponseDto> {
     const profile = await this.profileRepo.findByUserId(currentUser.id);
     if (!profile) {
-      throw new NotFoundException('Expert profile not found');
+      throw new NotFoundException(ErrorCode.EXPERT_PROFILE_NOT_FOUND);
     }
     if (profile.userId !== currentUser.id) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     if (dto.slug && dto.slug !== profile.slug) {
       if (RESERVED_SLUGS.includes(dto.slug)) {
-        throw new ConflictException('This slug is reserved');
+        throw new ConflictException(ErrorCode.SLUG_RESERVED);
       }
       if (await this.profileRepo.slugExists(dto.slug)) {
-        throw new ConflictException('Slug already taken');
+        throw new ConflictException(ErrorCode.SLUG_ALREADY_TAKEN);
       }
+    }
+
+    if (dto.sessionOptions) {
+      await this.replaceSessionOptions(profile, dto.sessionOptions);
+      delete dto.sessionOptions;
     }
 
     Object.assign(profile, dto);
@@ -198,10 +209,14 @@ export class ExpertProfileService {
     currentUser: AuthenticatedUser,
     dto: OnboardingStep1Dto,
   ): Promise<OnboardingStatusResponseDto> {
+    if (currentUser.role === UserRole.ADMIN) {
+      throw new ForbiddenException(ErrorCode.ADMINS_CANNOT_CREATE_PROFILE);
+    }
+
     // Check for existing profile
     const existing = await this.profileRepo.findByUserId(currentUser.id);
     if (existing && existing.onboardingCompleted) {
-      throw new ConflictException('Onboarding already completed');
+      throw new ConflictException(ErrorCode.ONBOARDING_ALREADY_COMPLETED);
     }
 
     // Validate slug availability
@@ -209,13 +224,13 @@ export class ExpertProfileService {
     if (!slugCheck.available) {
       // Allow if it's the same user's existing slug
       if (!existing || existing.slug !== dto.slug) {
-        throw new ConflictException('Slug is not available');
+        throw new ConflictException(ErrorCode.SLUG_NOT_AVAILABLE);
       }
     }
 
     const user = await this.userRepo.findById(currentUser.id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     const profile = existing ?? new ExpertProfile();
@@ -240,7 +255,7 @@ export class ExpertProfileService {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
     if (profile.onboardingStep < OnboardingStep.BASIC_INFO) {
-      throw new BadRequestException('Complete step 1 first');
+      throw new BadRequestException(ErrorCode.COMPLETE_STEP_1_FIRST);
     }
 
     profile.tags = dto.tags;
@@ -261,15 +276,13 @@ export class ExpertProfileService {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
     if (profile.onboardingStep < OnboardingStep.EXPERTISE) {
-      throw new BadRequestException('Complete step 2 first');
+      throw new BadRequestException(ErrorCode.COMPLETE_STEP_2_FIRST);
     }
 
-    profile.sessionPriceMillimes = dto.sessionPriceMillimes;
-    profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
     profile.timezone = dto.timezone ?? 'Africa/Tunis';
+    await this.upsertSessionOptions(profile, dto);
     profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PRICING);
     profile.profileCompleteness = profile.calculateCompleteness();
-
     const saved = await this.profileRepo.save(profile);
     return this.toOnboardingStatus(saved);
   }
@@ -281,11 +294,20 @@ export class ExpertProfileService {
     const profile = await this.getOnboardingProfile(currentUser.id);
 
     if (profile.onboardingStep < OnboardingStep.PRICING) {
-      throw new BadRequestException('Complete step 3 first');
+      throw new BadRequestException(ErrorCode.COMPLETE_STEP_3_FIRST);
     }
 
     profile.payoutMethod = dto.payoutMethod;
-    profile.payoutDetails = dto.payoutDetails;
+    profile.payoutDetails = dto.payoutMethod === PayoutMethod.BANK_TRANSFER
+      ? {
+          accountHolderName: dto.bankTransferDetails!.accountHolderName.trim(),
+          bankName: dto.bankTransferDetails!.bankName,
+          iban: dto.bankTransferDetails!.iban.replace(/\s/g, '').toUpperCase(),
+        }
+      : {
+          mobileProvider: dto.mobileMoneyDetails!.mobileProvider,
+          mobilePhone: dto.mobileMoneyDetails!.mobilePhone.replace(/\s/g, ''),
+        };
     profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PAYOUT);
     profile.profileCompleteness = profile.calculateCompleteness();
 
@@ -303,22 +325,21 @@ export class ExpertProfileService {
     if (!profile.slug) missingFields.push('slug');
     if (!profile.bio) missingFields.push('bio');
     if (!profile.category) missingFields.push('category');
-    if (!profile.sessionPriceMillimes) missingFields.push('sessionPriceMillimes');
+    const hasSessionOptions = profile.sessionOptions && profile.sessionOptions.length > 0;
+    if (!profile.sessionPriceMillimes && !hasSessionOptions) missingFields.push('sessionPriceMillimes');
     if (!profile.languages || profile.languages.length === 0) missingFields.push('languages');
     if (!profile.payoutMethod) missingFields.push('payoutMethod');
 
     if (missingFields.length > 0) {
-      throw new BadRequestException(
-        `Missing required fields: ${missingFields.join(', ')}`,
-      );
+      throw new BadRequestException(ErrorCode.MISSING_REQUIRED_FIELDS);
     }
 
-    // Update user role to EXPERT
+    // Update user role to EXPERT and mark user-level onboarding complete
     const user = await this.userRepo.findById(currentUser.id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
-    await this.userRepo.update(user.id, { role: UserRole.EXPERT });
+    await this.userRepo.update(user.id, { role: UserRole.EXPERT, onboardingCompleted: true });
 
     profile.onboardingCompleted = true;
     profile.isVisible = true;
@@ -349,14 +370,75 @@ export class ExpertProfileService {
   private async getOnboardingProfile(userId: string): Promise<ExpertProfile> {
     const profile = await this.profileRepo.findByUserId(userId);
     if (!profile) {
-      throw new NotFoundException(
-        'Expert profile not found. Complete step 1 first.',
-      );
+      throw new NotFoundException(ErrorCode.COMPLETE_STEP_1_FIRST);
     }
     if (profile.onboardingCompleted) {
-      throw new ConflictException('Onboarding already completed');
+      throw new ConflictException(ErrorCode.ONBOARDING_ALREADY_COMPLETED);
     }
     return profile;
+  }
+
+  private async upsertSessionOptions(
+    profile: ExpertProfile,
+    dto: OnboardingStep3Dto,
+  ): Promise<void> {
+    if (dto.sessionOptions && dto.sessionOptions.length > 0) {
+      await this.replaceSessionOptions(profile, dto.sessionOptions);
+      const first = dto.sessionOptions[0];
+      profile.sessionPriceMillimes = first.priceMillimes;
+      profile.sessionDurationMinutes = first.durationMinutes;
+    } else if (dto.sessionPriceMillimes) {
+      const optionDto: CreateSessionOptionDto = {
+        durationMinutes: dto.sessionDurationMinutes ?? 60,
+        priceMillimes: dto.sessionPriceMillimes,
+        sortOrder: 0,
+      };
+      await this.replaceSessionOptions(profile, [optionDto]);
+      profile.sessionPriceMillimes = dto.sessionPriceMillimes;
+      profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
+    }
+  }
+
+  private async replaceSessionOptions(
+    profile: ExpertProfile,
+    options: CreateSessionOptionDto[],
+  ): Promise<void> {
+    await this.sessionOptionRepo.delete({ expertProfileId: profile.id });
+    const entities = options.map((opt, index) => {
+      const entity = new SessionOption();
+      entity.expertProfileId = profile.id;
+      entity.durationMinutes = opt.durationMinutes;
+      entity.priceMillimes = opt.priceMillimes;
+      entity.label = opt.label;
+      entity.sortOrder = opt.sortOrder ?? index;
+      entity.isActive = true;
+      return entity;
+    });
+    await this.sessionOptionRepo.save(entities);
+    profile.sessionOptions = entities;
+    if (entities.length > 0) {
+      const first = entities.sort((a, b) => a.sortOrder - b.sortOrder)[0];
+      profile.sessionPriceMillimes = first.priceMillimes;
+      profile.sessionDurationMinutes = first.durationMinutes;
+    }
+  }
+
+  private toSessionOptionResponseDtos(profile: ExpertProfile): SessionOptionResponseDto[] {
+    const options = profile.sessionOptions ?? [];
+    return options
+      .filter((opt) => opt.isActive)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map(
+        (opt) =>
+          new SessionOptionResponseDto({
+            id: opt.id,
+            durationMinutes: opt.durationMinutes,
+            priceMillimes: opt.priceMillimes,
+            label: opt.label,
+            isActive: opt.isActive,
+            sortOrder: opt.sortOrder,
+          }),
+      );
   }
 
   private toOnboardingStatus(profile: ExpertProfile): OnboardingStatusResponseDto {
@@ -377,6 +459,8 @@ export class ExpertProfileService {
         sessionDurationMinutes: profile.sessionDurationMinutes,
         timezone: profile.timezone,
         payoutMethod: profile.payoutMethod,
+        payoutDetails: profile.payoutDetails ?? undefined,
+        sessionOptions: this.toSessionOptionResponseDtos(profile),
       },
     });
   }
@@ -402,6 +486,7 @@ export class ExpertProfileService {
       timezone: profile.timezone,
       averageRating: Number(profile.averageRating),
       totalSessions: profile.totalSessions,
+      sessionOptions: this.toSessionOptionResponseDtos(profile),
     });
   }
 }

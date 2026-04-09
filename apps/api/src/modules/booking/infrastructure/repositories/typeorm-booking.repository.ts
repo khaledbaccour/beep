@@ -19,6 +19,13 @@ export class TypeOrmBookingRepository implements IBookingRepository {
     });
   }
 
+  async findBySessionRoomId(sessionRoomId: string): Promise<Booking | null> {
+    return this.repo.findOne({
+      where: { sessionRoomId },
+      relations: ['client', 'expertProfile', 'expertProfile.user'],
+    });
+  }
+
   async findByClientId(clientId: string, status?: BookingStatus): Promise<Booking[]> {
     const where: Record<string, unknown> = { clientId };
     if (status) where['status'] = status;

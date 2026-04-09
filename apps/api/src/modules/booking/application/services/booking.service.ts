@@ -1,12 +1,15 @@
 import {
   Injectable,
   Inject,
+  Logger,
   NotFoundException,
   ConflictException,
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
-import { BookingStatus, UserRole } from '@beep/shared';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { BookingStatus, UserRole, ErrorCode } from '@beep/shared';
 import { Booking } from '../../domain/entities/booking.entity';
 import {
   IBookingRepository,
@@ -26,9 +29,17 @@ import { CancelBookingDto } from '../dtos/cancel-booking.dto';
 import { BookingResponseDto } from '../dtos/booking-response.dto';
 import { AuthenticatedUser } from '../../../identity/domain/interfaces/authenticated-user.interface';
 import { v4 as uuidv4 } from 'uuid';
+import { BookingEmailService } from './booking-email.service';
+import {
+  BOOKING_REMINDER_QUEUE,
+  BookingReminderJobName,
+} from '../../domain/constants/queue.constants';
+import { BookingReminderJobData } from '../../domain/interfaces/booking-reminder-job.interface';
 
 @Injectable()
 export class BookingService {
+  private readonly logger = new Logger(BookingService.name);
+
   constructor(
     @Inject(BOOKING_REPOSITORY)
     private readonly bookingRepo: IBookingRepository,
@@ -36,6 +47,9 @@ export class BookingService {
     private readonly profileRepo: IExpertProfileRepository,
     @Inject(PAYMENT_GATEWAY)
     private readonly paymentGateway: IPaymentGateway,
+    private readonly bookingEmailService: BookingEmailService,
+    @InjectQueue(BOOKING_REMINDER_QUEUE)
+    private readonly reminderQueue: Queue<BookingReminderJobData>,
   ) {}
 
   /**
@@ -48,21 +62,38 @@ export class BookingService {
   ): Promise<BookingResponseDto> {
     const profile = await this.profileRepo.findById(dto.expertProfileId);
     if (!profile) {
-      throw new NotFoundException('Expert not found');
+      throw new NotFoundException(ErrorCode.EXPERT_NOT_FOUND);
     }
 
     if (profile.userId === currentUser.id) {
-      throw new BadRequestException('Cannot book yourself');
+      throw new BadRequestException(ErrorCode.CANNOT_BOOK_YOURSELF);
     }
 
     const startTime = new Date(dto.scheduledStartTime);
     if (startTime <= new Date()) {
-      throw new BadRequestException('Cannot book in the past');
+      throw new BadRequestException(ErrorCode.CANNOT_BOOK_IN_PAST);
     }
 
-    const endTime = new Date(
-      startTime.getTime() + profile.sessionDurationMinutes * 60 * 1000,
-    );
+    let durationMinutes: number;
+    let priceMillimes: number;
+    let sessionOptionId: string | undefined;
+
+    if (dto.sessionOptionId) {
+      const sessionOption = (profile.sessionOptions ?? []).find(
+        (opt) => opt.id === dto.sessionOptionId && opt.isActive,
+      );
+      if (!sessionOption) {
+        throw new BadRequestException('Invalid or inactive session option');
+      }
+      durationMinutes = sessionOption.durationMinutes;
+      priceMillimes = sessionOption.priceMillimes;
+      sessionOptionId = sessionOption.id;
+    } else {
+      durationMinutes = profile.sessionDurationMinutes;
+      priceMillimes = profile.sessionPriceMillimes ?? 0;
+    }
+
+    const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
 
     const conflict = await this.bookingRepo.findConflicting(
       profile.id,
@@ -70,7 +101,7 @@ export class BookingService {
       endTime,
     );
     if (conflict) {
-      throw new ConflictException('Time slot is already booked');
+      throw new ConflictException(ErrorCode.TIME_SLOT_ALREADY_BOOKED);
     }
 
     const booking = new Booking();
@@ -78,7 +109,9 @@ export class BookingService {
     booking.expertProfileId = profile.id;
     booking.scheduledStartTime = startTime;
     booking.scheduledEndTime = endTime;
-    booking.amountMillimes = profile.sessionPriceMillimes ?? 0;
+    booking.amountMillimes = priceMillimes;
+    booking.durationMinutes = durationMinutes;
+    booking.sessionOptionId = sessionOptionId;
     booking.status = BookingStatus.PENDING_PAYMENT;
     booking.sessionRoomId = uuidv4();
 
@@ -97,17 +130,15 @@ export class BookingService {
   ): Promise<BookingResponseDto> {
     const booking = await this.bookingRepo.findById(bookingId);
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException(ErrorCode.BOOKING_NOT_FOUND);
     }
 
     if (booking.clientId !== currentUser.id) {
-      throw new ForbiddenException('Only the booking client can confirm payment');
+      throw new ForbiddenException(ErrorCode.ONLY_CLIENT_CAN_CONFIRM_PAYMENT);
     }
 
     if (booking.status !== BookingStatus.PENDING_PAYMENT) {
-      throw new BadRequestException(
-        `Booking is not awaiting payment (status: ${booking.status})`,
-      );
+      throw new BadRequestException(ErrorCode.BOOKING_NOT_AWAITING_PAYMENT);
     }
 
     const result = await this.paymentGateway.recordPayment({
@@ -119,16 +150,74 @@ export class BookingService {
     });
 
     if (!result.success) {
-      throw new BadRequestException(
-        result.errorMessage ?? 'Failed to record payment',
-      );
+      throw new BadRequestException(ErrorCode.PAYMENT_RECORDING_FAILED);
     }
 
     booking.paymentId = dto.transactionId;
     booking.confirm();
 
     const saved = await this.bookingRepo.save(booking);
+
+    // Load full relations for emails (findById loads client + expertProfile.user)
+    const fullBooking = await this.bookingRepo.findById(saved.id);
+    if (fullBooking) {
+      void this.sendConfirmationEmails(fullBooking);
+      void this.scheduleReminders(fullBooking);
+    }
+
     return this.toResponseDto(saved);
+  }
+
+  private async sendConfirmationEmails(booking: Booking): Promise<void> {
+    try {
+      await this.bookingEmailService.sendBookingConfirmedToClient(booking);
+      await this.bookingEmailService.sendBookingConfirmedToExpert(booking);
+    } catch (err) {
+      this.logger.error('Failed to send booking confirmation emails', err);
+    }
+  }
+
+  private async scheduleReminders(booking: Booking): Promise<void> {
+    try {
+      const startMs = booking.scheduledStartTime.getTime();
+      const nowMs = Date.now();
+
+      const reminders: Array<{
+        name: BookingReminderJobName;
+        hoursUntil: 24 | 1;
+        recipientType: 'client' | 'expert';
+      }> = [
+        { name: BookingReminderJobName.REMIND_CLIENT, hoursUntil: 24, recipientType: 'client' },
+        { name: BookingReminderJobName.REMIND_EXPERT, hoursUntil: 24, recipientType: 'expert' },
+        { name: BookingReminderJobName.REMIND_CLIENT, hoursUntil: 1, recipientType: 'client' },
+        { name: BookingReminderJobName.REMIND_EXPERT, hoursUntil: 1, recipientType: 'expert' },
+      ];
+
+      for (const reminder of reminders) {
+        const fireAtMs = startMs - reminder.hoursUntil * 60 * 60 * 1000;
+        const delay = fireAtMs - nowMs;
+        if (delay <= 0) continue;
+
+        await this.reminderQueue.add(
+          reminder.name,
+          {
+            bookingId: booking.id,
+            hoursUntil: reminder.hoursUntil,
+            recipientType: reminder.recipientType,
+          },
+          {
+            delay,
+            jobId: `reminder-${booking.id}-${reminder.recipientType}-${reminder.hoursUntil}h`,
+            removeOnComplete: true,
+            removeOnFail: false,
+          },
+        );
+      }
+
+      this.logger.log(`Scheduled reminders for booking ${booking.id}`);
+    } catch (err) {
+      this.logger.error('Failed to schedule reminders', err);
+    }
   }
 
   async cancelBooking(
@@ -138,14 +227,14 @@ export class BookingService {
   ): Promise<BookingResponseDto> {
     const booking = await this.bookingRepo.findById(bookingId);
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException(ErrorCode.BOOKING_NOT_FOUND);
     }
 
     const isClient = booking.clientId === currentUser.id;
     const isExpert = booking.expertProfile?.userId === currentUser.id;
 
     if (!isClient && !isExpert && currentUser.role !== UserRole.ADMIN) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     if (isClient) {
@@ -173,13 +262,13 @@ export class BookingService {
   ): Promise<BookingResponseDto> {
     const booking = await this.bookingRepo.findById(bookingId);
     if (!booking) {
-      throw new NotFoundException('Booking not found');
+      throw new NotFoundException(ErrorCode.BOOKING_NOT_FOUND);
     }
 
     const isClient = booking.clientId === currentUser.id;
     const isExpert = booking.expertProfile?.userId === currentUser.id;
     if (!isClient && !isExpert && currentUser.role !== UserRole.ADMIN) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     return this.toResponseDto(booking);
@@ -197,7 +286,7 @@ export class BookingService {
   ): Promise<BookingResponseDto[]> {
     const profile = await this.profileRepo.findByUserId(currentUser.id);
     if (!profile) {
-      throw new NotFoundException('Expert profile not found');
+      throw new NotFoundException(ErrorCode.EXPERT_PROFILE_NOT_FOUND);
     }
     const bookings = await this.bookingRepo.findByExpertProfileId(profile.id);
     return bookings.map((b) => this.toResponseDto(b));
@@ -217,6 +306,7 @@ export class BookingService {
       refundAmountMillimes: booking.refundAmountMillimes,
       refundEligibility: booking.getRefundEligibility(),
       sessionRoomId: booking.sessionRoomId,
+      durationMinutes: booking.durationMinutes,
     });
   }
 }

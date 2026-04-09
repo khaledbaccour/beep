@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Dictionary } from '@/i18n/types';
 import type { Locale } from '@/i18n';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import { registerUser } from '@/lib/api';
 
 interface Props {
@@ -32,13 +32,13 @@ export function RegisterPage({ dict, lang }: Props) {
     setLoading(true);
 
     try {
-      const res = await registerUser({ email, password, firstName, lastName, phone: phone || undefined });
+      const res = await registerUser({ email, password, firstName, lastName, phone: phone ? `+216${phone}` : undefined });
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       setSuccess(dict.auth.accountCreated);
       router.push(localePath(lang, '/choose-path'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.apiErrors.UNKNOWN_ERROR);
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export function RegisterPage({ dict, lang }: Props) {
         <a href={localePath(lang, '/')} className="flex items-center justify-center gap-1.5 mb-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
-          <span className="text-[17px] font-body font-extrabold text-ink-900">
+          <span className="text-[17px] font-body font-bold text-ink-900">
             beep<span className="text-brand-500">.tn</span>
           </span>
         </a>
@@ -95,7 +95,21 @@ export function RegisterPage({ dict, lang }: Props) {
 
           <div>
             <label className="block text-sm font-medium text-ink-700 mb-1.5">{dict.auth.phone}</label>
-            <Input type="tel" placeholder="+216 XX XXX XXX" value={phone} onChange={(e) => setPhone(e.target.value)} data-testid="register-phone" />
+            <div className="flex">
+              <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-ink-200 bg-ink-50 text-sm text-ink-500">+216</span>
+              <Input
+                type="tel"
+                placeholder="XX XXX XXX"
+                value={phone}
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  setPhone(digits);
+                }}
+                maxLength={8}
+                className="rounded-l-none"
+                data-testid="register-phone"
+              />
+            </div>
           </div>
 
           <Button variant="brand" size="lg" type="submit" className="w-full" disabled={loading} data-testid="register-submit">

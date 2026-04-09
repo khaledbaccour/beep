@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ExternalLink, UserCircle } from 'lucide-react';
+import { ExternalLink, UserCircle, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import {
   type ExpertProfile,
   type CreateExpertProfileBody,
@@ -14,7 +14,24 @@ import {
 import type { TabProps } from './types';
 import { CATEGORIES } from './types';
 
-export function ProfileTab({ d, lang }: TabProps) {
+interface SessionOptionRow {
+  durationMinutes: number;
+  priceTND: string;
+  label: string;
+}
+
+const DURATION_CHOICES = [
+  { value: 15, label: '15 min' },
+  { value: 30, label: '30 min' },
+  { value: 45, label: '45 min' },
+  { value: 60, label: '60 min' },
+  { value: 90, label: '90 min' },
+  { value: 120, label: '120 min' },
+];
+
+const MAX_OPTIONS = 6;
+
+export function ProfileTab({ d, dict, lang }: TabProps) {
   const [profile, setProfile] = useState<ExpertProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,6 +47,9 @@ export function ProfileTab({ d, lang }: TabProps) {
   const [price, setPrice] = useState('');
   const [duration, setDuration] = useState('30');
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [sessionOptions, setSessionOptions] = useState<SessionOptionRow[]>([
+    { durationMinutes: 60, priceTND: '', label: '' },
+  ]);
 
   useEffect(() => {
     const storedProfile = localStorage.getItem('beep_expert_profile');
@@ -52,6 +72,23 @@ export function ProfileTab({ d, lang }: TabProps) {
     setPrice(String(p.sessionPriceMillimes / 1000));
     setDuration(String(p.sessionDurationMinutes));
     setTimezone(p.timezone);
+    if (p.sessionOptions && p.sessionOptions.length > 0) {
+      setSessionOptions(
+        p.sessionOptions.map((so) => ({
+          durationMinutes: so.durationMinutes,
+          priceTND: String(so.priceMillimes / 1000),
+          label: so.label || '',
+        })),
+      );
+    } else {
+      setSessionOptions([
+        {
+          durationMinutes: p.sessionDurationMinutes,
+          priceTND: String(p.sessionPriceMillimes / 1000),
+          label: '',
+        },
+      ]);
+    }
     setIsNew(false);
   }
 
@@ -61,15 +98,24 @@ export function ProfileTab({ d, lang }: TabProps) {
     setMessage('');
     setIsError(false);
 
+    const firstOpt = sessionOptions[0];
     const body: CreateExpertProfileBody = {
       slug: slug.toLowerCase().trim(),
       bio,
       headline: headline || undefined,
       category,
       tags: tags ? tags.split(',').map((t) => t.trim()).filter(Boolean) : undefined,
-      sessionPriceMillimes: Math.round(parseFloat(price) * 1000),
-      sessionDurationMinutes: parseInt(duration, 10),
+      sessionPriceMillimes: firstOpt ? Math.round(parseFloat(firstOpt.priceTND) * 1000) : Math.round(parseFloat(price) * 1000),
+      sessionDurationMinutes: firstOpt ? firstOpt.durationMinutes : parseInt(duration, 10),
       timezone,
+      sessionOptions: sessionOptions
+        .filter((o) => o.priceTND && parseFloat(o.priceTND) > 0)
+        .map((o, i) => ({
+          durationMinutes: o.durationMinutes,
+          priceMillimes: Math.round(parseFloat(o.priceTND) * 1000),
+          label: o.label || undefined,
+          sortOrder: i,
+        })),
     };
 
     try {
@@ -82,7 +128,7 @@ export function ProfileTab({ d, lang }: TabProps) {
       setMessage(d.profileSaved);
     } catch (err) {
       setIsError(true);
-      setMessage(d.profileError + (err instanceof Error ? ': ' + err.message : ''));
+      setMessage(d.profileError + (err instanceof Error ? ': ' + translateError(err.message, dict) : ''));
     } finally {
       setSaving(false);
     }
@@ -191,37 +237,109 @@ export function ProfileTab({ d, lang }: TabProps) {
           />
         </div>
 
-        {/* Price + Duration */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">{d.sessionPrice}</label>
-            <div className="relative">
-              <Input
-                type="number"
-                min="1"
-                step="0.5"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-                className="border-2 border-ink-200 rounded-xl pr-14"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-400">TND</span>
-            </div>
+        {/* Session Options */}
+        <div>
+          <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-3">
+            {d.sessionPrice} / {d.sessionDuration}
+          </label>
+          <div className="space-y-4">
+            {sessionOptions.map((opt, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-xl border-2 border-ink-200 bg-cream-50 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-ink-500 uppercase">
+                    Option {idx + 1}
+                  </span>
+                  {sessionOptions.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setSessionOptions(sessionOptions.filter((_, i) => i !== idx))}
+                      className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-ink-500 mb-1">{d.sessionDuration}</label>
+                    <select
+                      value={opt.durationMinutes}
+                      onChange={(e) => {
+                        const updated = sessionOptions.map((o, i) =>
+                          i === idx ? { ...o, durationMinutes: parseInt(e.target.value, 10) } : o,
+                        );
+                        setSessionOptions(updated);
+                      }}
+                      className="flex h-11 w-full rounded-xl border-2 border-ink-200 bg-white px-3.5 py-2 text-sm text-ink-900 font-medium transition-colors focus-visible:outline-none focus-visible:border-ink-400 focus-visible:ring-2 focus-visible:ring-ink-100"
+                    >
+                      {DURATION_CHOICES.map((d) => (
+                        <option key={d.value} value={d.value}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-ink-500 mb-1">{d.sessionPrice}</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="1"
+                        max="9999"
+                        step="0.5"
+                        value={opt.priceTND}
+                        onChange={(e) => {
+                          const updated = sessionOptions.map((o, i) =>
+                            i === idx ? { ...o, priceTND: e.target.value } : o,
+                          );
+                          setSessionOptions(updated);
+                        }}
+                        placeholder="50"
+                        className="border-2 border-ink-200 rounded-xl pr-14"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-400">
+                        TND
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-ink-500 mb-1">Label (optional)</label>
+                  <Input
+                    value={opt.label}
+                    onChange={(e) => {
+                      const updated = sessionOptions.map((o, i) =>
+                        i === idx ? { ...o, label: e.target.value } : o,
+                      );
+                      setSessionOptions(updated);
+                    }}
+                    placeholder="e.g. Quick consultation, Full session..."
+                    className="border-2 border-ink-200 rounded-xl"
+                    maxLength={60}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">{d.sessionDuration}</label>
-            <div className="relative">
-              <Input
-                type="number"
-                min="15"
-                step="15"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="border-2 border-ink-200 rounded-xl pr-14"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-400">min</span>
-            </div>
-          </div>
+          {sessionOptions.length < MAX_OPTIONS && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() =>
+                setSessionOptions([
+                  ...sessionOptions,
+                  { durationMinutes: 60, priceTND: '', label: '' },
+                ])
+              }
+              className="mt-3 rounded-xl text-sm text-ink-500 hover:text-ink-700"
+            >
+              <Plus size={16} />
+              Add option
+            </Button>
+          )}
         </div>
 
         {/* Timezone */}

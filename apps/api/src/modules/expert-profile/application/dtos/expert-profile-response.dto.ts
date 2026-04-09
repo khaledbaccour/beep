@@ -1,4 +1,5 @@
 import { ExpertCategory } from '@beep/shared';
+import { SessionOptionResponseDto } from './session-option.dto';
 
 export class ExpertProfileResponseDto {
   id: string;
@@ -15,6 +16,7 @@ export class ExpertProfileResponseDto {
   timezone: string;
   averageRating: number;
   totalSessions: number;
+  sessionOptions: SessionOptionResponseDto[];
 
   constructor(partial: ExpertProfileResponseDto) {
     this.id = partial.id;
@@ -31,5 +33,6 @@ export class ExpertProfileResponseDto {
     this.timezone = partial.timezone;
     this.averageRating = partial.averageRating;
     this.totalSessions = partial.totalSessions;
+    this.sessionOptions = partial.sessionOptions;
   }
 }

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Rocket, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Rocket, Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { localePath } from '@/lib/i18n-utils';
+import { localePath, translateError } from '@/lib/i18n-utils';
 import type { Locale } from '@/i18n';
+import type { Dictionary } from '@/i18n/types';
 import {
   getOnboardingStatus,
   saveOnboardingStep1,
@@ -13,6 +14,7 @@ import {
   saveOnboardingStep3,
   saveOnboardingStep4,
   completeOnboarding,
+  getUserProfile,
 } from '@/lib/api';
 import { OnboardingProgress } from './OnboardingProgress';
 import { StepBasicInfo, type StepBasicInfoData } from './StepBasicInfo';
@@ -20,18 +22,21 @@ import { StepExpertise, type StepExpertiseData } from './StepExpertise';
 import { StepPricing, type StepPricingData } from './StepPricing';
 import { StepPayout, type StepPayoutData } from './StepPayout';
 
-const STEP_LABELS = ['Profile', 'Expertise', 'Pricing', 'Payout'];
 const TOTAL_STEPS = 4;
 
 interface OnboardingWizardProps {
   lang: Locale;
+  dict: Dictionary;
 }
 
-export function OnboardingWizard({ lang }: OnboardingWizardProps) {
+export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
+  const STEP_LABELS = [dict.onboarding.stepProfile, dict.onboarding.stepExpertise, dict.onboarding.stepPricing, dict.onboarding.stepPayout];
+
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [error, setError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -51,8 +56,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
   });
 
   const [step3, setStep3] = useState<StepPricingData>({
-    priceTND: '',
-    sessionDurationMinutes: 30,
+    sessionOptions: [{ durationMinutes: 60, priceTND: '', label: '' }],
     timezone: 'Africa/Tunis',
   });
 
@@ -73,15 +77,6 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
       return;
     }
 
-    const userStr = localStorage.getItem('beep_user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      if (user.role !== 'EXPERT') {
-        router.push(localePath(lang, '/marketplace'));
-        return;
-      }
-    }
-
     async function loadStatus() {
       try {
         const res = await getOnboardingStatus();
@@ -92,41 +87,55 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           return;
         }
 
-        // Restore saved data
-        if (status.step1) {
-          setStep1({
-            slug: status.step1.slug || '',
-            bio: status.step1.bio || '',
-            headline: status.step1.headline || '',
-            category: status.step1.category || '',
-          });
-        }
-        if (status.step2) {
-          setStep2({
-            tags: status.step2.tags || [],
-            certifications: status.step2.certifications || [],
-            yearsOfExperience: status.step2.yearsOfExperience || 0,
-            languages: status.step2.languages || [],
-          });
-        }
-        if (status.step3) {
-          setStep3({
-            priceTND: status.step3.sessionPriceMillimes
-              ? (status.step3.sessionPriceMillimes / 1000).toFixed(3)
-              : '',
-            sessionDurationMinutes: status.step3.sessionDurationMinutes || 30,
-            timezone: status.step3.timezone || 'Africa/Tunis',
-          });
-        }
-        if (status.step4) {
-          setStep4({
-            payoutMethod: status.step4.payoutMethod || 'BANK_TRANSFER',
-            bankName: status.step4.bankName || '',
-            iban: status.step4.iban || '',
-            accountHolderName: status.step4.accountHolderName || '',
-            mobileProvider: status.step4.mobileProvider || '',
-            mobilePhone: status.step4.mobilePhone || '',
-          });
+        // Restore saved data from profile
+        const p = status.profile;
+        if (p) {
+          if (p.slug || p.bio || p.category) {
+            setStep1({
+              slug: p.slug || '',
+              bio: p.bio || '',
+              headline: p.headline || '',
+              category: p.category || '',
+            });
+          }
+          if (p.languages?.length || p.yearsOfExperience) {
+            setStep2({
+              tags: p.tags || [],
+              certifications: p.certifications || [],
+              yearsOfExperience: p.yearsOfExperience || 0,
+              languages: p.languages || [],
+            });
+          }
+          if (p.sessionOptions && p.sessionOptions.length > 0) {
+            setStep3({
+              sessionOptions: p.sessionOptions.map((so) => ({
+                durationMinutes: so.durationMinutes,
+                priceTND: (so.priceMillimes / 1000).toString(),
+                label: so.label || '',
+              })),
+              timezone: p.timezone || 'Africa/Tunis',
+            });
+          } else if (p.sessionPriceMillimes) {
+            setStep3({
+              sessionOptions: [{
+                durationMinutes: p.sessionDurationMinutes || 60,
+                priceTND: (p.sessionPriceMillimes / 1000).toString(),
+                label: '',
+              }],
+              timezone: p.timezone || 'Africa/Tunis',
+            });
+          }
+          if (p.payoutMethod) {
+            const details = p.payoutDetails || {};
+            setStep4({
+              payoutMethod: p.payoutMethod,
+              bankName: details.bankName || '',
+              iban: details.iban || '',
+              accountHolderName: details.accountHolderName || '',
+              mobileProvider: details.mobileProvider || '',
+              mobilePhone: details.mobilePhone || '+216',
+            });
+          }
         }
 
         // Resume from the furthest incomplete step
@@ -145,35 +154,67 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
     const newErrors: Record<string, string> = {};
 
     if (step === 1) {
-      if (!step1.slug || step1.slug.length < 3) newErrors.slug = 'Slug must be at least 3 characters';
-      if (step1.slug.length > 30) newErrors.slug = 'Slug must be at most 30 characters';
+      if (!step1.slug || step1.slug.length < 3) newErrors.slug = dict.onboarding.valSlugMin;
+      if (step1.slug.length > 30) newErrors.slug = dict.onboarding.valSlugMax;
       if (step1.slug && step1.slug.length >= 2 && !/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(step1.slug)) {
-        newErrors.slug = 'Slug must start and end with a letter or number';
+        newErrors.slug = dict.onboarding.valSlugFormat;
       }
-      if (!step1.bio || step1.bio.length < 10) newErrors.bio = 'Bio must be at least 10 characters';
-      if (!step1.category) newErrors.category = 'Please select a category';
+      if (!step1.bio || step1.bio.length < 10) newErrors.bio = dict.onboarding.valBioMin;
+      if (!step1.category) newErrors.category = dict.onboarding.valCategory;
     }
 
     if (step === 2) {
-      if (step2.yearsOfExperience < 0) newErrors.yearsOfExperience = 'Must be 0 or more';
-      if (step2.languages.length === 0) newErrors.languages = 'Add at least one language';
+      if (step2.yearsOfExperience < 0) newErrors.yearsOfExperience = dict.onboarding.valExperienceMin;
+      if (step2.languages.length === 0) newErrors.languages = dict.onboarding.valLanguagesMin;
     }
 
     if (step === 3) {
-      if (!step3.priceTND || parseFloat(step3.priceTND) <= 0) newErrors.priceTND = 'Price must be greater than 0';
-      if (parseFloat(step3.priceTND) > 9999) newErrors.priceTND = 'Price cannot exceed 9999 TND';
-      if (!step3.sessionDurationMinutes) newErrors.sessionDurationMinutes = 'Select a duration';
-      if (!step3.timezone) newErrors.timezone = 'Select a timezone';
+      if (step3.sessionOptions.length === 0) {
+        newErrors.sessionOptions = dict.onboarding.valPriceMin;
+      } else {
+        step3.sessionOptions.forEach((opt, idx) => {
+          if (!opt.priceTND || parseFloat(opt.priceTND) <= 0) {
+            newErrors[`option_${idx}`] = dict.onboarding.valPriceMin;
+          } else if (parseFloat(opt.priceTND) > 9999) {
+            newErrors[`option_${idx}`] = dict.onboarding.valPriceMax;
+          }
+        });
+      }
+      if (!step3.timezone) newErrors.timezone = dict.onboarding.valTimezone;
     }
 
     if (step === 4) {
       if (step4.payoutMethod === 'BANK_TRANSFER') {
-        if (!step4.accountHolderName.trim()) newErrors.accountHolderName = 'Account holder name is required';
-        if (!step4.bankName.trim()) newErrors.bankName = 'Bank name is required';
-        if (!step4.iban.trim()) newErrors.iban = 'IBAN/RIB is required';
+        const name = step4.accountHolderName.trim();
+        if (!name) {
+          newErrors.accountHolderName = dict.onboarding.valAccountHolder;
+        } else if (name.length < 3) {
+          newErrors.accountHolderName = dict.onboarding.valNameMin;
+        } else if (!/^[a-zA-Z\u00C0-\u024F\s\-']{3,100}$/.test(name)) {
+          newErrors.accountHolderName = dict.onboarding.valNameFormat;
+        }
+
+        if (!step4.bankName) {
+          newErrors.bankName = dict.onboarding.valBankName;
+        }
+
+        const iban = step4.iban.replace(/\s/g, '').toUpperCase();
+        if (!iban) {
+          newErrors.iban = dict.onboarding.valIban;
+        } else if (!/^TN\d{22}$/.test(iban)) {
+          newErrors.iban = dict.onboarding.valIbanFormat;
+        }
       } else {
-        if (!step4.mobileProvider) newErrors.mobileProvider = 'Select a provider';
-        if (!step4.mobilePhone.trim()) newErrors.mobilePhone = 'Phone number is required';
+        if (!step4.mobileProvider) {
+          newErrors.mobileProvider = dict.onboarding.valProvider;
+        }
+
+        const phone = step4.mobilePhone.replace(/\s/g, '');
+        if (!phone) {
+          newErrors.mobilePhone = dict.onboarding.valPhone;
+        } else if (!/^\+216[2-9]\d{7}$/.test(phone)) {
+          newErrors.mobilePhone = dict.onboarding.valPhoneFormat;
+        }
       }
     }
 
@@ -203,23 +244,34 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           languages: step2.languages,
         });
       } else if (currentStep === 3) {
+        const firstOpt = step3.sessionOptions[0];
         await saveOnboardingStep3({
-          sessionPriceMillimes: Math.round(parseFloat(step3.priceTND) * 1000),
-          sessionDurationMinutes: step3.sessionDurationMinutes,
+          sessionOptions: step3.sessionOptions.map((o, i) => ({
+            durationMinutes: o.durationMinutes,
+            priceMillimes: Math.round(parseFloat(o.priceTND) * 1000),
+            label: o.label || undefined,
+            sortOrder: i,
+          })),
           timezone: step3.timezone,
+          sessionPriceMillimes: Math.round(parseFloat(firstOpt.priceTND) * 1000),
+          sessionDurationMinutes: firstOpt.durationMinutes,
         });
       } else if (currentStep === 4) {
         await saveOnboardingStep4({
           payoutMethod: step4.payoutMethod,
           ...(step4.payoutMethod === 'BANK_TRANSFER'
             ? {
-                bankName: step4.bankName,
-                iban: step4.iban,
-                accountHolderName: step4.accountHolderName,
+                bankTransferDetails: {
+                  accountHolderName: step4.accountHolderName.trim(),
+                  bankName: step4.bankName,
+                  iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+                },
               }
             : {
-                mobileProvider: step4.mobileProvider,
-                mobilePhone: step4.mobilePhone,
+                mobileMoneyDetails: {
+                  mobileProvider: step4.mobileProvider,
+                  mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
+                },
               }),
         });
       }
@@ -229,7 +281,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
         setErrors({});
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.onboarding.error);
     } finally {
       setSaving(false);
     }
@@ -247,23 +299,109 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
         payoutMethod: step4.payoutMethod,
         ...(step4.payoutMethod === 'BANK_TRANSFER'
           ? {
-              bankName: step4.bankName,
-              iban: step4.iban,
-              accountHolderName: step4.accountHolderName,
+              bankTransferDetails: {
+                accountHolderName: step4.accountHolderName.trim(),
+                bankName: step4.bankName,
+                iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+              },
             }
           : {
-              mobileProvider: step4.mobileProvider,
-              mobilePhone: step4.mobilePhone,
+              mobileMoneyDetails: {
+                mobileProvider: step4.mobileProvider,
+                mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
+              },
             }),
       });
 
       // Then complete onboarding
       await completeOnboarding();
+
+      // Refresh user data to get updated role (now EXPERT)
+      try {
+        const profileRes = await getUserProfile();
+        localStorage.setItem('beep_user', JSON.stringify(profileRes.data));
+      } catch {
+        // Fallback: manually update localStorage
+        const userStr = localStorage.getItem('beep_user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          user.role = 'EXPERT';
+          user.onboardingCompleted = true;
+          localStorage.setItem('beep_user', JSON.stringify(user));
+        }
+      }
+
       router.push(localePath(lang, '/dashboard?onboarding=complete'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.onboarding.error);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSaveDraft() {
+    setSavingDraft(true);
+    setError('');
+
+    try {
+      // Save all completed steps as draft
+      if (step1.slug && step1.bio && step1.category) {
+        await saveOnboardingStep1({
+          slug: step1.slug,
+          bio: step1.bio,
+          headline: step1.headline || undefined,
+          category: step1.category,
+        });
+      }
+      if (currentStep >= 2 && step2.languages.length > 0) {
+        await saveOnboardingStep2({
+          tags: step2.tags,
+          certifications: step2.certifications,
+          yearsOfExperience: step2.yearsOfExperience,
+          languages: step2.languages,
+        });
+      }
+      if (currentStep >= 3 && step3.sessionOptions.some((o) => o.priceTND && parseFloat(o.priceTND) > 0)) {
+        const firstOpt = step3.sessionOptions[0];
+        await saveOnboardingStep3({
+          sessionOptions: step3.sessionOptions
+            .filter((o) => o.priceTND && parseFloat(o.priceTND) > 0)
+            .map((o, i) => ({
+              durationMinutes: o.durationMinutes,
+              priceMillimes: Math.round(parseFloat(o.priceTND) * 1000),
+              label: o.label || undefined,
+              sortOrder: i,
+            })),
+          timezone: step3.timezone,
+          sessionPriceMillimes: Math.round(parseFloat(firstOpt.priceTND) * 1000),
+          sessionDurationMinutes: firstOpt.durationMinutes,
+        });
+      }
+      if (currentStep >= 4 && step4.payoutMethod) {
+        await saveOnboardingStep4({
+          payoutMethod: step4.payoutMethod,
+          ...(step4.payoutMethod === 'BANK_TRANSFER'
+            ? {
+                bankTransferDetails: {
+                  accountHolderName: step4.accountHolderName.trim(),
+                  bankName: step4.bankName,
+                  iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+                },
+              }
+            : {
+                mobileMoneyDetails: {
+                  mobileProvider: step4.mobileProvider,
+                  mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
+                },
+              }),
+        });
+      }
+
+      router.push(localePath(lang, '/dashboard'));
+    } catch (err) {
+      setError(err instanceof Error ? translateError(err.message, dict) : dict.onboarding.error);
+    } finally {
+      setSavingDraft(false);
     }
   }
 
@@ -280,24 +418,24 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex items-center gap-3">
           <div className="w-5 h-5 border-2 border-ink-200 border-t-ink-900 rounded-full animate-spin" />
-          <p className="text-sm text-ink-400">Loading...</p>
+          <p className="text-sm text-ink-400">{dict.onboarding.loading}</p>
         </div>
       </div>
     );
   }
 
   const stepTitles = [
-    'Your Profile',
-    'Your Expertise',
-    'Pricing & Availability',
-    'Payout Setup',
+    dict.onboarding.stepTitleProfile,
+    dict.onboarding.stepTitleExpertise,
+    dict.onboarding.stepTitlePricing,
+    dict.onboarding.stepTitlePayout,
   ];
 
   const stepDescriptions = [
-    'Set up your public profile that clients will see',
-    'Tell us about your skills and qualifications',
-    'Set your session price and duration',
-    'How would you like to receive payments?',
+    dict.onboarding.stepDescProfile,
+    dict.onboarding.stepDescExpertise,
+    dict.onboarding.stepDescPricing,
+    dict.onboarding.stepDescPayout,
   ];
 
   return (
@@ -306,10 +444,10 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-display text-ink-900 mb-2">
-            Become an Expert
+            {dict.onboarding.title}
           </h1>
           <p className="text-sm text-ink-500">
-            Complete these steps to start receiving bookings on Beep
+            {dict.onboarding.subtitle}
           </p>
         </div>
 
@@ -337,16 +475,16 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           {/* Step content */}
           <div className="p-6">
             {currentStep === 1 && (
-              <StepBasicInfo data={step1} onChange={setStep1} errors={errors} />
+              <StepBasicInfo data={step1} onChange={setStep1} errors={errors} dict={dict} />
             )}
             {currentStep === 2 && (
-              <StepExpertise data={step2} onChange={setStep2} errors={errors} />
+              <StepExpertise data={step2} onChange={setStep2} errors={errors} category={step1.category} dict={dict} />
             )}
             {currentStep === 3 && (
-              <StepPricing data={step3} onChange={setStep3} errors={errors} />
+              <StepPricing data={step3} onChange={setStep3} errors={errors} dict={dict} />
             )}
             {currentStep === 4 && (
-              <StepPayout data={step4} onChange={setStep4} errors={errors} />
+              <StepPayout data={step4} onChange={setStep4} errors={errors} dict={dict} />
             )}
           </div>
 
@@ -358,24 +496,37 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
           )}
 
           {/* Footer / Navigation */}
-          <div className="px-6 py-4 border-t-2 border-ink-100 bg-cream-50 flex items-center justify-between gap-3">
-            <div>
+          <div className="px-6 py-4 border-t-2 border-ink-100 bg-cream-50 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
               {currentStep > 1 && (
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={handleBack}
-                  disabled={saving}
-                  className="rounded-xl"
+                  disabled={saving || savingDraft}
+                  className="rounded-xl shrink-0"
                 >
                   <ArrowLeft size={16} />
-                  Back
+                  {dict.onboarding.back}
                 </Button>
               )}
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleSaveDraft}
+                disabled={saving || savingDraft}
+                className="rounded-xl text-ink-400 hover:text-ink-600 shrink-0"
+              >
+                {savingDraft ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Save size={16} />
+                )}
+              </Button>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-ink-400 hidden sm:inline">
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-xs font-bold text-ink-400">
                 {currentStep}/{TOTAL_STEPS}
               </span>
 
@@ -384,17 +535,17 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
                   type="button"
                   variant="brand"
                   onClick={handleNext}
-                  disabled={saving}
+                  disabled={saving || savingDraft}
                   className="rounded-xl"
                 >
                   {saving ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      Saving...
+                      {dict.onboarding.saving}
                     </>
                   ) : (
                     <>
-                      Next
+                      {dict.onboarding.next}
                       <ArrowRight size={16} />
                     </>
                   )}
@@ -404,18 +555,18 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
                   type="button"
                   variant="brand"
                   onClick={handleComplete}
-                  disabled={saving}
-                  className="rounded-xl"
+                  disabled={saving || savingDraft}
+                  className="rounded-xl whitespace-nowrap"
                 >
                   {saving ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      Completing...
+                      {dict.onboarding.completing}
                     </>
                   ) : (
                     <>
                       <Rocket size={16} />
-                      Complete & Go Live
+                      {dict.onboarding.completeAndGoLive}
                     </>
                   )}
                 </Button>
@@ -426,7 +577,7 @@ export function OnboardingWizard({ lang }: OnboardingWizardProps) {
 
         {/* Bottom note */}
         <p className="text-center text-xs text-ink-400 mt-6">
-          You can always update your profile details later from your dashboard.
+          {dict.onboarding.bottomNote}
         </p>
       </div>
     </div>
