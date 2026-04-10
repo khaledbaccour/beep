@@ -31,7 +31,7 @@ export function BookingRow({ booking, d, lang, isExpert }: BookingRowProps) {
   const start = new Date(booking.scheduledStartTime);
   const end = new Date(booking.scheduledEndTime);
 
-  const localeTag = lang === 'ar' ? 'ar-TN' : lang === 'en' ? 'en-US' : 'fr-TN';
+  const localeTag = lang === 'en' ? 'en-US' : 'fr-TN';
   const dateStr = start.toLocaleDateString(localeTag, {
     weekday: 'short', month: 'short', day: 'numeric',
   });

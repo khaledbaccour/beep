@@ -7,7 +7,7 @@ export function formatTime(isoString: string): string {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-const LOCALE_MAP: Record<string, string> = { fr: 'fr-TN', en: 'en-US', ar: 'ar-TN' };
+const LOCALE_MAP: Record<string, string> = { fr: 'fr-TN', en: 'en-US' };
 
 export function formatDate(date: Date, lang: string): string {
   return date.toLocaleDateString(LOCALE_MAP[lang] || 'fr-TN', {

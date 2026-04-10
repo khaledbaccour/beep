@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const locales = ['fr', 'en', 'ar'];
+const locales = ['fr', 'en'];
 const defaultLocale = 'fr';
 
 function getLocaleFromPath(pathname: string): string | null {

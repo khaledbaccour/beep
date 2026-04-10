@@ -55,7 +55,7 @@ export default function LangLayout({
   return (
     <html
       lang={params.lang}
-      dir={params.lang === 'ar' ? 'rtl' : 'ltr'}
+      dir="ltr"
       className={`scroll-smooth ${display.variable} ${body.variable} ${accent.variable} ${mono.variable}`}
     >
       <body className="min-h-screen bg-white">

@@ -58,7 +58,7 @@ export function Navbar({ dict, lang }: Props) {
   };
 
   const pathname = usePathname();
-  const pathWithoutLang = pathname.replace(/^\/(fr|en|ar)/, '') || '/';
+  const pathWithoutLang = pathname.replace(/^\/(fr|en)/, '') || '/';
 
   const dashboardHref = localePath(lang, '/dashboard');
 
@@ -95,7 +95,7 @@ export function Navbar({ dict, lang }: Props) {
         <div className="hidden md:flex items-center gap-2 shrink-0">
           {/* Language Switcher */}
           <div className="flex items-center border-2 border-ink-900 rounded-full overflow-hidden mr-1">
-            {(['fr', 'en', 'ar'] as const).map((locale) => (
+            {(['fr', 'en'] as const).map((locale) => (
               <a
                 key={locale}
                 href={locale === 'fr' ? pathWithoutLang : `/${locale}${pathWithoutLang}`}
@@ -173,7 +173,7 @@ export function Navbar({ dict, lang }: Props) {
 
             {/* Mobile Language Switcher */}
             <div className="flex items-center gap-1 px-3 py-2">
-              {(['fr', 'en', 'ar'] as const).map((locale) => (
+              {(['fr', 'en'] as const).map((locale) => (
                 <a
                   key={locale}
                   href={locale === 'fr' ? pathWithoutLang : `/${locale}${pathWithoutLang}`}
