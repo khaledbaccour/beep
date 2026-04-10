@@ -1,21 +1,16 @@
 import {
   IsEnum,
-  IsIn,
   IsNotEmpty,
   IsString,
   Matches,
   MaxLength,
   MinLength,
-  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   PayoutMethod,
-  TUNISIAN_BANKS,
-  MOBILE_PROVIDERS,
-  TUNISIAN_IBAN_REGEX,
-  TUNISIAN_PHONE_REGEX,
+  FRENCH_IBAN_REGEX,
   ACCOUNT_HOLDER_NAME_REGEX,
 } from '@beep/shared';
 
@@ -30,45 +25,19 @@ class BankTransferDetailsDto {
   accountHolderName!: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Bank name is required' })
-  @IsIn([...TUNISIAN_BANKS], { message: 'Please select a valid Tunisian bank' })
-  bankName!: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'IBAN or RIB is required' })
-  @Matches(TUNISIAN_IBAN_REGEX, {
-    message: 'IBAN must be in Tunisian format: TN59 followed by 20 digits (e.g. TN5900000000000000000000)',
+  @IsNotEmpty({ message: 'IBAN is required' })
+  @Matches(FRENCH_IBAN_REGEX, {
+    message: 'IBAN must be in French format: FR followed by 25 characters (27 total, e.g. FR7630006000011234567890189)',
   })
   iban!: string;
-}
-
-class MobileMoneyDetailsDto {
-  @IsString()
-  @IsNotEmpty({ message: 'Mobile provider is required' })
-  @IsIn([...MOBILE_PROVIDERS], { message: 'Please select a valid mobile provider' })
-  mobileProvider!: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'Phone number is required' })
-  @Matches(TUNISIAN_PHONE_REGEX, {
-    message: 'Phone number must be a valid Tunisian number: +216 followed by 8 digits (e.g. +21612345678)',
-  })
-  mobilePhone!: string;
 }
 
 export class OnboardingStep4Dto {
   @IsEnum(PayoutMethod)
   payoutMethod!: PayoutMethod;
 
-  @ValidateIf((o: OnboardingStep4Dto) => o.payoutMethod === PayoutMethod.BANK_TRANSFER)
   @ValidateNested()
   @Type(() => BankTransferDetailsDto)
   @IsNotEmpty({ message: 'Bank transfer details are required' })
-  bankTransferDetails?: BankTransferDetailsDto;
-
-  @ValidateIf((o: OnboardingStep4Dto) => o.payoutMethod === PayoutMethod.MOBILE_MONEY)
-  @ValidateNested()
-  @Type(() => MobileMoneyDetailsDto)
-  @IsNotEmpty({ message: 'Mobile money details are required' })
-  mobileMoneyDetails?: MobileMoneyDetailsDto;
+  bankTransferDetails!: BankTransferDetailsDto;
 }

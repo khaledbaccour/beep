@@ -442,15 +442,10 @@ export interface OnboardingStep3Data {
 }
 
 export interface OnboardingStep4Data {
-  payoutMethod: 'BANK_TRANSFER' | 'MOBILE_MONEY';
-  bankTransferDetails?: {
+  payoutMethod: 'BANK_TRANSFER';
+  bankTransferDetails: {
     accountHolderName: string;
-    bankName: string;
     iban: string;
-  };
-  mobileMoneyDetails?: {
-    mobileProvider: string;
-    mobilePhone: string;
   };
 }
 
@@ -471,7 +466,7 @@ export interface OnboardingStatus {
     sessionDurationMinutes?: number;
     timezone?: string;
     sessionOptions?: { id: string; durationMinutes: number; priceMillimes: number; label?: string; isActive: boolean; sortOrder: number }[];
-    payoutMethod?: 'BANK_TRANSFER' | 'MOBILE_MONEY';
+    payoutMethod?: 'BANK_TRANSFER';
     payoutDetails?: Record<string, string>;
   };
 }
