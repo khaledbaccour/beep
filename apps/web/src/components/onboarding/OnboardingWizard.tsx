@@ -15,6 +15,7 @@ import {
   saveOnboardingStep4,
   completeOnboarding,
   getUserProfile,
+  getMyExpertProfile,
 } from '@/lib/api';
 import { OnboardingProgress } from './OnboardingProgress';
 import { StepBasicInfo, type StepBasicInfoData } from './StepBasicInfo';
@@ -286,6 +287,16 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           user.onboardingCompleted = true;
           localStorage.setItem('beep_user', JSON.stringify(user));
         }
+      }
+
+      // Cache expert profile so the dashboard can display it immediately
+      try {
+        const expertRes = await getMyExpertProfile();
+        if (expertRes.data) {
+          localStorage.setItem('beep_expert_profile', JSON.stringify(expertRes.data));
+        }
+      } catch {
+        // Non-critical — ProfileTab will fetch from API on mount
       }
 
       router.push(localePath(lang, '/dashboard?onboarding=complete'));

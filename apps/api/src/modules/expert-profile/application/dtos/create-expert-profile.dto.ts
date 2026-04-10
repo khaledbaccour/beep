@@ -1,5 +1,7 @@
-import { IsString, IsEnum, IsInt, IsOptional, Min, Matches, IsArray, MinLength } from 'class-validator';
+import { IsString, IsEnum, IsInt, IsOptional, Min, Matches, IsArray, MinLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ExpertCategory } from '@beep/shared';
+import { CreateSessionOptionDto } from './session-option.dto';
 
 export class CreateExpertProfileDto {
   @IsString()
@@ -34,4 +36,10 @@ export class CreateExpertProfileDto {
   @IsString()
   @IsOptional()
   timezone?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSessionOptionDto)
+  @IsOptional()
+  sessionOptions?: CreateSessionOptionDto[];
 }

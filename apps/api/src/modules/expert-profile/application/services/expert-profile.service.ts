@@ -21,6 +21,7 @@ import {
   USER_REPOSITORY,
 } from '../../../identity/domain/repositories/user.repository.interface';
 import { CreateExpertProfileDto } from '../dtos/create-expert-profile.dto';
+import { UpdateExpertProfileDto } from '../dtos/update-expert-profile.dto';
 import { ExpertProfileResponseDto } from '../dtos/expert-profile-response.dto';
 import { OnboardingStep1Dto } from '../dtos/onboarding-step-1.dto';
 import { OnboardingStep2Dto } from '../dtos/onboarding-step-2.dto';
@@ -109,7 +110,27 @@ export class ExpertProfileService {
     profile.timezone = dto.timezone ?? 'Africa/Tunis';
 
     const saved = await this.profileRepo.save(profile);
+
+    if (dto.sessionOptions && dto.sessionOptions.length > 0) {
+      await this.replaceSessionOptions(saved, dto.sessionOptions);
+    }
+
     return this.toResponseDto(saved, user.firstName, user.lastName, user.avatarUrl);
+  }
+
+  async getMyProfile(
+    currentUser: AuthenticatedUser,
+  ): Promise<ExpertProfileResponseDto | null> {
+    const profile = await this.profileRepo.findByUserId(currentUser.id);
+    if (!profile) {
+      return null;
+    }
+    return this.toResponseDto(
+      profile,
+      profile.user.firstName,
+      profile.user.lastName,
+      profile.user.avatarUrl,
+    );
   }
 
   async getBySlug(slug: string): Promise<ExpertProfileResponseDto> {
@@ -150,7 +171,7 @@ export class ExpertProfileService {
 
   async updateProfile(
     currentUser: AuthenticatedUser,
-    dto: Partial<CreateExpertProfileDto> & { sessionOptions?: CreateSessionOptionDto[] },
+    dto: UpdateExpertProfileDto,
   ): Promise<ExpertProfileResponseDto> {
     const profile = await this.profileRepo.findByUserId(currentUser.id);
     if (!profile) {
