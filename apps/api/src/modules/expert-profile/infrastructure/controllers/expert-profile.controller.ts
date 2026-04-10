@@ -10,6 +10,7 @@ import {
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ExpertProfileService } from '../../application/services/expert-profile.service';
 import { CreateExpertProfileDto } from '../../application/dtos/create-expert-profile.dto';
+import { UpdateExpertProfileDto } from '../../application/dtos/update-expert-profile.dto';
 import { ExpertProfileResponseDto } from '../../application/dtos/expert-profile-response.dto';
 import { OnboardingStep1Dto } from '../../application/dtos/onboarding-step-1.dto';
 import { OnboardingStep2Dto } from '../../application/dtos/onboarding-step-2.dto';
@@ -103,6 +104,18 @@ export class ExpertProfileController {
     return ApiResponseDto.ok(result);
   }
 
+  // ── Current User Profile ────────────────────────────────────────────
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getMyProfile(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApiResponseDto<ExpertProfileResponseDto | null>> {
+    const result = await this.profileService.getMyProfile(user);
+    return ApiResponseDto.ok(result);
+  }
+
   // ── Existing Endpoints ─────────────────────────────────────────────
 
   @Get(':slug')
@@ -129,7 +142,7 @@ export class ExpertProfileController {
   @ApiBearerAuth()
   async update(
     @CurrentUser() user: AuthenticatedUser,
-    @Body() dto: Partial<CreateExpertProfileDto>,
+    @Body() dto: UpdateExpertProfileDto,
   ): Promise<ApiResponseDto<ExpertProfileResponseDto>> {
     const result = await this.profileService.updateProfile(user, dto);
     return ApiResponseDto.ok(result);

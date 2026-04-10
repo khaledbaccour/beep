@@ -10,6 +10,7 @@ import {
   type CreateExpertProfileBody,
   createExpertProfile,
   updateExpertProfile,
+  getMyExpertProfile,
 } from '@/lib/api';
 import type { TabProps } from './types';
 import { CATEGORIES } from './types';
@@ -52,15 +53,31 @@ export function ProfileTab({ d, dict, lang }: TabProps) {
   ]);
 
   useEffect(() => {
-    const storedProfile = localStorage.getItem('beep_expert_profile');
-    if (storedProfile) {
-      const p: ExpertProfile = JSON.parse(storedProfile);
-      populateForm(p);
-      setProfile(p);
-    } else {
-      setIsNew(true);
+    async function loadProfile() {
+      // Try API first (source of truth)
+      try {
+        const res = await getMyExpertProfile();
+        if (res.data) {
+          populateForm(res.data);
+          setProfile(res.data);
+          localStorage.setItem('beep_expert_profile', JSON.stringify(res.data));
+        } else {
+          setIsNew(true);
+        }
+      } catch {
+        // Fallback to localStorage cache
+        const storedProfile = localStorage.getItem('beep_expert_profile');
+        if (storedProfile) {
+          const p: ExpertProfile = JSON.parse(storedProfile);
+          populateForm(p);
+          setProfile(p);
+        } else {
+          setIsNew(true);
+        }
+      }
+      setLoading(false);
     }
-    setLoading(false);
+    loadProfile();
   }, []);
 
   function populateForm(p: ExpertProfile) {

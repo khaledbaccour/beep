@@ -227,6 +227,19 @@ function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
+/* ── Expert Profile (current user) ── */
+
+export async function getMyExpertProfile(): Promise<ApiResponse<ExpertProfile | null>> {
+  const res = await fetch(`${API_BASE}/experts/me`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Failed to get expert profile' }));
+    throw new Error(err.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
 /* ── User Profile ── */
 
 export async function getUserProfile(): Promise<ApiResponse<AuthResponse['user']>> {
