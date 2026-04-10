@@ -26,7 +26,7 @@ export class CreateExpertProfileDto {
 
   @IsInt()
   @Min(1000)
-  sessionPriceMillimes!: number;
+  sessionPriceCents!: number;
 
   @IsInt()
   @Min(15)

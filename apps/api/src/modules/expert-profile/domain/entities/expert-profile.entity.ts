@@ -29,15 +29,15 @@ export class ExpertProfile extends BaseEntity {
   @Column({ type: 'simple-array', nullable: true })
   tags?: string[];
 
-  /** Session price in millimes (TND) */
+  /** Session price in cents (EUR) */
   @Column({ type: 'int', nullable: true })
-  sessionPriceMillimes!: number | null;
+  sessionPriceCents!: number | null;
 
   /** Default session duration in minutes */
   @Column({ type: 'int', default: 60 })
   sessionDurationMinutes!: number;
 
-  @Column({ default: 'Africa/Tunis' })
+  @Column({ default: 'Europe/Paris' })
   timezone!: string;
 
   @Column({ type: 'decimal', precision: 2, scale: 1, default: 0 })
@@ -111,7 +111,7 @@ export class ExpertProfile extends BaseEntity {
     if (this.headline) filled++;
     if (this.category) filled++;
     if (this.tags && this.tags.length > 0) filled++;
-    if (this.sessionPriceMillimes) filled++;
+    if (this.sessionPriceCents) filled++;
     if (this.certifications && this.certifications.length > 0) filled++;
     if (this.yearsOfExperience !== undefined && this.yearsOfExperience !== null) filled++;
     if (this.languages && this.languages.length > 0) filled++;

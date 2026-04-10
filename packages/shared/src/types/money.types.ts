@@ -1,5 +1,5 @@
-/** All monetary amounts are stored in millimes (1 TND = 1000 millimes) */
+/** All monetary amounts are stored in cents (1 EUR = 100 cents) */
 export interface Money {
   amount: number;
-  currency: 'TND';
+  currency: 'EUR';
 }

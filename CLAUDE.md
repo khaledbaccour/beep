@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Beep** (beep.tn) is a Tunisian marketplace platform where experts (fitness coaches, teachers, doctors, lawyers, etc.) get a personal link (beep.tn/joel) with a booking calendar. Clients pay to reserve online video meetings with experts. A public marketplace lets users browse and discover experts.
+**Beep** (beep.fr) is a French marketplace platform where experts (fitness coaches, teachers, lawyers, etc.) get a personal link (beep.fr/joel) with a booking calendar. Clients pay to reserve online video meetings with experts. A public marketplace lets users browse and discover experts.
 
 ## Tech Stack
 
@@ -14,8 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Cache/Queue:** Redis + BullMQ for job scheduling (reminders, refund windows, session cleanup)
 - **Video Calls:** WebRTC peer-to-peer via PeerJS (free, no third-party subscription)
 - **Real-time Chat:** Socket.IO over WebSockets (free, self-hosted)
-- **Payments:** Gammal Tech payment gateway (Tunisia)
-- **Domain/Hosting:** OVH (beep.tn), deployment target is AWS (ECS/Fargate)
+- **Payments:** Gammal Tech payment gateway
+- **Domain/Hosting:** OVH (beep.fr), deployment target is AWS (ECS/Fargate)
 - **Containerization:** Docker + docker-compose for all services
 
 ## Build & Run Commands
@@ -76,7 +76,7 @@ apps/api/src/modules/<domain>/
 ### Core Domains
 
 - **Identity** — User accounts, authentication (JWT), roles (Expert, Client, Admin)
-- **Expert Profile** — Public profiles, slugs (beep.tn/joel), categories, bio, pricing
+- **Expert Profile** — Public profiles, slugs (beep.fr/joel), categories, bio, pricing
 - **Availability** — Recurring schedules, time slots, timezone handling, blackout dates
 - **Booking** — Reservation lifecycle, conflict detection, status machine
 - **Payment** — Payment processing, escrow-like hold, refund engine
@@ -97,7 +97,7 @@ apps/api/src/modules/<domain>/
 
 - All external services (payment, email, SMS, storage) are behind interfaces injected via NestJS DI tokens.
 - Repository pattern: domain defines the interface, infrastructure implements it.
-- This enables swapping Gammal Tech for Stripe/Flouci without touching domain logic.
+- This enables swapping Gammal Tech for Stripe without touching domain logic.
 - Example: `PAYMENT_GATEWAY` injection token → `GammalTechPaymentAdapter` implements `IPaymentGateway`.
 
 ### Booking & Cancellation Logic
@@ -137,7 +137,7 @@ Payment flow: funds are **captured but held** until session completes. Released 
 - All payment logic behind `IPaymentGateway` interface
 - Webhook handler for async payment confirmations
 - Idempotency keys on all payment operations
-- Amounts stored as integer cents (millimes for TND) — never floating point
+- Amounts stored as integer cents (1 EUR = 100 cents) — never floating point
 
 ## Docker Setup
 
@@ -169,7 +169,7 @@ beep/
 ## Key Conventions
 
 - All dates/times stored in UTC, converted to user timezone on display
-- Currency is TND (Tunisian Dinar), subdivided to millimes (1 TND = 1000 millimes), stored as integers
+- Currency is EUR (Euro), subdivided to cents (1 EUR = 100 cents), stored as integers
 - Expert slugs are unique, lowercase, alphanumeric + hyphens only
 - API versioning via URL prefix (`/api/v1/`)
 - All endpoints return consistent envelope: `{ data, meta, errors }`

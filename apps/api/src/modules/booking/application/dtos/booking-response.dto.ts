@@ -9,8 +9,8 @@ export class BookingResponseDto {
   scheduledStartTime: Date;
   scheduledEndTime: Date;
   status: BookingStatus;
-  amountMillimes: number;
-  refundAmountMillimes: number;
+  amountCents: number;
+  refundAmountCents: number;
   refundEligibility: RefundEligibility;
   sessionRoomId?: string;
   durationMinutes?: number;
@@ -24,8 +24,8 @@ export class BookingResponseDto {
     this.scheduledStartTime = partial.scheduledStartTime;
     this.scheduledEndTime = partial.scheduledEndTime;
     this.status = partial.status;
-    this.amountMillimes = partial.amountMillimes;
-    this.refundAmountMillimes = partial.refundAmountMillimes;
+    this.amountCents = partial.amountCents;
+    this.refundAmountCents = partial.refundAmountCents;
     this.refundEligibility = partial.refundEligibility;
     this.sessionRoomId = partial.sessionRoomId;
     this.durationMinutes = partial.durationMinutes;

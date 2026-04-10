@@ -5,7 +5,7 @@ import { CalendarDays, DollarSign, Video, TrendingUp, ArrowUpRight } from 'lucid
 import type { BookingResponse } from '@/lib/api';
 import { getExpertBookings } from '@/lib/api';
 import type { TabProps } from './types';
-import { millimesToTND } from './types';
+import { centsToEUR } from './types';
 import { BookingRow } from './BookingRow';
 
 const STAT_THEMES = [
@@ -45,11 +45,11 @@ export function OverviewTab({ d, lang }: TabProps) {
     (b) => new Date(b.scheduledStartTime) > now && !b.status.startsWith('CANCELLED'),
   );
   const completed = bookings.filter((b) => b.status === 'COMPLETED');
-  const totalEarnings = completed.reduce((sum, b) => sum + b.amountMillimes, 0);
+  const totalEarnings = completed.reduce((sum, b) => sum + b.amountCents, 0);
 
   const stats = [
     { label: d.upcomingSessions, value: loading ? '—' : String(upcoming.length), icon: CalendarDays },
-    { label: d.totalEarnings, value: loading ? '—' : `${millimesToTND(totalEarnings)} TND`, icon: DollarSign },
+    { label: d.totalEarnings, value: loading ? '—' : `${centsToEUR(totalEarnings)} EUR`, icon: DollarSign },
     { label: d.totalSessions, value: loading ? '—' : String(completed.length), icon: Video },
   ];
 

@@ -34,9 +34,9 @@ export function BookingConfirmation({
   onConfirm,
 }: BookingConfirmationProps) {
   const t = dict.expertProfile;
-  const priceMillimes = selectedOption?.priceMillimes ?? expert.sessionPriceMillimes;
+  const priceCents = selectedOption?.priceCents ?? expert.sessionPriceCents;
   const durationMinutes = selectedOption?.durationMinutes ?? expert.sessionDurationMinutes;
-  const priceTND = formatPrice(priceMillimes);
+  const priceEUR = formatPrice(priceCents);
 
   const trustItems = [
     { icon: Shield, text: t.refundPolicy },
@@ -70,7 +70,7 @@ export function BookingConfirmation({
             )}
             <div className="border-t border-ink-100 pt-3 flex justify-between">
               <span className="font-bold text-ink-900">{t.price}</span>
-              <span className="font-bold text-ink-900">{priceTND} {dict.common.tnd}</span>
+              <span className="font-bold text-ink-900">{priceEUR} {dict.common.eur}</span>
             </div>
           </div>
 
@@ -100,7 +100,7 @@ export function BookingConfirmation({
                 {t.processing}
               </span>
             ) : (
-              `${t.payAndBook} — ${priceTND} ${dict.common.tnd}`
+              `${t.payAndBook} — ${priceEUR} ${dict.common.eur}`
             )}
           </Button>
 

@@ -17,9 +17,9 @@ function formatDuration(minutes: number): string {
   return m > 0 ? `${h}h ${m}min` : `${h}h`;
 }
 
-function formatOptionPrice(millimes: number): string {
-  const tnd = millimes / 1000;
-  return tnd % 1 === 0 ? String(tnd) : tnd.toFixed(1);
+function formatOptionPrice(cents: number): string {
+  const eur = cents / 100;
+  return eur % 1 === 0 ? String(eur) : eur.toFixed(2);
 }
 
 export function DurationPicker({ options, selected, onSelect, label }: DurationPickerProps) {
@@ -55,7 +55,7 @@ export function DurationPicker({ options, selected, onSelect, label }: DurationP
                 </span>
               </div>
               <span className="text-lg font-display font-bold text-ink-900">
-                {formatOptionPrice(opt.priceMillimes)} TND
+                {formatOptionPrice(opt.priceCents)} EUR
               </span>
               {opt.label && (
                 <p className="text-xs text-ink-500 mt-1">{opt.label}</p>

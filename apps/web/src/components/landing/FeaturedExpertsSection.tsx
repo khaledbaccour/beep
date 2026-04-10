@@ -97,7 +97,7 @@ export function FeaturedExpertsSection({ dict, lang }: Props) {
                   <span className="text-2xl font-bold text-white">
                     {expert.price}
                   </span>
-                  <span className="text-sm text-white/60">{dict.common.tnd}</span>
+                  <span className="text-sm text-white/60">{dict.common.eur}</span>
                   <span className="text-xs text-white/40 ml-1">
                     / {dict.featured.sessions.slice(0, -1)}
                   </span>

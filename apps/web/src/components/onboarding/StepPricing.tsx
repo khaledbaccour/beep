@@ -7,7 +7,7 @@ import type { Dictionary } from '@/i18n/types';
 
 export interface SessionOptionRow {
   durationMinutes: number;
-  priceTND: string;
+  priceEUR: string;
   label: string;
 }
 
@@ -33,11 +33,10 @@ const DURATION_CHOICES = [
 ];
 
 const POPULAR_TIMEZONES = [
-  'Africa/Tunis',
-  'Africa/Algiers',
-  'Africa/Cairo',
   'Europe/Paris',
   'Europe/London',
+  'Europe/Berlin',
+  'Europe/Madrid',
   'America/New_York',
   'Asia/Dubai',
 ];
@@ -58,7 +57,7 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
       ...data,
       sessionOptions: [
         ...options,
-        { durationMinutes: 60, priceTND: '', label: '' },
+        { durationMinutes: 60, priceEUR: '', label: '' },
       ],
     });
   }
@@ -132,13 +131,13 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
                       min="1"
                       max="9999"
                       step="0.5"
-                      value={opt.priceTND}
-                      onChange={(e) => updateOption(idx, { priceTND: e.target.value })}
+                      value={opt.priceEUR}
+                      onChange={(e) => updateOption(idx, { priceEUR: e.target.value })}
                       placeholder="50"
                       className="border-2 border-ink-200 rounded-xl pr-14"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-400">
-                      TND
+                      EUR
                     </span>
                   </div>
                 </div>
@@ -205,14 +204,14 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
       </div>
 
       {/* Summary card */}
-      {options.some((o) => o.priceTND && parseFloat(o.priceTND) > 0) && (
+      {options.some((o) => o.priceEUR && parseFloat(o.priceEUR) > 0) && (
         <div className="p-4 rounded-xl border-[2.5px] border-ink-900 bg-cream-50 shadow-retro-sm">
           <p className="text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
             {dict.onboarding.sessionSummary}
           </p>
           <div className="space-y-2">
             {options
-              .filter((o) => o.priceTND && parseFloat(o.priceTND) > 0)
+              .filter((o) => o.priceEUR && parseFloat(o.priceEUR) > 0)
               .map((o, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <span className="text-sm text-ink-600">
@@ -221,7 +220,7 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
                     {o.label ? ` — ${o.label}` : ''}
                   </span>
                   <span className="text-lg font-bold text-ink-900">
-                    {parseFloat(o.priceTND).toFixed(2)} TND
+                    {parseFloat(o.priceEUR).toFixed(2)} EUR
                   </span>
                 </div>
               ))}

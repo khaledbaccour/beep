@@ -5,7 +5,7 @@ import type { Locale } from '@/i18n';
 import type { Dictionary } from '@/i18n/types';
 import { localePath } from '@/lib/i18n-utils';
 import type { BookingResponse, BookingStatus } from '@/lib/api';
-import { millimesToTND } from './types';
+import { centsToEUR } from './types';
 
 interface BookingRowProps {
   booking: BookingResponse;
@@ -31,7 +31,7 @@ export function BookingRow({ booking, d, lang, isExpert }: BookingRowProps) {
   const start = new Date(booking.scheduledStartTime);
   const end = new Date(booking.scheduledEndTime);
 
-  const localeTag = lang === 'en' ? 'en-US' : 'fr-TN';
+  const localeTag = lang === 'en' ? 'en-US' : 'fr-FR';
   const dateStr = start.toLocaleDateString(localeTag, {
     weekday: 'short', month: 'short', day: 'numeric',
   });
@@ -68,7 +68,7 @@ export function BookingRow({ booking, d, lang, isExpert }: BookingRowProps) {
       {/* Amount + status + join */}
       <div className="flex items-center gap-2.5 flex-wrap">
         <span className="text-sm font-bold text-ink-900 tabular-nums">
-          {millimesToTND(booking.amountMillimes)} <span className="text-[10px] font-bold text-ink-400">TND</span>
+          {centsToEUR(booking.amountCents)} <span className="text-[10px] font-bold text-ink-400">EUR</span>
         </span>
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase border ${style.border} ${style.bg} ${style.text}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />

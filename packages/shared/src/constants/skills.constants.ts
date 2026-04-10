@@ -343,11 +343,9 @@ export const SKILLS_BY_CATEGORY: Record<ExpertCategory, string[]> = {
   ],
 
   [ExpertCategory.LANGUAGES]: [
-    'arabic',
-    'tunisian arabic',
-    'modern standard arabic',
     'french',
     'english',
+    'arabic',
     'german',
     'spanish',
     'italian',

@@ -57,8 +57,8 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
   });
 
   const [step3, setStep3] = useState<StepPricingData>({
-    sessionOptions: [{ durationMinutes: 60, priceTND: '', label: '' }],
-    timezone: 'Africa/Tunis',
+    sessionOptions: [{ durationMinutes: 60, priceEUR: '', label: '' }],
+    timezone: 'Europe/Paris',
   });
 
   const [step4, setStep4] = useState<StepPayoutData>({
@@ -108,19 +108,19 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
             setStep3({
               sessionOptions: p.sessionOptions.map((so) => ({
                 durationMinutes: so.durationMinutes,
-                priceTND: (so.priceMillimes / 1000).toString(),
+                priceEUR: (so.priceCents / 100).toString(),
                 label: so.label || '',
               })),
-              timezone: p.timezone || 'Africa/Tunis',
+              timezone: p.timezone || 'Europe/Paris',
             });
-          } else if (p.sessionPriceMillimes) {
+          } else if (p.sessionPriceCents) {
             setStep3({
               sessionOptions: [{
                 durationMinutes: p.sessionDurationMinutes || 60,
-                priceTND: (p.sessionPriceMillimes / 1000).toString(),
+                priceEUR: (p.sessionPriceCents / 100).toString(),
                 label: '',
               }],
-              timezone: p.timezone || 'Africa/Tunis',
+              timezone: p.timezone || 'Europe/Paris',
             });
           }
           if (p.payoutMethod) {
@@ -168,9 +168,9 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         newErrors.sessionOptions = dict.onboarding.valPriceMin;
       } else {
         step3.sessionOptions.forEach((opt, idx) => {
-          if (!opt.priceTND || parseFloat(opt.priceTND) <= 0) {
+          if (!opt.priceEUR || parseFloat(opt.priceEUR) <= 0) {
             newErrors[`option_${idx}`] = dict.onboarding.valPriceMin;
-          } else if (parseFloat(opt.priceTND) > 9999) {
+          } else if (parseFloat(opt.priceEUR) > 9999) {
             newErrors[`option_${idx}`] = dict.onboarding.valPriceMax;
           }
         });
@@ -226,12 +226,12 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         await saveOnboardingStep3({
           sessionOptions: step3.sessionOptions.map((o, i) => ({
             durationMinutes: o.durationMinutes,
-            priceMillimes: Math.round(parseFloat(o.priceTND) * 1000),
+            priceCents: Math.round(parseFloat(o.priceEUR) * 100),
             label: o.label || undefined,
             sortOrder: i,
           })),
           timezone: step3.timezone,
-          sessionPriceMillimes: Math.round(parseFloat(firstOpt.priceTND) * 1000),
+          sessionPriceCents: Math.round(parseFloat(firstOpt.priceEUR) * 100),
           sessionDurationMinutes: firstOpt.durationMinutes,
         });
       } else if (currentStep === 4) {
@@ -329,19 +329,19 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           languages: step2.languages,
         });
       }
-      if (currentStep >= 3 && step3.sessionOptions.some((o) => o.priceTND && parseFloat(o.priceTND) > 0)) {
+      if (currentStep >= 3 && step3.sessionOptions.some((o) => o.priceEUR && parseFloat(o.priceEUR) > 0)) {
         const firstOpt = step3.sessionOptions[0];
         await saveOnboardingStep3({
           sessionOptions: step3.sessionOptions
-            .filter((o) => o.priceTND && parseFloat(o.priceTND) > 0)
+            .filter((o) => o.priceEUR && parseFloat(o.priceEUR) > 0)
             .map((o, i) => ({
               durationMinutes: o.durationMinutes,
-              priceMillimes: Math.round(parseFloat(o.priceTND) * 1000),
+              priceCents: Math.round(parseFloat(o.priceEUR) * 100),
               label: o.label || undefined,
               sortOrder: i,
             })),
           timezone: step3.timezone,
-          sessionPriceMillimes: Math.round(parseFloat(firstOpt.priceTND) * 1000),
+          sessionPriceCents: Math.round(parseFloat(firstOpt.priceEUR) * 100),
           sessionDurationMinutes: firstOpt.durationMinutes,
         });
       }

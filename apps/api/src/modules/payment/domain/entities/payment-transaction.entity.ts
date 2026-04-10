@@ -11,9 +11,9 @@ export class PaymentTransaction extends BaseEntity {
   externalTransactionId!: string;
 
   @Column({ type: 'int' })
-  amountMillimes!: number;
+  amountCents!: number;
 
-  @Column({ default: 'TND' })
+  @Column({ default: 'EUR' })
   currency!: string;
 
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
@@ -23,7 +23,7 @@ export class PaymentTransaction extends BaseEntity {
   idempotencyKey!: string;
 
   @Column({ type: 'int', default: 0 })
-  refundedAmountMillimes!: number;
+  refundedAmountCents!: number;
 
   @Column({ nullable: true })
   gatewayResponse?: string;

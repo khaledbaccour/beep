@@ -5,10 +5,10 @@
 export const FRENCH_IBAN_REGEX = /^FR\d{2}[A-Z0-9]{23}$/;
 
 /**
- * Tunisian phone number: +216 followed by 8 digits (starting with 2, 3, 4, 5, 7, or 9).
+ * French phone number: +33 followed by 9 digits (starting with 1-9).
  * Kept for user registration validation (register.dto.ts).
  */
-export const TUNISIAN_PHONE_REGEX = /^\+216[2-9]\d{7}$/;
+export const FRENCH_PHONE_REGEX = /^\+33[1-9]\d{8}$/;
 
 /**
  * Account holder name: letters (including accented), spaces, hyphens, apostrophes. 3-100 chars.

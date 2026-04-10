@@ -32,7 +32,7 @@ export function RegisterPage({ dict, lang }: Props) {
     setLoading(true);
 
     try {
-      const res = await registerUser({ email, password, firstName, lastName, phone: phone ? `+216${phone}` : undefined });
+      const res = await registerUser({ email, password, firstName, lastName, phone: phone ? `+33${phone}` : undefined });
       localStorage.setItem('beep_token', res.data.accessToken);
       localStorage.setItem('beep_user', JSON.stringify(res.data.user));
       setSuccess(dict.auth.accountCreated);
@@ -51,7 +51,7 @@ export function RegisterPage({ dict, lang }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
           <span className="text-[17px] font-body font-bold text-ink-900">
-            beep<span className="text-brand-500">.tn</span>
+            beep<span className="text-brand-500">.fr</span>
           </span>
         </a>
 
@@ -75,11 +75,11 @@ export function RegisterPage({ dict, lang }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-ink-700 mb-1.5">{dict.auth.firstName}</label>
-              <Input type="text" placeholder="Ahmed" value={firstName} onChange={(e) => setFirstName(e.target.value)} required data-testid="register-firstName" />
+              <Input type="text" placeholder="Jean" value={firstName} onChange={(e) => setFirstName(e.target.value)} required data-testid="register-firstName" />
             </div>
             <div>
               <label className="block text-sm font-medium text-ink-700 mb-1.5">{dict.auth.lastName}</label>
-              <Input type="text" placeholder="Ben Ali" value={lastName} onChange={(e) => setLastName(e.target.value)} required data-testid="register-lastName" />
+              <Input type="text" placeholder="Dupont" value={lastName} onChange={(e) => setLastName(e.target.value)} required data-testid="register-lastName" />
             </div>
           </div>
 
@@ -96,16 +96,16 @@ export function RegisterPage({ dict, lang }: Props) {
           <div>
             <label className="block text-sm font-medium text-ink-700 mb-1.5">{dict.auth.phone}</label>
             <div className="flex">
-              <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-ink-200 bg-ink-50 text-sm text-ink-500">+216</span>
+              <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-ink-200 bg-ink-50 text-sm text-ink-500">+33</span>
               <Input
                 type="tel"
-                placeholder="XX XXX XXX"
+                placeholder="X XX XX XX XX"
                 value={phone}
                 onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 9);
                   setPhone(digits);
                 }}
-                maxLength={8}
+                maxLength={9}
                 className="rounded-l-none"
                 data-testid="register-phone"
               />

@@ -184,7 +184,7 @@ export function CategoriesPage({ dict, lang }: Props) {
                         </div>
                         <div className="flex items-center gap-0.5 px-3 py-1.5 rounded-full bg-[#141418]/10 border border-[#141418]/20 text-xs font-bold text-[#141418]">
                           {dict.categoriesPage.startFrom} {cat.startPrice}
-                          <span className="text-[10px] text-[#141418]/60 ml-0.5">{dict.common.tnd}</span>
+                          <span className="text-[10px] text-[#141418]/60 ml-0.5">{dict.common.eur}</span>
                         </div>
                       </div>
                     </div>
@@ -255,7 +255,7 @@ export function CategoriesPage({ dict, lang }: Props) {
                           {cat.count}
                         </span>
                         <span className="text-[10px] font-bold text-[#141418]/50">
-                          {dict.categoriesPage.startFrom} {cat.startPrice} {dict.common.tnd}
+                          {dict.categoriesPage.startFrom} {cat.startPrice} {dict.common.eur}
                         </span>
                       </div>
                     </div>

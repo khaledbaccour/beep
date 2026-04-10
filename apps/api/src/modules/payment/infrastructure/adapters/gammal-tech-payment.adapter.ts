@@ -36,7 +36,7 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     const txn = this.txnRepo.create({
       bookingId: request.bookingId,
       externalTransactionId: request.transactionId,
-      amountMillimes: request.amountMillimes,
+      amountCents: request.amountCents,
       currency: request.currency,
       status: PaymentStatus.CAPTURED,
       idempotencyKey: request.idempotencyKey,
@@ -45,7 +45,7 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     await this.txnRepo.save(txn);
 
     this.logger.log(
-      `Payment recorded: booking=${request.bookingId} txn=${request.transactionId} amount=${request.amountMillimes}`,
+      `Payment recorded: booking=${request.bookingId} txn=${request.transactionId} amount=${request.amountCents}`,
     );
 
     return { success: true };
@@ -66,9 +66,9 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     }
 
     const refundId = uuidv4();
-    txn.refundedAmountMillimes += request.amountMillimes;
+    txn.refundedAmountCents += request.amountCents;
 
-    if (txn.refundedAmountMillimes >= txn.amountMillimes) {
+    if (txn.refundedAmountCents >= txn.amountCents) {
       txn.status = PaymentStatus.PENDING_REFUND;
     } else {
       txn.status = PaymentStatus.PENDING_REFUND;
@@ -84,7 +84,7 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     await this.txnRepo.save(txn);
 
     this.logger.warn(
-      `Manual refund required: txn=${request.transactionId} amount=${request.amountMillimes} refundId=${refundId}`,
+      `Manual refund required: txn=${request.transactionId} amount=${request.amountCents} refundId=${refundId}`,
     );
 
     return {

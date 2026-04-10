@@ -49,8 +49,8 @@ function getInitials(firstName: string, lastName: string): string {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 }
 
-function formatPrice(millimes: number): number {
-  return Math.round(millimes / 1000);
+function formatPrice(cents: number): number {
+  return Math.round(cents / 100);
 }
 
 export function MarketplacePage({ dict, lang }: Props) {
@@ -178,8 +178,8 @@ export function MarketplacePage({ dict, lang }: Props) {
 
   const handleApplyFilters = () => {
     setActiveCategory(pendingCategory);
-    setAppliedMinPrice(minPrice ? Number(minPrice) * 1000 : undefined);
-    setAppliedMaxPrice(maxPrice ? Number(maxPrice) * 1000 : undefined);
+    setAppliedMinPrice(minPrice ? Number(minPrice) * 100 : undefined);
+    setAppliedMaxPrice(maxPrice ? Number(maxPrice) * 100 : undefined);
     setFilterOpen(false);
   };
 
@@ -197,8 +197,8 @@ export function MarketplacePage({ dict, lang }: Props) {
   const handleToggleFilter = () => {
     if (!filterOpen) {
       setPendingCategory(activeCategory);
-      setMinPrice(appliedMinPrice != null ? String(appliedMinPrice / 1000) : '');
-      setMaxPrice(appliedMaxPrice != null ? String(appliedMaxPrice / 1000) : '');
+      setMinPrice(appliedMinPrice != null ? String(appliedMinPrice / 100) : '');
+      setMaxPrice(appliedMaxPrice != null ? String(appliedMaxPrice / 100) : '');
     }
     setFilterOpen(!filterOpen);
   };
@@ -271,7 +271,7 @@ export function MarketplacePage({ dict, lang }: Props) {
                 {/* Price range */}
                 <div className="mb-5">
                   <label className="text-xs font-bold text-ink-700 uppercase tracking-wider mb-2.5 block">
-                    {dict.marketplace.priceRange} ({dict.common.tnd})
+                    {dict.marketplace.priceRange} ({dict.common.eur})
                   </label>
                   <div className="flex gap-2 items-center">
                     <Input
@@ -334,7 +334,7 @@ export function MarketplacePage({ dict, lang }: Props) {
             )}
             {appliedMinPrice != null && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-ink-100 text-ink-700 border border-ink-200">
-                {dict.marketplace.minPrice}: {appliedMinPrice / 1000} {dict.common.tnd}
+                {dict.marketplace.minPrice}: {appliedMinPrice / 100} {dict.common.eur}
                 <button
                   onClick={() => { setAppliedMinPrice(undefined); setMinPrice(''); }}
                   className="ml-0.5 hover:text-ink-900"
@@ -345,7 +345,7 @@ export function MarketplacePage({ dict, lang }: Props) {
             )}
             {appliedMaxPrice != null && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-ink-100 text-ink-700 border border-ink-200">
-                {dict.marketplace.maxPrice}: {appliedMaxPrice / 1000} {dict.common.tnd}
+                {dict.marketplace.maxPrice}: {appliedMaxPrice / 100} {dict.common.eur}
                 <button
                   onClick={() => { setAppliedMaxPrice(undefined); setMaxPrice(''); }}
                   className="ml-0.5 hover:text-ink-900"
@@ -400,7 +400,7 @@ export function MarketplacePage({ dict, lang }: Props) {
               {experts.map((expert) => {
                 const gradient = GRADIENT_BY_CATEGORY[expert.category] ?? 'from-gray-400 to-gray-500';
                 const initials = getInitials(expert.firstName, expert.lastName);
-                const price = formatPrice(expert.sessionPriceMillimes);
+                const price = formatPrice(expert.sessionPriceCents);
 
                 return (
                   <a
@@ -439,7 +439,7 @@ export function MarketplacePage({ dict, lang }: Props) {
                     <div className="flex items-center justify-between pt-3.5 border-t-2 border-ink-900/10">
                       <span className="text-xs text-ink-400">{expert.totalSessions} {dict.marketplace.sessions}</span>
                       <span className="text-base font-bold text-ink-900">
-                        {price} <span className="text-xs font-normal text-ink-400">{dict.common.tnd}</span>
+                        {price} <span className="text-xs font-normal text-ink-400">{dict.common.eur}</span>
                       </span>
                     </div>
                   </a>

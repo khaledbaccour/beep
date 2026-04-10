@@ -75,7 +75,7 @@ export class BookingService {
     }
 
     let durationMinutes: number;
-    let priceMillimes: number;
+    let priceCents: number;
     let sessionOptionId: string | undefined;
 
     if (dto.sessionOptionId) {
@@ -86,11 +86,11 @@ export class BookingService {
         throw new BadRequestException('Invalid or inactive session option');
       }
       durationMinutes = sessionOption.durationMinutes;
-      priceMillimes = sessionOption.priceMillimes;
+      priceCents = sessionOption.priceCents;
       sessionOptionId = sessionOption.id;
     } else {
       durationMinutes = profile.sessionDurationMinutes;
-      priceMillimes = profile.sessionPriceMillimes ?? 0;
+      priceCents = profile.sessionPriceCents ?? 0;
     }
 
     const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
@@ -109,7 +109,7 @@ export class BookingService {
     booking.expertProfileId = profile.id;
     booking.scheduledStartTime = startTime;
     booking.scheduledEndTime = endTime;
-    booking.amountMillimes = priceMillimes;
+    booking.amountCents = priceCents;
     booking.durationMinutes = durationMinutes;
     booking.sessionOptionId = sessionOptionId;
     booking.status = BookingStatus.PENDING_PAYMENT;
@@ -144,8 +144,8 @@ export class BookingService {
     const result = await this.paymentGateway.recordPayment({
       bookingId: booking.id,
       transactionId: dto.transactionId,
-      amountMillimes: booking.amountMillimes,
-      currency: 'TND',
+      amountCents: booking.amountCents,
+      currency: 'EUR',
       idempotencyKey: `booking-${booking.id}`,
     });
 
@@ -243,10 +243,10 @@ export class BookingService {
       booking.cancelByExpert(dto.reason);
     }
 
-    if (booking.refundAmountMillimes > 0 && booking.paymentId) {
+    if (booking.refundAmountCents > 0 && booking.paymentId) {
       await this.paymentGateway.requestRefund({
         transactionId: booking.paymentId,
-        amountMillimes: booking.refundAmountMillimes,
+        amountCents: booking.refundAmountCents,
         reason: dto.reason,
         idempotencyKey: `refund-${booking.id}-${Date.now()}`,
       });
@@ -302,8 +302,8 @@ export class BookingService {
       scheduledStartTime: booking.scheduledStartTime,
       scheduledEndTime: booking.scheduledEndTime,
       status: booking.status,
-      amountMillimes: booking.amountMillimes,
-      refundAmountMillimes: booking.refundAmountMillimes,
+      amountCents: booking.amountCents,
+      refundAmountCents: booking.refundAmountCents,
       refundEligibility: booking.getRefundEligibility(),
       sessionRoomId: booking.sessionRoomId,
       durationMinutes: booking.durationMinutes,

@@ -56,7 +56,7 @@ export function LoginPage({ dict, lang }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
           <span className="text-[17px] font-body font-bold text-ink-900">
-            beep<span className="text-brand-500">.tn</span>
+            beep<span className="text-brand-500">.fr</span>
           </span>
         </a>
 

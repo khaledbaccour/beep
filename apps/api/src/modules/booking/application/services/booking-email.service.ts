@@ -18,7 +18,7 @@ export class BookingEmailService {
     private readonly templates: EmailTemplatesService,
     private readonly configService: ConfigService,
   ) {
-    this.appUrl = this.configService.get<string>('APP_URL') || 'https://beep.tn';
+    this.appUrl = this.configService.get<string>('APP_URL') || 'https://beep.fr';
   }
 
   async sendBookingConfirmedToClient(booking: Booking): Promise<void> {
@@ -30,7 +30,7 @@ export class BookingEmailService {
       scheduledStartTime: booking.scheduledStartTime,
       scheduledEndTime: booking.scheduledEndTime,
       durationMinutes,
-      amountMillimes: booking.amountMillimes,
+      amountCents: booking.amountCents,
       sessionRoomId: booking.sessionRoomId!,
       appUrl: this.appUrl,
       lang: 'en',
@@ -54,7 +54,7 @@ export class BookingEmailService {
       scheduledStartTime: booking.scheduledStartTime,
       scheduledEndTime: booking.scheduledEndTime,
       durationMinutes,
-      amountMillimes: booking.amountMillimes,
+      amountCents: booking.amountCents,
       sessionRoomId: booking.sessionRoomId!,
       appUrl: this.appUrl,
       lang: 'en',

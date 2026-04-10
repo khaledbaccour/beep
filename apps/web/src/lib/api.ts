@@ -19,7 +19,7 @@ interface PaginatedResponse<T> {
 export interface SessionOption {
   id: string;
   durationMinutes: number;
-  priceMillimes: number;
+  priceCents: number;
   label?: string;
   isActive: boolean;
   sortOrder: number;
@@ -35,7 +35,7 @@ export interface ExpertProfile {
   headline?: string;
   category: string;
   tags?: string[];
-  sessionPriceMillimes: number;
+  sessionPriceCents: number;
   sessionDurationMinutes: number;
   timezone: string;
   averageRating: number;
@@ -171,7 +171,7 @@ export interface BookingResponse {
   scheduledStartTime: string;
   scheduledEndTime: string;
   status: BookingStatus;
-  amountMillimes: number;
+  amountCents: number;
   durationMinutes?: number;
   sessionRoomId?: string;
 }
@@ -282,7 +282,7 @@ export interface CreateExpertProfileBody {
   headline?: string;
   category: string;
   tags?: string[];
-  sessionPriceMillimes: number;
+  sessionPriceCents: number;
   sessionDurationMinutes?: number;
   timezone?: string;
   sessionOptions?: SessionOptionInput[];
@@ -442,7 +442,7 @@ export interface OnboardingStep2Data {
 
 export interface SessionOptionInput {
   durationMinutes: number;
-  priceMillimes: number;
+  priceCents: number;
   label?: string;
   sortOrder?: number;
 }
@@ -450,7 +450,7 @@ export interface SessionOptionInput {
 export interface OnboardingStep3Data {
   sessionOptions: SessionOptionInput[];
   timezone: string;
-  sessionPriceMillimes?: number;
+  sessionPriceCents?: number;
   sessionDurationMinutes?: number;
 }
 
@@ -475,10 +475,10 @@ export interface OnboardingStatus {
     certifications?: { name: string; issuer: string; year: number }[];
     yearsOfExperience?: number;
     languages?: string[];
-    sessionPriceMillimes?: number;
+    sessionPriceCents?: number;
     sessionDurationMinutes?: number;
     timezone?: string;
-    sessionOptions?: { id: string; durationMinutes: number; priceMillimes: number; label?: string; isActive: boolean; sortOrder: number }[];
+    sessionOptions?: { id: string; durationMinutes: number; priceCents: number; label?: string; isActive: boolean; sortOrder: number }[];
     payoutMethod?: 'BANK_TRANSFER';
     payoutDetails?: Record<string, string>;
   };

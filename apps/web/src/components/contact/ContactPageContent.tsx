@@ -35,7 +35,7 @@ export function ContactPageContent({ dict, lang }: Props) {
     e.preventDefault();
     const subject = encodeURIComponent(`[Beep] ${formState.subject}`);
     const body = encodeURIComponent(`Name: ${formState.name}\nEmail: ${formState.email}\n\n${formState.message}`);
-    window.open(`mailto:contact@beep.tn?subject=${subject}&body=${body}`, '_self');
+    window.open(`mailto:contact@beep.fr?subject=${subject}&body=${body}`, '_self');
     setSubmitted(true);
   };
 
@@ -53,7 +53,7 @@ export function ContactPageContent({ dict, lang }: Props) {
     {
       title: d.socialTitle,
       desc: d.socialDesc,
-      detail: '@beep.tn',
+      detail: '@beep.fr',
       icon: MessageCircle,
       bg: 'bg-[#FFF5F2]',
       iconBg: 'bg-[#FDE8E4]',
@@ -255,7 +255,7 @@ export function ContactPageContent({ dict, lang }: Props) {
 
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 select-none pointer-events-none">
           <span className="text-[100px] sm:text-[160px] md:text-[200px] font-bold text-white/[0.03] leading-none tracking-tighter uppercase">
-            BEEP.TN
+            BEEP.FR
           </span>
         </div>
 

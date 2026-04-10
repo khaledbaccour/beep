@@ -17,7 +17,7 @@ import { CATEGORIES } from './types';
 
 interface SessionOptionRow {
   durationMinutes: number;
-  priceTND: string;
+  priceEUR: string;
   label: string;
 }
 
@@ -49,7 +49,7 @@ export function ProfileTab({ d, dict, lang }: TabProps) {
   const [duration, setDuration] = useState('30');
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [sessionOptions, setSessionOptions] = useState<SessionOptionRow[]>([
-    { durationMinutes: 60, priceTND: '', label: '' },
+    { durationMinutes: 60, priceEUR: '', label: '' },
   ]);
 
   useEffect(() => {
@@ -86,14 +86,14 @@ export function ProfileTab({ d, dict, lang }: TabProps) {
     setHeadline(p.headline ?? '');
     setCategory(p.category);
     setTags(p.tags?.join(', ') ?? '');
-    setPrice(String(p.sessionPriceMillimes / 1000));
+    setPrice(String(p.sessionPriceCents / 100));
     setDuration(String(p.sessionDurationMinutes));
     setTimezone(p.timezone);
     if (p.sessionOptions && p.sessionOptions.length > 0) {
       setSessionOptions(
         p.sessionOptions.map((so) => ({
           durationMinutes: so.durationMinutes,
-          priceTND: String(so.priceMillimes / 1000),
+          priceEUR: String(so.priceCents / 100),
           label: so.label || '',
         })),
       );
@@ -101,7 +101,7 @@ export function ProfileTab({ d, dict, lang }: TabProps) {
       setSessionOptions([
         {
           durationMinutes: p.sessionDurationMinutes,
-          priceTND: String(p.sessionPriceMillimes / 1000),
+          priceEUR: String(p.sessionPriceCents / 100),
           label: '',
         },
       ]);
@@ -122,14 +122,14 @@ export function ProfileTab({ d, dict, lang }: TabProps) {
       headline: headline || undefined,
       category,
       tags: tags ? tags.split(',').map((t) => t.trim()).filter(Boolean) : undefined,
-      sessionPriceMillimes: firstOpt ? Math.round(parseFloat(firstOpt.priceTND) * 1000) : Math.round(parseFloat(price) * 1000),
+      sessionPriceCents: firstOpt ? Math.round(parseFloat(firstOpt.priceEUR) * 100) : Math.round(parseFloat(price) * 100),
       sessionDurationMinutes: firstOpt ? firstOpt.durationMinutes : parseInt(duration, 10),
       timezone,
       sessionOptions: sessionOptions
-        .filter((o) => o.priceTND && parseFloat(o.priceTND) > 0)
+        .filter((o) => o.priceEUR && parseFloat(o.priceEUR) > 0)
         .map((o, i) => ({
           durationMinutes: o.durationMinutes,
-          priceMillimes: Math.round(parseFloat(o.priceTND) * 1000),
+          priceCents: Math.round(parseFloat(o.priceEUR) * 100),
           label: o.label || undefined,
           sortOrder: i,
         })),
@@ -307,10 +307,10 @@ export function ProfileTab({ d, dict, lang }: TabProps) {
                         min="1"
                         max="9999"
                         step="0.5"
-                        value={opt.priceTND}
+                        value={opt.priceEUR}
                         onChange={(e) => {
                           const updated = sessionOptions.map((o, i) =>
-                            i === idx ? { ...o, priceTND: e.target.value } : o,
+                            i === idx ? { ...o, priceEUR: e.target.value } : o,
                           );
                           setSessionOptions(updated);
                         }}
@@ -318,7 +318,7 @@ export function ProfileTab({ d, dict, lang }: TabProps) {
                         className="border-2 border-ink-200 rounded-xl pr-14"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-400">
-                        TND
+                        EUR
                       </span>
                     </div>
                   </div>
@@ -348,7 +348,7 @@ export function ProfileTab({ d, dict, lang }: TabProps) {
               onClick={() =>
                 setSessionOptions([
                   ...sessionOptions,
-                  { durationMinutes: 60, priceTND: '', label: '' },
+                  { durationMinutes: 60, priceEUR: '', label: '' },
                 ])
               }
               className="mt-3 rounded-xl text-sm text-ink-500 hover:text-ink-700"

@@ -216,9 +216,9 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       setPendingBookingId(pendingBooking.id);
 
       // Step 2: Open Gammal Tech payment popup
-      const amountTND = (selectedOption?.priceMillimes ?? expert.sessionPriceMillimes) / 1000;
+      const amountEUR = (selectedOption?.priceCents ?? expert.sessionPriceCents) / 100;
       const payment = await payWithCard(
-        amountTND,
+        amountEUR,
         `Beep: Session with ${expert.firstName} ${expert.lastName}`,
       );
 
@@ -292,10 +292,10 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   const options = expert.sessionOptions ?? [];
   const hasMultipleOptions = options.length > 1;
   const displayPrice = selectedOption
-    ? formatPrice(selectedOption.priceMillimes)
+    ? formatPrice(selectedOption.priceCents)
     : hasMultipleOptions
-      ? formatPrice(Math.min(...options.map((o) => o.priceMillimes)))
-      : formatPrice(expert.sessionPriceMillimes);
+      ? formatPrice(Math.min(...options.map((o) => o.priceCents)))
+      : formatPrice(expert.sessionPriceCents);
   const displayDuration = selectedOption
     ? selectedOption.durationMinutes
     : expert.sessionDurationMinutes;
@@ -412,7 +412,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
                   <span className="text-sm text-ink-400 mr-1">{t.from}</span>
                 )}
                 <span className="text-3xl font-display font-bold text-ink-900">{displayPrice}</span>
-                <span className="text-sm text-ink-400">{dict.common.tnd}</span>
+                <span className="text-sm text-ink-400">{dict.common.eur}</span>
               </div>
               <p className="text-xs text-ink-400 mb-5">
                 {displayDuration} min &middot; {t.perSession}

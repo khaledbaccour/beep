@@ -13,7 +13,7 @@ export interface BookingConfirmedClientData {
   scheduledStartTime: Date;
   scheduledEndTime: Date;
   durationMinutes: number;
-  amountMillimes: number;
+  amountCents: number;
   sessionRoomId: string;
   appUrl: string;
   lang: string;
@@ -25,7 +25,7 @@ export interface BookingConfirmedExpertData {
   scheduledStartTime: Date;
   scheduledEndTime: Date;
   durationMinutes: number;
-  amountMillimes: number;
+  amountCents: number;
   sessionRoomId: string;
   appUrl: string;
   lang: string;
@@ -53,7 +53,7 @@ export class EmailTemplatesService {
   bookingConfirmedClient(data: BookingConfirmedClientData): EmailContent {
     const date = this.formatDate(data.scheduledStartTime);
     const time = this.formatTimeRange(data.scheduledStartTime, data.scheduledEndTime);
-    const amount = this.formatMillimes(data.amountMillimes);
+    const amount = this.formatCents(data.amountCents);
     const link = this.meetingLink(data.appUrl, data.lang, data.sessionRoomId);
     const refId = data.bookingId.slice(0, 8).toUpperCase();
 
@@ -140,7 +140,7 @@ export class EmailTemplatesService {
   bookingConfirmedExpert(data: BookingConfirmedExpertData): EmailContent {
     const date = this.formatDate(data.scheduledStartTime);
     const time = this.formatTimeRange(data.scheduledStartTime, data.scheduledEndTime);
-    const amount = this.formatMillimes(data.amountMillimes);
+    const amount = this.formatCents(data.amountCents);
     const link = this.meetingLink(data.appUrl, data.lang, data.sessionRoomId);
 
     return {
@@ -299,13 +299,13 @@ export class EmailTemplatesService {
 
   availabilityReminder(data: AvailabilityReminderData): EmailContent {
     const lang = data.lang || 'fr';
-    const locale = lang === 'ar' ? 'ar-TN' : lang === 'en' ? 'en-US' : 'fr-FR';
+    const locale = lang === 'en' ? 'en-US' : 'fr-FR';
     const weekDate = new Date(data.weekStartDate + 'T00:00:00Z');
     const weekLabel = weekDate.toLocaleDateString(locale, {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
-      timeZone: 'Africa/Tunis',
+      timeZone: 'Europe/Paris',
     });
     const dashboardLink = `${data.appUrl}/${lang}/dashboard?tab=availability`;
 
@@ -327,15 +327,6 @@ export class EmailTemplatesService {
         cta_detail: 'Without availability, clients won\'t be able to book sessions with you. Take a moment to plan your week.',
         cta: 'Plan my availability',
         tip: 'Tip: enable recurring scheduling to stop receiving this reminder.',
-      },
-      ar: {
-        subject: `خطط لتوفرك لأسبوع ${weekLabel}`,
-        title: 'خطط لأسبوعك',
-        greeting: `مرحبا <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>،`,
-        body: `لم تحدد بعد توفرك لأسبوع <strong style="color:#FF6B35;">${weekLabel}</strong>.`,
-        cta_detail: 'بدون توفر، لن يتمكن العملاء من حجز جلسات معك. خذ لحظة للتخطيط لأسبوعك.',
-        cta: 'تخطيط توفري',
-        tip: 'نصيحة: فعّل الجدولة المتكررة لعدم تلقي هذا التذكير.',
       },
     }[lang] ?? {
       subject: `Planifiez vos disponibilités pour la semaine du ${weekLabel}`,
@@ -384,9 +375,9 @@ export class EmailTemplatesService {
     };
   }
 
-  private formatMillimes(millimes: number): string {
-    const tnd = millimes / 1000;
-    return `${tnd.toFixed(3)} TND`;
+  private formatCents(cents: number): string {
+    const eur = cents / 100;
+    return `${eur.toFixed(2)} EUR`;
   }
 
   private formatDate(date: Date): string {
@@ -395,7 +386,7 @@ export class EmailTemplatesService {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      timeZone: 'Africa/Tunis',
+      timeZone: 'Europe/Paris',
     });
   }
 
@@ -403,7 +394,7 @@ export class EmailTemplatesService {
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'Africa/Tunis',
+      timeZone: 'Europe/Paris',
       hour12: false,
     });
   }
@@ -437,7 +428,7 @@ export class EmailTemplatesService {
         <!-- Footer -->
         <tr><td style="padding:24px 0 0;text-align:center;">
           <p style="color:#475569;font-size:11px;margin:0;">
-            Questions? Reply to this email or contact us at bookings@beep.tn
+            Questions? Reply to this email or contact us at bookings@beep.fr
           </p>
           <p style="color:#334155;font-size:11px;margin:8px 0 0;">
             &copy; 2026 Beep. All rights reserved.

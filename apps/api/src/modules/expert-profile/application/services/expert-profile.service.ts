@@ -105,9 +105,9 @@ export class ExpertProfileService {
     profile.headline = dto.headline;
     profile.category = dto.category;
     profile.tags = dto.tags;
-    profile.sessionPriceMillimes = dto.sessionPriceMillimes;
+    profile.sessionPriceCents = dto.sessionPriceCents;
     profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
-    profile.timezone = dto.timezone ?? 'Africa/Tunis';
+    profile.timezone = dto.timezone ?? 'Europe/Paris';
 
     const saved = await this.profileRepo.save(profile);
 
@@ -300,7 +300,7 @@ export class ExpertProfileService {
       throw new BadRequestException(ErrorCode.COMPLETE_STEP_2_FIRST);
     }
 
-    profile.timezone = dto.timezone ?? 'Africa/Tunis';
+    profile.timezone = dto.timezone ?? 'Europe/Paris';
     await this.upsertSessionOptions(profile, dto);
     profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PRICING);
     profile.profileCompleteness = profile.calculateCompleteness();
@@ -341,7 +341,7 @@ export class ExpertProfileService {
     if (!profile.bio) missingFields.push('bio');
     if (!profile.category) missingFields.push('category');
     const hasSessionOptions = profile.sessionOptions && profile.sessionOptions.length > 0;
-    if (!profile.sessionPriceMillimes && !hasSessionOptions) missingFields.push('sessionPriceMillimes');
+    if (!profile.sessionPriceCents && !hasSessionOptions) missingFields.push('sessionPriceCents');
     if (!profile.languages || profile.languages.length === 0) missingFields.push('languages');
     if (!profile.payoutMethod) missingFields.push('payoutMethod');
 
@@ -400,16 +400,16 @@ export class ExpertProfileService {
     if (dto.sessionOptions && dto.sessionOptions.length > 0) {
       await this.replaceSessionOptions(profile, dto.sessionOptions);
       const first = dto.sessionOptions[0];
-      profile.sessionPriceMillimes = first.priceMillimes;
+      profile.sessionPriceCents = first.priceCents;
       profile.sessionDurationMinutes = first.durationMinutes;
-    } else if (dto.sessionPriceMillimes) {
+    } else if (dto.sessionPriceCents) {
       const optionDto: CreateSessionOptionDto = {
         durationMinutes: dto.sessionDurationMinutes ?? 60,
-        priceMillimes: dto.sessionPriceMillimes,
+        priceCents: dto.sessionPriceCents,
         sortOrder: 0,
       };
       await this.replaceSessionOptions(profile, [optionDto]);
-      profile.sessionPriceMillimes = dto.sessionPriceMillimes;
+      profile.sessionPriceCents = dto.sessionPriceCents;
       profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
     }
   }
@@ -423,7 +423,7 @@ export class ExpertProfileService {
       const entity = new SessionOption();
       entity.expertProfileId = profile.id;
       entity.durationMinutes = opt.durationMinutes;
-      entity.priceMillimes = opt.priceMillimes;
+      entity.priceCents = opt.priceCents;
       entity.label = opt.label;
       entity.sortOrder = opt.sortOrder ?? index;
       entity.isActive = true;
@@ -433,7 +433,7 @@ export class ExpertProfileService {
     profile.sessionOptions = entities;
     if (entities.length > 0) {
       const first = entities.sort((a, b) => a.sortOrder - b.sortOrder)[0];
-      profile.sessionPriceMillimes = first.priceMillimes;
+      profile.sessionPriceCents = first.priceCents;
       profile.sessionDurationMinutes = first.durationMinutes;
     }
   }
@@ -448,7 +448,7 @@ export class ExpertProfileService {
           new SessionOptionResponseDto({
             id: opt.id,
             durationMinutes: opt.durationMinutes,
-            priceMillimes: opt.priceMillimes,
+            priceCents: opt.priceCents,
             label: opt.label,
             isActive: opt.isActive,
             sortOrder: opt.sortOrder,
@@ -470,7 +470,7 @@ export class ExpertProfileService {
         certifications: profile.certifications,
         yearsOfExperience: profile.yearsOfExperience,
         languages: profile.languages,
-        sessionPriceMillimes: profile.sessionPriceMillimes ?? undefined,
+        sessionPriceCents: profile.sessionPriceCents ?? undefined,
         sessionDurationMinutes: profile.sessionDurationMinutes,
         timezone: profile.timezone,
         payoutMethod: profile.payoutMethod,
@@ -496,7 +496,7 @@ export class ExpertProfileService {
       headline: profile.headline,
       category: profile.category,
       tags: profile.tags,
-      sessionPriceMillimes: profile.sessionPriceMillimes,
+      sessionPriceCents: profile.sessionPriceCents,
       sessionDurationMinutes: profile.sessionDurationMinutes,
       timezone: profile.timezone,
       averageRating: Number(profile.averageRating),

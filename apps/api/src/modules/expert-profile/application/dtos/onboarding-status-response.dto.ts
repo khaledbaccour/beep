@@ -15,7 +15,7 @@ export class OnboardingStatusResponseDto {
     certifications?: Certification[];
     yearsOfExperience?: number;
     languages?: string[];
-    sessionPriceMillimes?: number;
+    sessionPriceCents?: number;
     sessionDurationMinutes?: number;
     timezone?: string;
     payoutMethod?: PayoutMethod;

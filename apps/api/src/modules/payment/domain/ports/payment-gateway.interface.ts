@@ -3,8 +3,8 @@ export const PAYMENT_GATEWAY = Symbol('PAYMENT_GATEWAY');
 export interface RecordPaymentRequest {
   bookingId: string;
   transactionId: string;
-  amountMillimes: number;
-  currency: 'TND';
+  amountCents: number;
+  currency: 'EUR';
   idempotencyKey: string;
 }
 
@@ -15,7 +15,7 @@ export interface RecordPaymentResult {
 
 export interface RefundRequest {
   transactionId: string;
-  amountMillimes: number;
+  amountCents: number;
   reason: string;
   idempotencyKey: string;
 }

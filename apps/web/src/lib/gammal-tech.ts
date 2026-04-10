@@ -165,18 +165,18 @@ export function isGammalTechLoggedIn(): boolean {
  * When NEXT_PUBLIC_DEV_PAYMENT=true, skips the SDK popup entirely
  * and returns a fake successful transaction for development/testing.
  *
- * @param amountTND  Amount in TND (NOT millimes).
+ * @param amountEUR  Amount in EUR (NOT cents).
  * @param description  Human-readable description shown on receipt.
  * @returns The transaction details on success.
  */
 export async function payWithCard(
-  amountTND: number,
+  amountEUR: number,
   description: string,
 ): Promise<{ txn: string; amount: number }> {
   if (DEV_PAYMENT) {
     return {
       txn: `dev_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      amount: amountTND,
+      amount: amountEUR,
     };
   }
 
@@ -193,7 +193,7 @@ export async function payWithCard(
 
   return new Promise<{ txn: string; amount: number }>((resolve, reject) => {
     sdk
-      .payCard(amountTND, 'TND', description, (delivery) => {
+      .payCard(amountEUR, 'EUR', description, (delivery) => {
         resolve({ txn: delivery.txn, amount: delivery.amount });
       })
       .catch((err: Error) => {

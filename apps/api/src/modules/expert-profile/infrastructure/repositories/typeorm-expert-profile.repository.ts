@@ -40,10 +40,10 @@ export class TypeOrmExpertProfileRepository implements IExpertProfileRepository 
       qb.andWhere('profile.category = :category', { category: filters.category });
     }
     if (filters.minPrice !== undefined) {
-      qb.andWhere('profile.sessionPriceMillimes >= :minPrice', { minPrice: filters.minPrice });
+      qb.andWhere('profile.sessionPriceCents >= :minPrice', { minPrice: filters.minPrice });
     }
     if (filters.maxPrice !== undefined) {
-      qb.andWhere('profile.sessionPriceMillimes <= :maxPrice', { maxPrice: filters.maxPrice });
+      qb.andWhere('profile.sessionPriceCents <= :maxPrice', { maxPrice: filters.maxPrice });
     }
     if (filters.search) {
       qb.andWhere(
