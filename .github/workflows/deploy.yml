@@ -20,4 +20,4 @@ jobs:
             cd /opt/beep/$BRANCH
             git pull origin $BRANCH
             docker compose -p "$PROJECT" build web api
-            docker compose -p "$PROJECT" up -d web api
+            docker compose -p "$PROJECT" up -d --force-recreate web api
