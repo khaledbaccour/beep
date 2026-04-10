@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Plus, Trash2, Clock, Copy, ChevronLeft, ChevronRight, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ExpertProfile, WeekSlot, AvailabilityScheduleSlot, RecurrenceConfig } from '@/lib/api';
-import { setWeekAvailability, getWeekSlots, setAvailability, getSchedules, setRecurrence, getRecurrence } from '@/lib/api';
+import { setWeekAvailability, getWeekSlots, setAvailability, getSchedules, setRecurrence, getRecurrence, getMyExpertProfile } from '@/lib/api';
 import type { TabProps } from './types';
 import { DAYS } from './types';
 
@@ -181,39 +181,60 @@ export function AvailabilityTab({ d }: TabProps) {
   }, []);
 
   useEffect(() => {
-    const storedProfile = localStorage.getItem('beep_expert_profile');
-    if (!storedProfile) {
+    async function loadProfileAndSchedules() {
+      // Try API first, fall back to localStorage
+      let p: ExpertProfile | null = null;
+
+      try {
+        const res = await getMyExpertProfile();
+        p = res.data;
+        if (p) {
+          localStorage.setItem('beep_expert_profile', JSON.stringify(p));
+        }
+      } catch {
+        const stored = localStorage.getItem('beep_expert_profile');
+        if (stored) p = JSON.parse(stored);
+      }
+
+      if (!p) {
+        setLoading(false);
+        return;
+      }
+
+      setProfileId(p.id);
+
+      try {
+        const [schedRes, recRes, weekRes] = await Promise.all([
+          getSchedules(p.id),
+          getRecurrence(p.id),
+          getWeekSlots(p.id, toDateStr(monday)),
+        ]);
+
+        const tpl = templateToSchedule(schedRes.data ?? []);
+        setTemplate(tpl);
+
+        const rec = recRes.data ?? { isRecurring: false, recurringUntil: null };
+        setRecurrenceState(rec);
+
+        const weekData = weekRes.data ?? [];
+        if (weekData.length > 0) {
+          setSchedule(weekSlotsToSchedule(weekData, monday));
+          setIsFromTemplate(false);
+        } else if (rec.isRecurring) {
+          const hasAnyTemplate = DAYS.some((day) => tpl[day].enabled);
+          if (hasAnyTemplate) {
+            setSchedule(JSON.parse(JSON.stringify(tpl)));
+            setIsFromTemplate(true);
+          }
+        }
+      } catch {
+        // Silently fail, leave empty
+      }
+
       setLoading(false);
-      return;
     }
 
-    const p: ExpertProfile = JSON.parse(storedProfile);
-    setProfileId(p.id);
-
-    Promise.all([
-      getSchedules(p.id),
-      getRecurrence(p.id),
-      getWeekSlots(p.id, toDateStr(monday)),
-    ]).then(([schedRes, recRes, weekRes]) => {
-      const tpl = templateToSchedule(schedRes.data ?? []);
-      setTemplate(tpl);
-
-      const rec = recRes.data ?? { isRecurring: false, recurringUntil: null };
-      setRecurrenceState(rec);
-
-      const weekData = weekRes.data ?? [];
-      if (weekData.length > 0) {
-        setSchedule(weekSlotsToSchedule(weekData, monday));
-        setIsFromTemplate(false);
-      } else if (rec.isRecurring) {
-        const hasAnyTemplate = DAYS.some((day) => tpl[day].enabled);
-        if (hasAnyTemplate) {
-          setSchedule(JSON.parse(JSON.stringify(tpl)));
-          setIsFromTemplate(true);
-        }
-      }
-    }).catch(() => {})
-      .finally(() => setLoading(false));
+    loadProfileAndSchedules();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function navigateWeek(direction: -1 | 1) {

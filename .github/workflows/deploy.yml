@@ -16,7 +16,8 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             BRANCH="${{ github.ref_name }}"
+            PROJECT="beep-${BRANCH}"
             cd /opt/beep/$BRANCH
             git pull origin $BRANCH
-            docker compose build web api
-            docker compose up -d web api
+            docker compose -p "$PROJECT" build web api
+            docker compose -p "$PROJECT" up -d web api
