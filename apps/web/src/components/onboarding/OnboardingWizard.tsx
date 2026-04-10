@@ -62,11 +62,8 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
 
   const [step4, setStep4] = useState<StepPayoutData>({
     payoutMethod: 'BANK_TRANSFER',
-    bankName: '',
     iban: '',
     accountHolderName: '',
-    mobileProvider: '',
-    mobilePhone: '',
   });
 
   // Load existing onboarding status on mount
@@ -128,12 +125,9 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           if (p.payoutMethod) {
             const details = p.payoutDetails || {};
             setStep4({
-              payoutMethod: p.payoutMethod,
-              bankName: details.bankName || '',
+              payoutMethod: 'BANK_TRANSFER',
               iban: details.iban || '',
               accountHolderName: details.accountHolderName || '',
-              mobileProvider: details.mobileProvider || '',
-              mobilePhone: details.mobilePhone || '+216',
             });
           }
         }
@@ -184,37 +178,20 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
     }
 
     if (step === 4) {
-      if (step4.payoutMethod === 'BANK_TRANSFER') {
-        const name = step4.accountHolderName.trim();
-        if (!name) {
-          newErrors.accountHolderName = dict.onboarding.valAccountHolder;
-        } else if (name.length < 3) {
-          newErrors.accountHolderName = dict.onboarding.valNameMin;
-        } else if (!/^[a-zA-Z\u00C0-\u024F\s\-']{3,100}$/.test(name)) {
-          newErrors.accountHolderName = dict.onboarding.valNameFormat;
-        }
+      const name = step4.accountHolderName.trim();
+      if (!name) {
+        newErrors.accountHolderName = dict.onboarding.valAccountHolder;
+      } else if (name.length < 3) {
+        newErrors.accountHolderName = dict.onboarding.valNameMin;
+      } else if (!/^[a-zA-Z\u00C0-\u024F\s\-']{3,100}$/.test(name)) {
+        newErrors.accountHolderName = dict.onboarding.valNameFormat;
+      }
 
-        if (!step4.bankName) {
-          newErrors.bankName = dict.onboarding.valBankName;
-        }
-
-        const iban = step4.iban.replace(/\s/g, '').toUpperCase();
-        if (!iban) {
-          newErrors.iban = dict.onboarding.valIban;
-        } else if (!/^TN\d{22}$/.test(iban)) {
-          newErrors.iban = dict.onboarding.valIbanFormat;
-        }
-      } else {
-        if (!step4.mobileProvider) {
-          newErrors.mobileProvider = dict.onboarding.valProvider;
-        }
-
-        const phone = step4.mobilePhone.replace(/\s/g, '');
-        if (!phone) {
-          newErrors.mobilePhone = dict.onboarding.valPhone;
-        } else if (!/^\+216[2-9]\d{7}$/.test(phone)) {
-          newErrors.mobilePhone = dict.onboarding.valPhoneFormat;
-        }
+      const iban = step4.iban.replace(/\s/g, '').toUpperCase();
+      if (!iban) {
+        newErrors.iban = dict.onboarding.valIban;
+      } else if (!/^FR\d{2}[A-Z0-9]{23}$/.test(iban)) {
+        newErrors.iban = dict.onboarding.valIbanFormat;
       }
     }
 
@@ -258,21 +235,11 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         });
       } else if (currentStep === 4) {
         await saveOnboardingStep4({
-          payoutMethod: step4.payoutMethod,
-          ...(step4.payoutMethod === 'BANK_TRANSFER'
-            ? {
-                bankTransferDetails: {
-                  accountHolderName: step4.accountHolderName.trim(),
-                  bankName: step4.bankName,
-                  iban: step4.iban.replace(/\s/g, '').toUpperCase(),
-                },
-              }
-            : {
-                mobileMoneyDetails: {
-                  mobileProvider: step4.mobileProvider,
-                  mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
-                },
-              }),
+          payoutMethod: 'BANK_TRANSFER',
+          bankTransferDetails: {
+            accountHolderName: step4.accountHolderName.trim(),
+            iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+          },
         });
       }
 
@@ -296,21 +263,11 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
     try {
       // Save step 4 first
       await saveOnboardingStep4({
-        payoutMethod: step4.payoutMethod,
-        ...(step4.payoutMethod === 'BANK_TRANSFER'
-          ? {
-              bankTransferDetails: {
-                accountHolderName: step4.accountHolderName.trim(),
-                bankName: step4.bankName,
-                iban: step4.iban.replace(/\s/g, '').toUpperCase(),
-              },
-            }
-          : {
-              mobileMoneyDetails: {
-                mobileProvider: step4.mobileProvider,
-                mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
-              },
-            }),
+        payoutMethod: 'BANK_TRANSFER',
+        bankTransferDetails: {
+          accountHolderName: step4.accountHolderName.trim(),
+          iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+        },
       });
 
       // Then complete onboarding
@@ -377,23 +334,13 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           sessionDurationMinutes: firstOpt.durationMinutes,
         });
       }
-      if (currentStep >= 4 && step4.payoutMethod) {
+      if (currentStep >= 4 && step4.accountHolderName && step4.iban) {
         await saveOnboardingStep4({
-          payoutMethod: step4.payoutMethod,
-          ...(step4.payoutMethod === 'BANK_TRANSFER'
-            ? {
-                bankTransferDetails: {
-                  accountHolderName: step4.accountHolderName.trim(),
-                  bankName: step4.bankName,
-                  iban: step4.iban.replace(/\s/g, '').toUpperCase(),
-                },
-              }
-            : {
-                mobileMoneyDetails: {
-                  mobileProvider: step4.mobileProvider,
-                  mobilePhone: step4.mobilePhone.replace(/\s/g, ''),
-                },
-              }),
+          payoutMethod: 'BANK_TRANSFER',
+          bankTransferDetails: {
+            accountHolderName: step4.accountHolderName.trim(),
+            iban: step4.iban.replace(/\s/g, '').toUpperCase(),
+          },
         });
       }
 

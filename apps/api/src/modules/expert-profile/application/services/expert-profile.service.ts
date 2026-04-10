@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserRole, OnboardingStep, PayoutMethod, ErrorCode } from '@beep/shared';
+import { UserRole, OnboardingStep, ErrorCode } from '@beep/shared';
 import { ExpertProfile } from '../../domain/entities/expert-profile.entity';
 import { SessionOption } from '../../domain/entities/session-option.entity';
 import {
@@ -298,16 +298,10 @@ export class ExpertProfileService {
     }
 
     profile.payoutMethod = dto.payoutMethod;
-    profile.payoutDetails = dto.payoutMethod === PayoutMethod.BANK_TRANSFER
-      ? {
-          accountHolderName: dto.bankTransferDetails!.accountHolderName.trim(),
-          bankName: dto.bankTransferDetails!.bankName,
-          iban: dto.bankTransferDetails!.iban.replace(/\s/g, '').toUpperCase(),
-        }
-      : {
-          mobileProvider: dto.mobileMoneyDetails!.mobileProvider,
-          mobilePhone: dto.mobileMoneyDetails!.mobilePhone.replace(/\s/g, ''),
-        };
+    profile.payoutDetails = {
+      accountHolderName: dto.bankTransferDetails.accountHolderName.trim(),
+      iban: dto.bankTransferDetails.iban.replace(/\s/g, '').toUpperCase(),
+    };
     profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PAYOUT);
     profile.profileCompleteness = profile.calculateCompleteness();
 

@@ -1,48 +1,12 @@
 /**
- * Major Tunisian banks recognized for payout.
- * Used for validation on both frontend and backend.
+ * French IBAN: FR + 2 check digits + 23 alphanumeric = 27 characters total.
+ * Input should be uppercased and whitespace-stripped before validation.
  */
-export const TUNISIAN_BANKS = [
-  'BIAT',
-  'Attijari Bank',
-  'STB',
-  'BNA',
-  'BH Bank',
-  'Amen Bank',
-  'UIB',
-  'BT',
-  'UBCI',
-  'ABC',
-  'Zitouna Bank',
-  'Al Baraka Bank',
-  'Wifak Bank',
-  'QNB',
-  'Citibank',
-  'BTL',
-  'TSB',
-  'BTK',
-  'BTS',
-  'Other',
-] as const;
-
-export type TunisianBank = (typeof TUNISIAN_BANKS)[number];
-
-/**
- * Supported mobile money providers in Tunisia.
- */
-export const MOBILE_PROVIDERS = ['D17', 'Flouci', 'Sobflous', 'MobiDinar'] as const;
-
-export type MobileProvider = (typeof MOBILE_PROVIDERS)[number];
-
-/**
- * Tunisian RIB is exactly 20 digits.
- * Tunisian IBAN is TN59 + 20 digits = 24 characters total.
- */
-export const TUNISIAN_IBAN_REGEX = /^TN59\d{20}$/;
-export const TUNISIAN_RIB_REGEX = /^[0-9]{20}$/;
+export const FRENCH_IBAN_REGEX = /^FR\d{2}[A-Z0-9]{23}$/;
 
 /**
  * Tunisian phone number: +216 followed by 8 digits (starting with 2, 3, 4, 5, 7, or 9).
+ * Kept for user registration validation (register.dto.ts).
  */
 export const TUNISIAN_PHONE_REGEX = /^\+216[2-9]\d{7}$/;
 
