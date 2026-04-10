@@ -1,8 +1,5 @@
 import { i18n, type Locale } from '@/i18n';
 import { notFound } from 'next/navigation';
-import { UnderConstructionPage } from '@/components/UnderConstructionPage';
-
-const UNDER_CONSTRUCTION = true;
 import {
   Space_Grotesk,
   DM_Sans,
@@ -62,7 +59,7 @@ export default function LangLayout({
       className={`scroll-smooth ${display.variable} ${body.variable} ${accent.variable} ${mono.variable}`}
     >
       <body className="min-h-screen bg-white">
-        {UNDER_CONSTRUCTION ? <UnderConstructionPage lang={params.lang} /> : children}
+        {children}
       </body>
     </html>
   );
