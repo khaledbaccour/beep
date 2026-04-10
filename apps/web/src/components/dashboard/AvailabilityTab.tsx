@@ -300,6 +300,8 @@ export function AvailabilityTab({ d }: TabProps) {
   }
 
   async function handleRecurrenceToggle() {
+    setMessage('');
+    setIsError(false);
     const newVal = !recurrence.isRecurring;
     const newRec: RecurrenceConfig = { isRecurring: newVal, recurringUntil: recurrence.recurringUntil };
     setRecurrenceState(newRec);
@@ -307,10 +309,14 @@ export function AvailabilityTab({ d }: TabProps) {
       await setRecurrence(newRec);
     } catch {
       setRecurrenceState(recurrence); // revert
+      setIsError(true);
+      setMessage(d.scheduleError);
     }
   }
 
   async function handleRecurrenceUntilChange(value: string) {
+    setMessage('');
+    setIsError(false);
     const newRec: RecurrenceConfig = {
       isRecurring: recurrence.isRecurring,
       recurringUntil: value || null,
@@ -320,6 +326,8 @@ export function AvailabilityTab({ d }: TabProps) {
       await setRecurrence(newRec);
     } catch {
       setRecurrenceState(recurrence);
+      setIsError(true);
+      setMessage(d.scheduleError);
     }
   }
 
@@ -452,8 +460,8 @@ export function AvailabilityTab({ d }: TabProps) {
                     aria-label={`Toggle ${dayLabels[day]}`}
                   >
                     <span
-                      className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white border-2 border-ink-900 transition-transform ${
-                        ds.enabled ? 'translate-x-[24px]' : 'translate-x-[3px]'
+                      className={`absolute top-[2px] left-0 w-[18px] h-[18px] rounded-full bg-white border-2 border-ink-900 transition-transform ${
+                        ds.enabled ? 'translate-x-[26px]' : 'translate-x-[3px]'
                       }`}
                     />
                   </button>
@@ -560,8 +568,8 @@ export function AvailabilityTab({ d }: TabProps) {
               }`}
             >
               <span
-                className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white border-2 border-ink-900 transition-transform ${
-                  recurrence.isRecurring ? 'translate-x-[24px]' : 'translate-x-[3px]'
+                className={`absolute top-[2px] left-0 w-[18px] h-[18px] rounded-full bg-white border-2 border-ink-900 transition-transform ${
+                  recurrence.isRecurring ? 'translate-x-[26px]' : 'translate-x-[3px]'
                 }`}
               />
             </button>
@@ -615,8 +623,8 @@ export function AvailabilityTab({ d }: TabProps) {
                             ds.enabled ? 'bg-brand-500' : 'bg-ink-100'
                           }`}
                         >
-                          <span className={`absolute top-[2px] w-3.5 h-3.5 rounded-full bg-white border-[1.5px] border-ink-900 transition-transform ${
-                            ds.enabled ? 'translate-x-[16px]' : 'translate-x-[2px]'
+                          <span className={`absolute top-[2px] left-0 w-3.5 h-3.5 rounded-full bg-white border-[1.5px] border-ink-900 transition-transform ${
+                            ds.enabled ? 'translate-x-[20px]' : 'translate-x-[2px]'
                           }`} />
                         </button>
                         <span className={`text-xs font-bold min-w-[60px] mt-1 ${ds.enabled ? 'text-ink-900' : 'text-ink-300'}`}>
