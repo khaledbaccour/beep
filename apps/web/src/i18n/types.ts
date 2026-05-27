@@ -1,3 +1,3 @@
-import fr from './dictionaries/fr.json';
+import en from './dictionaries/en.json';
 
-export type Dictionary = typeof fr;
+export type Dictionary = typeof en;

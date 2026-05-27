@@ -13,10 +13,11 @@ export interface BookingConfirmedClientData {
   scheduledStartTime: Date;
   scheduledEndTime: Date;
   durationMinutes: number;
-  amountMillimes: number;
+  amountPaise: number;
   sessionRoomId: string;
   appUrl: string;
   lang: string;
+  timezone: string;
 }
 
 export interface BookingConfirmedExpertData {
@@ -25,10 +26,11 @@ export interface BookingConfirmedExpertData {
   scheduledStartTime: Date;
   scheduledEndTime: Date;
   durationMinutes: number;
-  amountMillimes: number;
+  amountPaise: number;
   sessionRoomId: string;
   appUrl: string;
   lang: string;
+  timezone: string;
 }
 
 export interface AvailabilityReminderData {
@@ -36,6 +38,7 @@ export interface AvailabilityReminderData {
   weekStartDate: string;
   appUrl: string;
   lang: string;
+  timezone: string;
 }
 
 export interface ReminderData {
@@ -46,14 +49,18 @@ export interface ReminderData {
   sessionRoomId: string;
   appUrl: string;
   lang: string;
+  timezone: string;
 }
+
+const DEFAULT_TIMEZONE = 'Asia/Kolkata';
 
 @Injectable()
 export class EmailTemplatesService {
   bookingConfirmedClient(data: BookingConfirmedClientData): EmailContent {
-    const date = this.formatDate(data.scheduledStartTime);
-    const time = this.formatTimeRange(data.scheduledStartTime, data.scheduledEndTime);
-    const amount = this.formatMillimes(data.amountMillimes);
+    const tz = data.timezone || DEFAULT_TIMEZONE;
+    const date = this.formatDate(data.scheduledStartTime, tz);
+    const time = this.formatTimeRange(data.scheduledStartTime, data.scheduledEndTime, tz);
+    const amount = this.formatPaise(data.amountPaise);
     const link = this.meetingLink(data.appUrl, data.lang, data.sessionRoomId);
     const refId = data.bookingId.slice(0, 8).toUpperCase();
 
@@ -138,9 +145,10 @@ export class EmailTemplatesService {
   }
 
   bookingConfirmedExpert(data: BookingConfirmedExpertData): EmailContent {
-    const date = this.formatDate(data.scheduledStartTime);
-    const time = this.formatTimeRange(data.scheduledStartTime, data.scheduledEndTime);
-    const amount = this.formatMillimes(data.amountMillimes);
+    const tz = data.timezone || DEFAULT_TIMEZONE;
+    const date = this.formatDate(data.scheduledStartTime, tz);
+    const time = this.formatTimeRange(data.scheduledStartTime, data.scheduledEndTime, tz);
+    const amount = this.formatPaise(data.amountPaise);
     const link = this.meetingLink(data.appUrl, data.lang, data.sessionRoomId);
 
     return {
@@ -200,8 +208,9 @@ export class EmailTemplatesService {
   }
 
   reminderClient(data: ReminderData): EmailContent {
-    const date = this.formatDate(data.scheduledStartTime);
-    const timeStr = this.formatTime(data.scheduledStartTime);
+    const tz = data.timezone || DEFAULT_TIMEZONE;
+    const date = this.formatDate(data.scheduledStartTime, tz);
+    const timeStr = this.formatTime(data.scheduledStartTime, tz);
     const link = this.meetingLink(data.appUrl, data.lang, data.sessionRoomId);
     const hourLabel = data.hoursUntil === 1 ? '1 hour' : `${data.hoursUntil} hours`;
 
@@ -249,8 +258,9 @@ export class EmailTemplatesService {
   }
 
   reminderExpert(data: ReminderData): EmailContent {
-    const date = this.formatDate(data.scheduledStartTime);
-    const timeStr = this.formatTime(data.scheduledStartTime);
+    const tz = data.timezone || DEFAULT_TIMEZONE;
+    const date = this.formatDate(data.scheduledStartTime, tz);
+    const timeStr = this.formatTime(data.scheduledStartTime, tz);
     const link = this.meetingLink(data.appUrl, data.lang, data.sessionRoomId);
     const hourLabel = data.hoursUntil === 1 ? '1 hour' : `${data.hoursUntil} hours`;
 
@@ -298,26 +308,27 @@ export class EmailTemplatesService {
   }
 
   availabilityReminder(data: AvailabilityReminderData): EmailContent {
-    const lang = data.lang || 'fr';
-    const locale = lang === 'ar' ? 'ar-TN' : lang === 'en' ? 'en-US' : 'fr-FR';
+    const lang = data.lang || 'en';
+    const locale = lang === 'hi' ? 'hi-IN' : 'en-IN';
+    const tz = data.timezone || DEFAULT_TIMEZONE;
     const weekDate = new Date(data.weekStartDate + 'T00:00:00Z');
     const weekLabel = weekDate.toLocaleDateString(locale, {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
-      timeZone: 'Africa/Tunis',
+      timeZone: tz,
     });
     const dashboardLink = `${data.appUrl}/${lang}/dashboard?tab=availability`;
 
     const t = {
-      fr: {
-        subject: `Planifiez vos disponibilités pour la semaine du ${weekLabel}`,
-        title: 'Planifiez votre semaine',
-        greeting: `Bonjour <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,`,
-        body: `vous n'avez pas encore défini vos disponibilités pour la semaine du <strong style="color:#FF6B35;">${weekLabel}</strong>.`,
-        cta_detail: 'Sans disponibilités, les clients ne pourront pas réserver de sessions avec vous. Prenez un moment pour planifier votre semaine.',
-        cta: 'Planifier mes disponibilités',
-        tip: 'Astuce : activez la planification récurrente pour ne plus recevoir ce rappel.',
+      hi: {
+        subject: `${weekLabel} सप्ताह के लिए अपनी उपलब्धता निर्धारित करें`,
+        title: 'अपना सप्ताह योजना बनाएं',
+        greeting: `नमस्ते <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,`,
+        body: `आपने अभी तक <strong style="color:#FF6B35;">${weekLabel}</strong> सप्ताह के लिए अपनी उपलब्धता निर्धारित नहीं की है।`,
+        cta_detail: 'उपलब्धता के बिना, ग्राहक आपके साथ सत्र बुक नहीं कर पाएंगे। अपने सप्ताह की योजना बनाने के लिए कुछ समय निकालें।',
+        cta: 'मेरी उपलब्धता निर्धारित करें',
+        tip: 'सुझाव: यह रिमाइंडर बंद करने के लिए आवर्ती शेड्यूलिंग सक्षम करें।',
       },
       en: {
         subject: `Plan your availability for the week of ${weekLabel}`,
@@ -328,23 +339,14 @@ export class EmailTemplatesService {
         cta: 'Plan my availability',
         tip: 'Tip: enable recurring scheduling to stop receiving this reminder.',
       },
-      ar: {
-        subject: `خطط لتوفرك لأسبوع ${weekLabel}`,
-        title: 'خطط لأسبوعك',
-        greeting: `مرحبا <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>،`,
-        body: `لم تحدد بعد توفرك لأسبوع <strong style="color:#FF6B35;">${weekLabel}</strong>.`,
-        cta_detail: 'بدون توفر، لن يتمكن العملاء من حجز جلسات معك. خذ لحظة للتخطيط لأسبوعك.',
-        cta: 'تخطيط توفري',
-        tip: 'نصيحة: فعّل الجدولة المتكررة لعدم تلقي هذا التذكير.',
-      },
     }[lang] ?? {
-      subject: `Planifiez vos disponibilités pour la semaine du ${weekLabel}`,
-      title: 'Planifiez votre semaine',
-      greeting: `Bonjour <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,`,
-      body: `vous n'avez pas encore défini vos disponibilités pour la semaine du <strong style="color:#FF6B35;">${weekLabel}</strong>.`,
-      cta_detail: 'Sans disponibilités, les clients ne pourront pas réserver de sessions avec vous.',
-      cta: 'Planifier mes disponibilités',
-      tip: 'Astuce : activez la planification récurrente pour ne plus recevoir ce rappel.',
+      subject: `Plan your availability for the week of ${weekLabel}`,
+      title: 'Plan your week',
+      greeting: `Hi <strong style="color:#f1f5f9;">${data.expertFirstName}</strong>,`,
+      body: `you haven't set your availability for the week of <strong style="color:#FF6B35;">${weekLabel}</strong> yet.`,
+      cta_detail: 'Without availability, clients won\'t be able to book sessions with you.',
+      cta: 'Plan my availability',
+      tip: 'Tip: enable recurring scheduling to stop receiving this reminder.',
     };
 
     return {
@@ -384,32 +386,32 @@ export class EmailTemplatesService {
     };
   }
 
-  private formatMillimes(millimes: number): string {
-    const tnd = millimes / 1000;
-    return `${tnd.toFixed(3)} TND`;
+  private formatPaise(paise: number): string {
+    const inr = paise / 100;
+    return `₹${inr.toFixed(2)}`;
   }
 
-  private formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', {
+  private formatDate(date: Date, timeZone: string): string {
+    return date.toLocaleDateString('en-IN', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      timeZone: 'Africa/Tunis',
+      timeZone,
     });
   }
 
-  private formatTime(date: Date): string {
-    return date.toLocaleTimeString('en-US', {
+  private formatTime(date: Date, timeZone: string): string {
+    return date.toLocaleTimeString('en-IN', {
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'Africa/Tunis',
+      timeZone,
       hour12: false,
     });
   }
 
-  private formatTimeRange(start: Date, end: Date): string {
-    return `${this.formatTime(start)} - ${this.formatTime(end)}`;
+  private formatTimeRange(start: Date, end: Date, timeZone: string): string {
+    return `${this.formatTime(start, timeZone)} - ${this.formatTime(end, timeZone)}`;
   }
 
   private meetingLink(appUrl: string, lang: string, roomId: string): string {
@@ -427,7 +429,7 @@ export class EmailTemplatesService {
         <!-- Header -->
         <tr><td style="padding:0 0 32px;text-align:center;">
           <h2 style="margin:0;font-size:28px;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.5px;">
-            <span style="color:#FF6B35;">beep</span><span style="color:#f1f5f9;">.tn</span>
+            <span style="color:#FF6B35;">beep</span><span style="color:#f1f5f9;">.fr</span>
           </h2>
         </td></tr>
         <!-- Content -->
@@ -437,7 +439,7 @@ export class EmailTemplatesService {
         <!-- Footer -->
         <tr><td style="padding:24px 0 0;text-align:center;">
           <p style="color:#475569;font-size:11px;margin:0;">
-            Questions? Reply to this email or contact us at bookings@beep.tn
+            Questions? Reply to this email or contact us at bookings@beep.fr
           </p>
           <p style="color:#334155;font-size:11px;margin:8px 0 0;">
             &copy; 2026 Beep. All rights reserved.

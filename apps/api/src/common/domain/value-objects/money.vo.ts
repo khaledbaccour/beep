@@ -1,10 +1,10 @@
 export class Money {
   constructor(
     public readonly amount: number,
-    public readonly currency: 'TND' = 'TND',
+    public readonly currency: 'INR' = 'INR',
   ) {
     if (!Number.isInteger(amount)) {
-      throw new Error('Money amount must be an integer (millimes)');
+      throw new Error('Money amount must be an integer (paise)');
     }
   }
 
@@ -32,7 +32,7 @@ export class Money {
   }
 
   toDisplayString(): string {
-    return `${(this.amount / 1000).toFixed(3)} ${this.currency}`;
+    return `₹${(this.amount / 100).toFixed(2)}`;
   }
 
   private assertSameCurrency(other: Money): void {

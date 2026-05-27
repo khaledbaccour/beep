@@ -15,7 +15,7 @@ export class OnboardingStep3Dto {
   @IsInt()
   @Min(1000)
   @IsOptional()
-  sessionPriceMillimes?: number;
+  sessionPricePaise?: number;
 
   /** @deprecated Use sessionOptions instead. Kept for backward compat. */
   @IsInt()

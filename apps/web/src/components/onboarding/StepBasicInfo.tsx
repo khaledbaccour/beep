@@ -69,7 +69,7 @@ export function StepBasicInfo({ data, onChange, errors, dict }: StepBasicInfoPro
         </label>
         <div className="flex items-center gap-0">
           <span className="h-11 px-3.5 flex items-center text-sm font-bold text-ink-400 bg-cream-100 border-2 border-r-0 border-ink-200 rounded-l-xl whitespace-nowrap">
-            beep.tn/
+            beep.fr/
           </span>
           <div className="relative flex-1">
             <Input

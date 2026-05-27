@@ -2,7 +2,7 @@ import type { Locale } from '@/i18n';
 import type { Dictionary } from '@/i18n/types';
 
 export function localePath(lang: Locale, path: string): string {
-  if (lang === 'fr') return path;
+  if (lang === 'en') return path;
   return `/${lang}${path}`;
 }
 

@@ -1,5 +1,5 @@
 import { IsEmail, IsString, MinLength, Matches } from 'class-validator';
-import { TUNISIAN_PHONE_REGEX } from '@beep/shared';
+import { INDIAN_PHONE_REGEX } from '@beep/shared';
 
 export class RegisterDto {
   @IsEmail()
@@ -18,8 +18,8 @@ export class RegisterDto {
   lastName!: string;
 
   @IsString()
-  @Matches(TUNISIAN_PHONE_REGEX, {
-    message: 'Phone must be a valid Tunisian number (+216 followed by 8 digits)',
+  @Matches(INDIAN_PHONE_REGEX, {
+    message: 'Phone must be a valid Indian mobile number (+91 followed by 10 digits starting with 6-9)',
   })
   phone!: string;
 }

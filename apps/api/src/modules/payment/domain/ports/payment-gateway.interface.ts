@@ -3,8 +3,8 @@ export const PAYMENT_GATEWAY = Symbol('PAYMENT_GATEWAY');
 export interface RecordPaymentRequest {
   bookingId: string;
   transactionId: string;
-  amountMillimes: number;
-  currency: 'TND';
+  amountPaise: number;
+  currency: 'INR';
   idempotencyKey: string;
 }
 
@@ -15,14 +15,14 @@ export interface RecordPaymentResult {
 
 export interface RefundRequest {
   transactionId: string;
-  amountMillimes: number;
+  amountPaise: number;
   reason: string;
   idempotencyKey: string;
 }
 
 export interface RefundResult {
   success: boolean;
-  /** For Gammal Tech, refunds are manual — this is the internal tracking ID */
+  /** For the mock adapter, refunds are flagged for manual handling */
   refundId: string;
   requiresManualAction: boolean;
   errorMessage?: string;
@@ -30,14 +30,14 @@ export interface RefundResult {
 
 export interface IPaymentGateway {
   /**
-   * Records a payment that was completed client-side via the SDK.
-   * Gammal Tech has no server-side capture — the frontend popup handles charging.
+   * Records a payment that was completed client-side.
+   * The mock adapter accepts any payload and simulates a successful capture.
    */
   recordPayment(request: RecordPaymentRequest): Promise<RecordPaymentResult>;
 
   /**
-   * Requests a refund. For Gammal Tech, this flags the transaction for manual
-   * processing since there is no programmatic refund API.
+   * Requests a refund. The mock adapter flags the transaction for manual
+   * processing — there is no programmatic refund yet.
    */
   requestRefund(request: RefundRequest): Promise<RefundResult>;
 }

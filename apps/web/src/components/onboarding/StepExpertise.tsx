@@ -30,13 +30,14 @@ interface StepExpertiseProps {
 
 export function StepExpertise({ data, onChange, errors, category, dict }: StepExpertiseProps) {
   const COMMON_LANGUAGES = [
-    { value: 'Arabic', label: dict.onboarding.langArabic },
-    { value: 'French', label: dict.onboarding.langFrench },
     { value: 'English', label: dict.onboarding.langEnglish },
-    { value: 'Italian', label: dict.onboarding.langItalian },
-    { value: 'German', label: dict.onboarding.langGerman },
-    { value: 'Spanish', label: dict.onboarding.langSpanish },
-    { value: 'Turkish', label: dict.onboarding.langTurkish },
+    { value: 'Hindi', label: dict.onboarding.langHindi },
+    { value: 'Tamil', label: dict.onboarding.langTamil },
+    { value: 'Telugu', label: dict.onboarding.langTelugu },
+    { value: 'Bengali', label: dict.onboarding.langBengali },
+    { value: 'Marathi', label: dict.onboarding.langMarathi },
+    { value: 'Gujarati', label: dict.onboarding.langGujarati },
+    { value: 'Punjabi', label: dict.onboarding.langPunjabi },
   ];
 
   const [tagInput, setTagInput] = useState('');

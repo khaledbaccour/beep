@@ -7,7 +7,7 @@ import type { Dictionary } from '@/i18n/types';
 
 export interface SessionOptionRow {
   durationMinutes: number;
-  priceTND: string;
+  priceINR: string;
   label: string;
 }
 
@@ -33,19 +33,24 @@ const DURATION_CHOICES = [
 ];
 
 const POPULAR_TIMEZONES = [
-  'Africa/Tunis',
-  'Africa/Algiers',
-  'Africa/Cairo',
-  'Europe/Paris',
+  'Asia/Kolkata',
+  'Asia/Dubai',
+  'Asia/Singapore',
+  'Asia/Tokyo',
   'Europe/London',
   'America/New_York',
-  'Asia/Dubai',
 ];
 
 const MAX_OPTIONS = 6;
 
+function getTimezoneOptions(currentTz: string): string[] {
+  if (POPULAR_TIMEZONES.includes(currentTz)) return POPULAR_TIMEZONES;
+  return [currentTz, ...POPULAR_TIMEZONES];
+}
+
 export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) {
   const options = data.sessionOptions;
+  const timezoneOptions = getTimezoneOptions(data.timezone);
 
   function updateOption(index: number, patch: Partial<SessionOptionRow>) {
     const updated = options.map((opt, i) => (i === index ? { ...opt, ...patch } : opt));
@@ -58,7 +63,7 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
       ...data,
       sessionOptions: [
         ...options,
-        { durationMinutes: 60, priceTND: '', label: '' },
+        { durationMinutes: 60, priceINR: '', label: '' },
       ],
     });
   }
@@ -73,7 +78,6 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
 
   return (
     <div className="space-y-6">
-      {/* Session options */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-3">
           {dict.onboarding.sessionPrice || 'Session Options'}
@@ -101,7 +105,6 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                {/* Duration dropdown */}
                 <div>
                   <label className="block text-xs text-ink-500 mb-1">
                     {dict.onboarding.sessionDuration || 'Duration'}
@@ -121,7 +124,6 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
                   </select>
                 </div>
 
-                {/* Price input */}
                 <div>
                   <label className="block text-xs text-ink-500 mb-1">
                     {dict.onboarding.sessionPrice || 'Price'}
@@ -130,21 +132,20 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
                     <Input
                       type="number"
                       min="1"
-                      max="9999"
-                      step="0.5"
-                      value={opt.priceTND}
-                      onChange={(e) => updateOption(idx, { priceTND: e.target.value })}
-                      placeholder="50"
+                      max="99999"
+                      step="1"
+                      value={opt.priceINR}
+                      onChange={(e) => updateOption(idx, { priceINR: e.target.value })}
+                      placeholder="800"
                       className="border-2 border-ink-200 rounded-xl pr-14"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-ink-400">
-                      TND
+                      ₹
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Optional label */}
               <div>
                 <label className="block text-xs text-ink-500 mb-1">
                   Label (optional)
@@ -182,7 +183,6 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
         )}
       </div>
 
-      {/* Timezone */}
       <div>
         <label className="block text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
           {dict.onboarding.timezone}
@@ -192,7 +192,7 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
           onChange={(e) => onChange({ ...data, timezone: e.target.value })}
           className="flex h-11 w-full rounded-xl border-2 border-ink-200 bg-white px-3.5 py-2 text-sm text-ink-900 font-mono transition-colors focus-visible:outline-none focus-visible:border-ink-400 focus-visible:ring-2 focus-visible:ring-ink-100"
         >
-          {POPULAR_TIMEZONES.map((tz) => (
+          {timezoneOptions.map((tz) => (
             <option key={tz} value={tz}>
               {tz}
             </option>
@@ -204,15 +204,14 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
         )}
       </div>
 
-      {/* Summary card */}
-      {options.some((o) => o.priceTND && parseFloat(o.priceTND) > 0) && (
+      {options.some((o) => o.priceINR && parseFloat(o.priceINR) > 0) && (
         <div className="p-4 rounded-xl border-[2.5px] border-ink-900 bg-cream-50 shadow-retro-sm">
           <p className="text-xs font-bold text-ink-600 uppercase tracking-wider mb-2">
             {dict.onboarding.sessionSummary}
           </p>
           <div className="space-y-2">
             {options
-              .filter((o) => o.priceTND && parseFloat(o.priceTND) > 0)
+              .filter((o) => o.priceINR && parseFloat(o.priceINR) > 0)
               .map((o, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <span className="text-sm text-ink-600">
@@ -221,7 +220,7 @@ export function StepPricing({ data, onChange, errors, dict }: StepPricingProps) 
                     {o.label ? ` — ${o.label}` : ''}
                   </span>
                   <span className="text-lg font-bold text-ink-900">
-                    {parseFloat(o.priceTND).toFixed(2)} TND
+                    ₹{parseFloat(o.priceINR).toFixed(0)}
                   </span>
                 </div>
               ))}

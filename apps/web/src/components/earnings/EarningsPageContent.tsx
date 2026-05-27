@@ -26,7 +26,7 @@ export function EarningsPageContent({ dict, lang }: Props) {
   const d = dict.earningsPage;
 
   const [sessions, setSessions] = useState(8);
-  const [price, setPrice] = useState(80);
+  const [price, setPrice] = useState(800);
 
   const EXPERT_SHARE = 0.85; // Platform takes 15% commission
   const WEEKS_PER_MONTH = 4;
@@ -180,20 +180,20 @@ export function EarningsPageContent({ dict, lang }: Props) {
             <div className="mb-10">
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm font-bold text-ink-700">{d.calcPrice}</label>
-                <span className="text-lg font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">{price} TND</span>
+                <span className="text-lg font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">₹{price}</span>
               </div>
               <input
                 type="range"
-                min={30}
-                max={300}
-                step={10}
+                min={200}
+                max={5000}
+                step={100}
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
                 className="w-full h-2 rounded-full appearance-none cursor-pointer bg-ink-100 accent-emerald-600"
               />
               <div className="flex justify-between text-xs text-ink-400 mt-1">
-                <span>30 TND</span>
-                <span>300 TND</span>
+                <span>₹200</span>
+                <span>₹5000</span>
               </div>
             </div>
 
@@ -201,7 +201,7 @@ export function EarningsPageContent({ dict, lang }: Props) {
             <div className="bg-gradient-to-br from-brand-50 via-white to-emerald-50 border-2 border-ink-900 rounded-2xl p-8 text-center shadow-retro-sm">
               <p className="text-sm font-bold text-ink-500 uppercase tracking-wider mb-2">{d.calcResult}</p>
               <p className="text-5xl sm:text-6xl font-bold text-brand-600 mb-2">
-                {monthlyEarnings.toLocaleString()} <span className="text-2xl">TND</span>
+                ₹{monthlyEarnings.toLocaleString()}
               </p>
               <p className="text-xs text-ink-400">{d.calcFormula}</p>
             </div>

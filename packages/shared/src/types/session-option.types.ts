@@ -1,7 +1,7 @@
 export interface SessionOptionData {
   id: string;
   durationMinutes: number;
-  priceMillimes: number;
+  pricePaise: number;
   label?: string;
   isActive: boolean;
   sortOrder: number;

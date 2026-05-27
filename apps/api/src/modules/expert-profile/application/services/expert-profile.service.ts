@@ -105,9 +105,9 @@ export class ExpertProfileService {
     profile.headline = dto.headline;
     profile.category = dto.category;
     profile.tags = dto.tags;
-    profile.sessionPriceMillimes = dto.sessionPriceMillimes;
+    profile.sessionPricePaise = dto.sessionPricePaise;
     profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
-    profile.timezone = dto.timezone ?? 'Africa/Tunis';
+    profile.timezone = dto.timezone ?? 'Asia/Kolkata';
 
     const saved = await this.profileRepo.save(profile);
 
@@ -300,7 +300,7 @@ export class ExpertProfileService {
       throw new BadRequestException(ErrorCode.COMPLETE_STEP_2_FIRST);
     }
 
-    profile.timezone = dto.timezone ?? 'Africa/Tunis';
+    profile.timezone = dto.timezone ?? 'Asia/Kolkata';
     await this.upsertSessionOptions(profile, dto);
     profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PRICING);
     profile.profileCompleteness = profile.calculateCompleteness();
@@ -319,10 +319,23 @@ export class ExpertProfileService {
     }
 
     profile.payoutMethod = dto.payoutMethod;
-    profile.payoutDetails = {
-      accountHolderName: dto.bankTransferDetails.accountHolderName.trim(),
-      iban: dto.bankTransferDetails.iban.replace(/\s/g, '').toUpperCase(),
-    };
+    if (dto.payoutMethod === 'BANK_TRANSFER') {
+      if (!dto.bankTransferDetails) {
+        throw new BadRequestException('bankTransferDetails required for BANK_TRANSFER');
+      }
+      profile.payoutDetails = {
+        accountHolderName: dto.bankTransferDetails.accountHolderName.trim(),
+        ifscCode: dto.bankTransferDetails.ifscCode.replace(/\s/g, '').toUpperCase(),
+        accountNumber: dto.bankTransferDetails.accountNumber.replace(/\s/g, ''),
+      };
+    } else if (dto.payoutMethod === 'UPI') {
+      if (!dto.upiDetails) {
+        throw new BadRequestException('upiDetails required for UPI');
+      }
+      profile.payoutDetails = {
+        upiId: dto.upiDetails.upiId.trim(),
+      };
+    }
     profile.onboardingStep = Math.max(profile.onboardingStep, OnboardingStep.PAYOUT);
     profile.profileCompleteness = profile.calculateCompleteness();
 
@@ -341,7 +354,7 @@ export class ExpertProfileService {
     if (!profile.bio) missingFields.push('bio');
     if (!profile.category) missingFields.push('category');
     const hasSessionOptions = profile.sessionOptions && profile.sessionOptions.length > 0;
-    if (!profile.sessionPriceMillimes && !hasSessionOptions) missingFields.push('sessionPriceMillimes');
+    if (!profile.sessionPricePaise && !hasSessionOptions) missingFields.push('sessionPricePaise');
     if (!profile.languages || profile.languages.length === 0) missingFields.push('languages');
     if (!profile.payoutMethod) missingFields.push('payoutMethod');
 
@@ -400,16 +413,16 @@ export class ExpertProfileService {
     if (dto.sessionOptions && dto.sessionOptions.length > 0) {
       await this.replaceSessionOptions(profile, dto.sessionOptions);
       const first = dto.sessionOptions[0];
-      profile.sessionPriceMillimes = first.priceMillimes;
+      profile.sessionPricePaise = first.pricePaise;
       profile.sessionDurationMinutes = first.durationMinutes;
-    } else if (dto.sessionPriceMillimes) {
+    } else if (dto.sessionPricePaise) {
       const optionDto: CreateSessionOptionDto = {
         durationMinutes: dto.sessionDurationMinutes ?? 60,
-        priceMillimes: dto.sessionPriceMillimes,
+        pricePaise: dto.sessionPricePaise,
         sortOrder: 0,
       };
       await this.replaceSessionOptions(profile, [optionDto]);
-      profile.sessionPriceMillimes = dto.sessionPriceMillimes;
+      profile.sessionPricePaise = dto.sessionPricePaise;
       profile.sessionDurationMinutes = dto.sessionDurationMinutes ?? 60;
     }
   }
@@ -423,7 +436,7 @@ export class ExpertProfileService {
       const entity = new SessionOption();
       entity.expertProfileId = profile.id;
       entity.durationMinutes = opt.durationMinutes;
-      entity.priceMillimes = opt.priceMillimes;
+      entity.pricePaise = opt.pricePaise;
       entity.label = opt.label;
       entity.sortOrder = opt.sortOrder ?? index;
       entity.isActive = true;
@@ -433,7 +446,7 @@ export class ExpertProfileService {
     profile.sessionOptions = entities;
     if (entities.length > 0) {
       const first = entities.sort((a, b) => a.sortOrder - b.sortOrder)[0];
-      profile.sessionPriceMillimes = first.priceMillimes;
+      profile.sessionPricePaise = first.pricePaise;
       profile.sessionDurationMinutes = first.durationMinutes;
     }
   }
@@ -448,7 +461,7 @@ export class ExpertProfileService {
           new SessionOptionResponseDto({
             id: opt.id,
             durationMinutes: opt.durationMinutes,
-            priceMillimes: opt.priceMillimes,
+            pricePaise: opt.pricePaise,
             label: opt.label,
             isActive: opt.isActive,
             sortOrder: opt.sortOrder,
@@ -470,7 +483,7 @@ export class ExpertProfileService {
         certifications: profile.certifications,
         yearsOfExperience: profile.yearsOfExperience,
         languages: profile.languages,
-        sessionPriceMillimes: profile.sessionPriceMillimes ?? undefined,
+        sessionPricePaise: profile.sessionPricePaise ?? undefined,
         sessionDurationMinutes: profile.sessionDurationMinutes,
         timezone: profile.timezone,
         payoutMethod: profile.payoutMethod,
@@ -496,7 +509,7 @@ export class ExpertProfileService {
       headline: profile.headline,
       category: profile.category,
       tags: profile.tags,
-      sessionPriceMillimes: profile.sessionPriceMillimes,
+      sessionPricePaise: profile.sessionPricePaise,
       sessionDurationMinutes: profile.sessionDurationMinutes,
       timezone: profile.timezone,
       averageRating: Number(profile.averageRating),

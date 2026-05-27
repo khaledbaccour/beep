@@ -12,7 +12,7 @@ import { ProfileTab } from './ProfileTab';
 import { AvailabilityTab } from './AvailabilityTab';
 import { BookingsTab } from './BookingsTab';
 import { ClientDashboard } from './ClientDashboard';
-import { revertToClient, getOnboardingStatus } from '@/lib/api';
+import { revertToClient, getOnboardingStatus, getMyExpertProfile } from '@/lib/api';
 import type { ExpertProfile } from '@/lib/api';
 
 interface Props {
@@ -56,9 +56,21 @@ export function DashboardPage({ dict, lang }: Props) {
     const parsedUser = JSON.parse(stored);
     setUser(parsedUser);
 
-    const storedProfile = localStorage.getItem('beep_expert_profile');
-    if (storedProfile) {
-      try { setExpertProfile(JSON.parse(storedProfile)); } catch { /* ignore */ }
+    // Fetch expert profile from API (source of truth), cache in localStorage
+    if (parsedUser.role === 'EXPERT') {
+      getMyExpertProfile()
+        .then((res) => {
+          if (res.data) {
+            setExpertProfile(res.data);
+            localStorage.setItem('beep_expert_profile', JSON.stringify(res.data));
+          }
+        })
+        .catch(() => {
+          const storedProfile = localStorage.getItem('beep_expert_profile');
+          if (storedProfile) {
+            try { setExpertProfile(JSON.parse(storedProfile)); } catch { /* ignore */ }
+          }
+        });
     }
 
     // Check for draft onboarding profile (CLIENT users who started but didn't finish)
@@ -88,7 +100,7 @@ export function DashboardPage({ dict, lang }: Props) {
   ];
 
   const greeting = getGreeting(d);
-  const profileUrl = expertProfile ? `beep.tn/${expertProfile.slug}` : null;
+  const profileUrl = expertProfile ? `beep.fr/${expertProfile.slug}` : null;
 
   function copySlug() {
     if (!profileUrl) return;

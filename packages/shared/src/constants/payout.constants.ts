@@ -1,14 +1,24 @@
 /**
- * French IBAN: FR + 2 check digits + 23 alphanumeric = 27 characters total.
+ * Indian IFSC code: 4 letters + 0 + 6 alphanumeric = 11 characters.
  * Input should be uppercased and whitespace-stripped before validation.
  */
-export const FRENCH_IBAN_REGEX = /^FR\d{2}[A-Z0-9]{23}$/;
+export const INDIAN_IFSC_REGEX = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 
 /**
- * Tunisian phone number: +216 followed by 8 digits (starting with 2, 3, 4, 5, 7, or 9).
+ * Indian bank account number: 9 to 18 digits (covers all major banks).
+ */
+export const INDIAN_ACCOUNT_REGEX = /^\d{9,18}$/;
+
+/**
+ * UPI virtual payment address: handle@provider (e.g. priya@okaxis, 9876543210@paytm).
+ */
+export const UPI_REGEX = /^[\w.\-]+@[\w.\-]+$/;
+
+/**
+ * Indian mobile number: +91 followed by 10 digits starting with 6, 7, 8, or 9.
  * Kept for user registration validation (register.dto.ts).
  */
-export const TUNISIAN_PHONE_REGEX = /^\+216[2-9]\d{7}$/;
+export const INDIAN_PHONE_REGEX = /^\+91[6-9]\d{9}$/;
 
 /**
  * Account holder name: letters (including accented), spaces, hyphens, apostrophes. 3-100 chars.

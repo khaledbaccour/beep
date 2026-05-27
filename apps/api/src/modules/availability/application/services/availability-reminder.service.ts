@@ -46,12 +46,13 @@ export class AvailabilityReminderService {
         const user = profile.user;
         if (!user?.email) continue;
 
-        const appUrl = this.configService.get<string>('APP_URL') || 'https://beep.tn';
+        const appUrl = this.configService.get<string>('APP_URL') || 'https://beep.fr';
         const content = this.emailTemplates.availabilityReminder({
           expertFirstName: user.firstName,
           weekStartDate: nextMonday,
           appUrl,
-          lang: 'fr',
+          lang: 'en',
+          timezone: profile.timezone,
         });
 
         await this.emailSender.sendEmail({

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const locales = ['fr', 'en'];
-const defaultLocale = 'fr';
+const locales = ['en', 'hi'];
+const defaultLocale = 'en';
 
 function getLocaleFromPath(pathname: string): string | null {
   const segments = pathname.split('/');
@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
 
   const pathnameLocale = getLocaleFromPath(pathname);
 
-  // If no locale in path, treat as default locale (fr) — rewrite internally
+  // If no locale in path, treat as default locale (en) — rewrite internally
   if (!pathnameLocale) {
     const url = request.nextUrl.clone();
     url.pathname = `/${defaultLocale}${pathname}`;

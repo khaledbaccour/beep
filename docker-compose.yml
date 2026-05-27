@@ -62,7 +62,7 @@ services:
     command: >
       -n
       --lt-cred-mech
-      --realm=beep.tn
+      --realm=beep.fr
       --user=${TURN_USERNAME:-beep}:${TURN_PASSWORD:-changeme}
       --fingerprint
 

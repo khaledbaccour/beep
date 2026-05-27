@@ -45,7 +45,7 @@ export function BookingSuccess({
             />
             <DetailRow
               label={t.price}
-              value={`${formatPrice(booking.amountMillimes)} ${dict.common.tnd}`}
+              value={`₹${formatPrice(booking.amountPaise)} ${dict.common.inr}`}
               bold
             />
           </div>

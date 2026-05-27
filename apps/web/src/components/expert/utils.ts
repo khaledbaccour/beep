@@ -1,5 +1,5 @@
-export function formatPrice(millimes: number): string {
-  return (millimes / 1000).toFixed(millimes % 1000 === 0 ? 0 : 1);
+export function formatPrice(paise: number): string {
+  return (paise / 100).toFixed(paise % 100 === 0 ? 0 : 2);
 }
 
 export function formatTime(isoString: string): string {
@@ -7,10 +7,10 @@ export function formatTime(isoString: string): string {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-const LOCALE_MAP: Record<string, string> = { fr: 'fr-TN', en: 'en-US' };
+const LOCALE_MAP: Record<string, string> = { en: 'en-IN', hi: 'hi-IN' };
 
 export function formatDate(date: Date, lang: string): string {
-  return date.toLocaleDateString(LOCALE_MAP[lang] || 'fr-TN', {
+  return date.toLocaleDateString(LOCALE_MAP[lang] || 'en-IN', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -18,7 +18,7 @@ export function formatDate(date: Date, lang: string): string {
 }
 
 export function getLocaleString(lang: string): string {
-  return LOCALE_MAP[lang] || 'fr-TN';
+  return LOCALE_MAP[lang] || 'en-IN';
 }
 
 export function getDaysArray(startDate: Date, count: number): Date[] {

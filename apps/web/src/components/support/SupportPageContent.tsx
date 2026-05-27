@@ -174,7 +174,7 @@ export function SupportPageContent({ dict, lang }: Props) {
             <h3 className="text-2xl font-bold text-ink-900 mb-3">{d.stillNeedHelp}</h3>
             <p className="text-base text-ink-500 mb-6">{d.stillNeedHelpDesc}</p>
             <a
-              href="mailto:contact@beep.tn"
+              href="mailto:contact@beep.fr"
               className="inline-flex items-center gap-2 rounded-full bg-brand-600 text-white font-bold text-base px-8 py-4 border-2 border-ink-900 shadow-retro hover:-translate-y-0.5 hover:shadow-retro-md active:translate-y-0 active:shadow-retro-sm transition-all duration-200"
             >
               <Mail size={18} />
@@ -192,7 +192,7 @@ export function SupportPageContent({ dict, lang }: Props) {
 
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 select-none pointer-events-none">
           <span className="text-[100px] sm:text-[160px] md:text-[200px] font-bold text-white/[0.03] leading-none tracking-tighter uppercase">
-            BEEP.TN
+            BEEP.FR
           </span>
         </div>
 

@@ -27,6 +27,6 @@ export const CATEGORIES = [
   'PSYCHOLOGY', 'NUTRITION', 'FINANCE', 'LANGUAGES', 'MUSIC', 'ART', 'OTHER',
 ] as const;
 
-export function millimesToTND(millimes: number): string {
-  return (millimes / 1000).toFixed(2);
+export function paiseToINR(paise: number): string {
+  return (paise / 100).toFixed(2);
 }
