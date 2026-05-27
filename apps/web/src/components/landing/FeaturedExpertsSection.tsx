@@ -11,12 +11,12 @@ interface Props {
 }
 
 const experts = [
-  { name: 'Yassine Bouaziz', slug: 'yassine', role: 'Fitness Coach', rating: 4.9, sessions: 340, price: 35, initials: 'YB', accent: '#FFB088', tags: ['Weight Loss', 'HIIT', 'Nutrition'] },
-  { name: 'Amira Ben Salem', slug: 'amira', role: 'Graphic Designer', rating: 5.0, sessions: 512, price: 80, initials: 'AB', accent: '#C4B5FD', tags: ['Branding', 'Logo Design', 'UI/UX'] },
-  { name: 'Mehdi Trabelsi', slug: 'mehdi', role: 'Software Engineer', rating: 4.8, sessions: 189, price: 50, initials: 'MT', accent: '#93C5FD', tags: ['React', 'System Design', 'Career'] },
-  { name: 'Sana Khlifi', slug: 'sana', role: 'Business Consultant', rating: 4.9, sessions: 267, price: 65, initials: 'SK', accent: '#86EFAC', tags: ['Startup', 'Strategy', 'Marketing'] },
-  { name: 'Khalil Jebali', slug: 'khalil', role: 'English Teacher', rating: 4.7, sessions: 421, price: 25, initials: 'KJ', accent: '#FDE68A', tags: ['IELTS', 'Business English'] },
-  { name: 'Ines Maalej', slug: 'ines', role: 'Life Coach', rating: 5.0, sessions: 198, price: 70, initials: 'IM', accent: '#F9A8D4', tags: ['Productivity', 'Mindset', 'Career Change'] },
+  { name: 'Priya Sharma', slug: 'priya', role: 'Fitness Coach', rating: 4.9, sessions: 340, price: 600, initials: 'PS', accent: '#FFB088', tags: ['Weight Loss', 'HIIT', 'Nutrition'] },
+  { name: 'Arjun Mehta', slug: 'arjun', role: 'Graphic Designer', rating: 5.0, sessions: 512, price: 1500, initials: 'AM', accent: '#C4B5FD', tags: ['Branding', 'Logo Design', 'UI/UX'] },
+  { name: 'Rohan Iyer', slug: 'rohan', role: 'Software Engineer', rating: 4.8, sessions: 189, price: 1200, initials: 'RI', accent: '#93C5FD', tags: ['React', 'System Design', 'Career'] },
+  { name: 'Ananya Reddy', slug: 'ananya', role: 'Business Consultant', rating: 4.9, sessions: 267, price: 1000, initials: 'AR', accent: '#86EFAC', tags: ['Startup', 'Strategy', 'Marketing'] },
+  { name: 'Vikram Singh', slug: 'vikram', role: 'English Teacher', rating: 4.7, sessions: 421, price: 500, initials: 'VS', accent: '#FDE68A', tags: ['IELTS', 'Business English'] },
+  { name: 'Kavya Patel', slug: 'kavya', role: 'Life Coach', rating: 5.0, sessions: 198, price: 1100, initials: 'KP', accent: '#F9A8D4', tags: ['Productivity', 'Mindset', 'Career Change'] },
 ];
 
 export function FeaturedExpertsSection({ dict, lang }: Props) {
@@ -97,7 +97,7 @@ export function FeaturedExpertsSection({ dict, lang }: Props) {
                   <span className="text-2xl font-bold text-white">
                     {expert.price}
                   </span>
-                  <span className="text-sm text-white/60">{dict.common.eur}</span>
+                  <span className="text-sm text-white/60">{dict.common.inr}</span>
                   <span className="text-xs text-white/40 ml-1">
                     / {dict.featured.sessions.slice(0, -1)}
                   </span>
