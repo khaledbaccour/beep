@@ -58,7 +58,7 @@ export function Navbar({ dict, lang }: Props) {
   };
 
   const pathname = usePathname();
-  const pathWithoutLang = pathname.replace(/^\/(fr|en)/, '') || '/';
+  const pathWithoutLang = pathname.replace(/^\/(en|hi)/, '') || '/';
 
   const dashboardHref = localePath(lang, '/dashboard');
 
