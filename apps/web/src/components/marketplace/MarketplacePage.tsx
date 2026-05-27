@@ -49,8 +49,8 @@ function getInitials(firstName: string, lastName: string): string {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 }
 
-function formatPrice(cents: number): number {
-  return Math.round(cents / 100);
+function formatPrice(paise: number): number {
+  return Math.round(paise / 100);
 }
 
 export function MarketplacePage({ dict, lang }: Props) {
@@ -271,7 +271,7 @@ export function MarketplacePage({ dict, lang }: Props) {
                 {/* Price range */}
                 <div className="mb-5">
                   <label className="text-xs font-bold text-ink-700 uppercase tracking-wider mb-2.5 block">
-                    {dict.marketplace.priceRange} ({dict.common.eur})
+                    {dict.marketplace.priceRange} ({dict.common.inr})
                   </label>
                   <div className="flex gap-2 items-center">
                     <Input
@@ -334,7 +334,7 @@ export function MarketplacePage({ dict, lang }: Props) {
             )}
             {appliedMinPrice != null && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-ink-100 text-ink-700 border border-ink-200">
-                {dict.marketplace.minPrice}: {appliedMinPrice / 100} {dict.common.eur}
+                {dict.marketplace.minPrice}: {appliedMinPrice / 100} {dict.common.inr}
                 <button
                   onClick={() => { setAppliedMinPrice(undefined); setMinPrice(''); }}
                   className="ml-0.5 hover:text-ink-900"
@@ -345,7 +345,7 @@ export function MarketplacePage({ dict, lang }: Props) {
             )}
             {appliedMaxPrice != null && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-ink-100 text-ink-700 border border-ink-200">
-                {dict.marketplace.maxPrice}: {appliedMaxPrice / 100} {dict.common.eur}
+                {dict.marketplace.maxPrice}: {appliedMaxPrice / 100} {dict.common.inr}
                 <button
                   onClick={() => { setAppliedMaxPrice(undefined); setMaxPrice(''); }}
                   className="ml-0.5 hover:text-ink-900"
@@ -400,7 +400,7 @@ export function MarketplacePage({ dict, lang }: Props) {
               {experts.map((expert) => {
                 const gradient = GRADIENT_BY_CATEGORY[expert.category] ?? 'from-gray-400 to-gray-500';
                 const initials = getInitials(expert.firstName, expert.lastName);
-                const price = formatPrice(expert.sessionPriceCents);
+                const price = formatPrice(expert.sessionPricePaise);
 
                 return (
                   <a
@@ -439,7 +439,7 @@ export function MarketplacePage({ dict, lang }: Props) {
                     <div className="flex items-center justify-between pt-3.5 border-t-2 border-ink-900/10">
                       <span className="text-xs text-ink-400">{expert.totalSessions} {dict.marketplace.sessions}</span>
                       <span className="text-base font-bold text-ink-900">
-                        {price} <span className="text-xs font-normal text-ink-400">{dict.common.eur}</span>
+                        {price} <span className="text-xs font-normal text-ink-400">{dict.common.inr}</span>
                       </span>
                     </div>
                   </a>

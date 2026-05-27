@@ -30,7 +30,8 @@ export class BookingEmailService {
       scheduledStartTime: booking.scheduledStartTime,
       scheduledEndTime: booking.scheduledEndTime,
       durationMinutes,
-      amountCents: booking.amountCents,
+      amountPaise: booking.amountPaise,
+      timezone: booking.expertProfile.timezone,
       sessionRoomId: booking.sessionRoomId!,
       appUrl: this.appUrl,
       lang: 'en',
@@ -54,7 +55,8 @@ export class BookingEmailService {
       scheduledStartTime: booking.scheduledStartTime,
       scheduledEndTime: booking.scheduledEndTime,
       durationMinutes,
-      amountCents: booking.amountCents,
+      amountPaise: booking.amountPaise,
+      timezone: booking.expertProfile.timezone,
       sessionRoomId: booking.sessionRoomId!,
       appUrl: this.appUrl,
       lang: 'en',
@@ -78,6 +80,7 @@ export class BookingEmailService {
       sessionRoomId: booking.sessionRoomId!,
       appUrl: this.appUrl,
       lang: 'en',
+      timezone: booking.expertProfile.timezone,
     });
 
     await this.emailSender.sendEmail({
@@ -99,6 +102,7 @@ export class BookingEmailService {
       sessionRoomId: booking.sessionRoomId!,
       appUrl: this.appUrl,
       lang: 'en',
+      timezone: booking.expertProfile.timezone,
     });
 
     await this.emailSender.sendEmail({

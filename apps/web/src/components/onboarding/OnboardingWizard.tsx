@@ -25,6 +25,18 @@ import { StepPayout, type StepPayoutData } from './StepPayout';
 
 const TOTAL_STEPS = 4;
 
+const IFSC_REGEX = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+const ACCOUNT_NUMBER_REGEX = /^\d{9,18}$/;
+const UPI_REGEX = /^[\w.\-]+@[\w.\-]+$/;
+
+function detectTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+  } catch {
+    return 'Asia/Kolkata';
+  }
+}
+
 interface OnboardingWizardProps {
   lang: Locale;
   dict: Dictionary;
@@ -41,7 +53,6 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
   const [error, setError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Step data
   const [step1, setStep1] = useState<StepBasicInfoData>({
     slug: '',
     bio: '',
@@ -57,17 +68,18 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
   });
 
   const [step3, setStep3] = useState<StepPricingData>({
-    sessionOptions: [{ durationMinutes: 60, priceEUR: '', label: '' }],
-    timezone: 'Europe/Paris',
+    sessionOptions: [{ durationMinutes: 60, priceINR: '', label: '' }],
+    timezone: detectTimezone(),
   });
 
   const [step4, setStep4] = useState<StepPayoutData>({
     payoutMethod: 'BANK_TRANSFER',
-    iban: '',
     accountHolderName: '',
+    ifscCode: '',
+    accountNumber: '',
+    upiId: '',
   });
 
-  // Load existing onboarding status on mount
   useEffect(() => {
     const token = localStorage.getItem('beep_token');
     if (!token) {
@@ -85,7 +97,6 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           return;
         }
 
-        // Restore saved data from profile
         const p = status.profile;
         if (p) {
           if (p.slug || p.bio || p.category) {
@@ -108,35 +119,36 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
             setStep3({
               sessionOptions: p.sessionOptions.map((so) => ({
                 durationMinutes: so.durationMinutes,
-                priceEUR: (so.priceCents / 100).toString(),
+                priceINR: (so.pricePaise / 100).toString(),
                 label: so.label || '',
               })),
-              timezone: p.timezone || 'Europe/Paris',
+              timezone: p.timezone || detectTimezone(),
             });
-          } else if (p.sessionPriceCents) {
+          } else if (p.sessionPricePaise) {
             setStep3({
               sessionOptions: [{
                 durationMinutes: p.sessionDurationMinutes || 60,
-                priceEUR: (p.sessionPriceCents / 100).toString(),
+                priceINR: (p.sessionPricePaise / 100).toString(),
                 label: '',
               }],
-              timezone: p.timezone || 'Europe/Paris',
+              timezone: p.timezone || detectTimezone(),
             });
           }
           if (p.payoutMethod) {
             const details = p.payoutDetails || {};
             setStep4({
-              payoutMethod: 'BANK_TRANSFER',
-              iban: details.iban || '',
+              payoutMethod: p.payoutMethod,
               accountHolderName: details.accountHolderName || '',
+              ifscCode: details.ifscCode || '',
+              accountNumber: details.accountNumber || '',
+              upiId: details.upiId || '',
             });
           }
         }
 
-        // Resume from the furthest incomplete step
         setCurrentStep(Math.min(status.currentStep || 1, TOTAL_STEPS));
       } catch {
-        // No existing onboarding - start fresh (step 1)
+        // No existing onboarding - start fresh
       } finally {
         setLoading(false);
       }
@@ -168,9 +180,9 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         newErrors.sessionOptions = dict.onboarding.valPriceMin;
       } else {
         step3.sessionOptions.forEach((opt, idx) => {
-          if (!opt.priceEUR || parseFloat(opt.priceEUR) <= 0) {
+          if (!opt.priceINR || parseFloat(opt.priceINR) <= 0) {
             newErrors[`option_${idx}`] = dict.onboarding.valPriceMin;
-          } else if (parseFloat(opt.priceEUR) > 9999) {
+          } else if (parseFloat(opt.priceINR) > 99999) {
             newErrors[`option_${idx}`] = dict.onboarding.valPriceMax;
           }
         });
@@ -179,25 +191,60 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
     }
 
     if (step === 4) {
-      const name = step4.accountHolderName.trim();
-      if (!name) {
-        newErrors.accountHolderName = dict.onboarding.valAccountHolder;
-      } else if (name.length < 3) {
-        newErrors.accountHolderName = dict.onboarding.valNameMin;
-      } else if (!/^[a-zA-Z\u00C0-\u024F\s\-']{3,100}$/.test(name)) {
-        newErrors.accountHolderName = dict.onboarding.valNameFormat;
-      }
+      if (step4.payoutMethod === 'BANK_TRANSFER') {
+        const name = step4.accountHolderName.trim();
+        if (!name) {
+          newErrors.accountHolderName = dict.onboarding.valAccountHolder;
+        } else if (name.length < 3) {
+          newErrors.accountHolderName = dict.onboarding.valNameMin;
+        } else if (!/^[a-zA-ZÀ-ɏ\s\-']{3,100}$/.test(name)) {
+          newErrors.accountHolderName = dict.onboarding.valNameFormat;
+        }
 
-      const iban = step4.iban.replace(/\s/g, '').toUpperCase();
-      if (!iban) {
-        newErrors.iban = dict.onboarding.valIban;
-      } else if (!/^FR\d{2}[A-Z0-9]{23}$/.test(iban)) {
-        newErrors.iban = dict.onboarding.valIbanFormat;
+        const ifsc = step4.ifscCode.replace(/\s/g, '').toUpperCase();
+        if (!ifsc) {
+          newErrors.ifscCode = dict.onboarding.valIban;
+        } else if (!IFSC_REGEX.test(ifsc)) {
+          newErrors.ifscCode = dict.onboarding.valIbanFormat;
+        }
+
+        const account = step4.accountNumber.replace(/\s/g, '');
+        if (!account) {
+          newErrors.accountNumber = dict.onboarding.valIban;
+        } else if (!ACCOUNT_NUMBER_REGEX.test(account)) {
+          newErrors.accountNumber = dict.onboarding.valAccountFormat;
+        }
+      } else {
+        const upi = step4.upiId.trim();
+        if (!upi) {
+          newErrors.upiId = dict.onboarding.valUpiId;
+        } else if (!UPI_REGEX.test(upi)) {
+          newErrors.upiId = dict.onboarding.valUpiFormat;
+        }
       }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  }
+
+  function buildStep4Payload() {
+    if (step4.payoutMethod === 'BANK_TRANSFER') {
+      return {
+        payoutMethod: 'BANK_TRANSFER' as const,
+        bankTransferDetails: {
+          accountHolderName: step4.accountHolderName.trim(),
+          ifscCode: step4.ifscCode.replace(/\s/g, '').toUpperCase(),
+          accountNumber: step4.accountNumber.replace(/\s/g, ''),
+        },
+      };
+    }
+    return {
+      payoutMethod: 'UPI' as const,
+      upiDetails: {
+        upiId: step4.upiId.trim(),
+      },
+    };
   }
 
   async function handleNext() {
@@ -226,22 +273,16 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         await saveOnboardingStep3({
           sessionOptions: step3.sessionOptions.map((o, i) => ({
             durationMinutes: o.durationMinutes,
-            priceCents: Math.round(parseFloat(o.priceEUR) * 100),
+            pricePaise: Math.round(parseFloat(o.priceINR) * 100),
             label: o.label || undefined,
             sortOrder: i,
           })),
           timezone: step3.timezone,
-          sessionPriceCents: Math.round(parseFloat(firstOpt.priceEUR) * 100),
+          sessionPricePaise: Math.round(parseFloat(firstOpt.priceINR) * 100),
           sessionDurationMinutes: firstOpt.durationMinutes,
         });
       } else if (currentStep === 4) {
-        await saveOnboardingStep4({
-          payoutMethod: 'BANK_TRANSFER',
-          bankTransferDetails: {
-            accountHolderName: step4.accountHolderName.trim(),
-            iban: step4.iban.replace(/\s/g, '').toUpperCase(),
-          },
-        });
+        await saveOnboardingStep4(buildStep4Payload());
       }
 
       if (currentStep < TOTAL_STEPS) {
@@ -262,24 +303,14 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
     setError('');
 
     try {
-      // Save step 4 first
-      await saveOnboardingStep4({
-        payoutMethod: 'BANK_TRANSFER',
-        bankTransferDetails: {
-          accountHolderName: step4.accountHolderName.trim(),
-          iban: step4.iban.replace(/\s/g, '').toUpperCase(),
-        },
-      });
+      await saveOnboardingStep4(buildStep4Payload());
 
-      // Then complete onboarding
       await completeOnboarding();
 
-      // Refresh user data to get updated role (now EXPERT)
       try {
         const profileRes = await getUserProfile();
         localStorage.setItem('beep_user', JSON.stringify(profileRes.data));
       } catch {
-        // Fallback: manually update localStorage
         const userStr = localStorage.getItem('beep_user');
         if (userStr) {
           const user = JSON.parse(userStr);
@@ -289,14 +320,13 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
         }
       }
 
-      // Cache expert profile so the dashboard can display it immediately
       try {
         const expertRes = await getMyExpertProfile();
         if (expertRes.data) {
           localStorage.setItem('beep_expert_profile', JSON.stringify(expertRes.data));
         }
       } catch {
-        // Non-critical — ProfileTab will fetch from API on mount
+        // Non-critical
       }
 
       router.push(localePath(lang, '/dashboard?onboarding=complete'));
@@ -312,7 +342,6 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
     setError('');
 
     try {
-      // Save all completed steps as draft
       if (step1.slug && step1.bio && step1.category) {
         await saveOnboardingStep1({
           slug: step1.slug,
@@ -329,30 +358,28 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           languages: step2.languages,
         });
       }
-      if (currentStep >= 3 && step3.sessionOptions.some((o) => o.priceEUR && parseFloat(o.priceEUR) > 0)) {
+      if (currentStep >= 3 && step3.sessionOptions.some((o) => o.priceINR && parseFloat(o.priceINR) > 0)) {
         const firstOpt = step3.sessionOptions[0];
         await saveOnboardingStep3({
           sessionOptions: step3.sessionOptions
-            .filter((o) => o.priceEUR && parseFloat(o.priceEUR) > 0)
+            .filter((o) => o.priceINR && parseFloat(o.priceINR) > 0)
             .map((o, i) => ({
               durationMinutes: o.durationMinutes,
-              priceCents: Math.round(parseFloat(o.priceEUR) * 100),
+              pricePaise: Math.round(parseFloat(o.priceINR) * 100),
               label: o.label || undefined,
               sortOrder: i,
             })),
           timezone: step3.timezone,
-          sessionPriceCents: Math.round(parseFloat(firstOpt.priceEUR) * 100),
+          sessionPricePaise: Math.round(parseFloat(firstOpt.priceINR) * 100),
           sessionDurationMinutes: firstOpt.durationMinutes,
         });
       }
-      if (currentStep >= 4 && step4.accountHolderName && step4.iban) {
-        await saveOnboardingStep4({
-          payoutMethod: 'BANK_TRANSFER',
-          bankTransferDetails: {
-            accountHolderName: step4.accountHolderName.trim(),
-            iban: step4.iban.replace(/\s/g, '').toUpperCase(),
-          },
-        });
+      if (currentStep >= 4) {
+        const hasBankData = step4.payoutMethod === 'BANK_TRANSFER' && step4.accountHolderName && step4.ifscCode && step4.accountNumber;
+        const hasUpiData = step4.payoutMethod === 'UPI' && step4.upiId;
+        if (hasBankData || hasUpiData) {
+          await saveOnboardingStep4(buildStep4Payload());
+        }
       }
 
       router.push(localePath(lang, '/dashboard'));
@@ -399,7 +426,6 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
   return (
     <div className="min-h-screen bg-cream-50 py-8 sm:py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-display text-ink-900 mb-2">
             {dict.onboarding.title}
@@ -409,7 +435,6 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           </p>
         </div>
 
-        {/* Progress */}
         <div className="mb-8">
           <OnboardingProgress
             currentStep={currentStep}
@@ -418,9 +443,7 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           />
         </div>
 
-        {/* Card */}
         <div className="rounded-2xl border-[2.5px] border-ink-900 bg-white shadow-retro-md overflow-hidden">
-          {/* Step header */}
           <div className="px-6 py-5 border-b-2 border-ink-100">
             <h2 className="text-lg font-display font-bold text-ink-900">
               {stepTitles[currentStep - 1]}
@@ -430,7 +453,6 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
             </p>
           </div>
 
-          {/* Step content */}
           <div className="p-6">
             {currentStep === 1 && (
               <StepBasicInfo data={step1} onChange={setStep1} errors={errors} dict={dict} />
@@ -446,14 +468,12 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
             )}
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="mx-6 mb-4 p-3 rounded-xl text-sm font-medium bg-red-50 text-red-700 border border-red-200">
               {error}
             </div>
           )}
 
-          {/* Footer / Navigation */}
           <div className="px-6 py-4 border-t-2 border-ink-100 bg-cream-50 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               {currentStep > 1 && (
@@ -533,7 +553,6 @@ export function OnboardingWizard({ lang, dict }: OnboardingWizardProps) {
           </div>
         </div>
 
-        {/* Bottom note */}
         <p className="text-center text-xs text-ink-400 mt-6">
           {dict.onboarding.bottomNote}
         </p>

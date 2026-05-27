@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Beep** (beep.fr) is a French marketplace platform where experts (fitness coaches, teachers, lawyers, etc.) get a personal link (beep.fr/joel) with a booking calendar. Clients pay to reserve online video meetings with experts. A public marketplace lets users browse and discover experts.
+**Beep** (beep.fr — Indian domain pending) is an Indian marketplace platform where experts (fitness coaches, teachers, lawyers, etc.) get a personal link (beep.fr/priya) with a booking calendar. Clients pay to reserve online video meetings with experts. A public marketplace lets users browse and discover experts.
 
 ## Tech Stack
 
@@ -14,8 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Cache/Queue:** Redis + BullMQ for job scheduling (reminders, refund windows, session cleanup)
 - **Video Calls:** WebRTC peer-to-peer via PeerJS (free, no third-party subscription)
 - **Real-time Chat:** Socket.IO over WebSockets (free, self-hosted)
-- **Payments:** Gammal Tech payment gateway
-- **Domain/Hosting:** OVH (beep.fr), deployment target is AWS (ECS/Fargate)
+- **Payments:** Mock payment adapter (simulated success) — replace with Razorpay/Paytm/UPI gateway before production
+- **Domain/Hosting:** OVH (beep.fr currently — Indian domain pending), deployment target is AWS (ECS/Fargate)
 - **Containerization:** Docker + docker-compose for all services
 
 ## Build & Run Commands
@@ -97,8 +97,8 @@ apps/api/src/modules/<domain>/
 
 - All external services (payment, email, SMS, storage) are behind interfaces injected via NestJS DI tokens.
 - Repository pattern: domain defines the interface, infrastructure implements it.
-- This enables swapping Gammal Tech for Stripe without touching domain logic.
-- Example: `PAYMENT_GATEWAY` injection token → `GammalTechPaymentAdapter` implements `IPaymentGateway`.
+- This enables swapping the mock adapter for Razorpay/Paytm without touching domain logic.
+- Example: `PAYMENT_GATEWAY` injection token → `MockPaymentAdapter` implements `IPaymentGateway`.
 
 ### Booking & Cancellation Logic
 
@@ -132,12 +132,13 @@ Payment flow: funds are **captured but held** until session completes. Released 
 - Sessions are time-boxed (auto-disconnect at booking end time + 5min grace)
 - Chat messages during session are persisted to DB via WebSocket
 
-### Payment Integration (Gammal Tech)
+### Payment Integration (Mock Adapter — replace before production)
 
 - All payment logic behind `IPaymentGateway` interface
+- `MockPaymentAdapter` simulates a successful capture for development; swap for a real Indian gateway (Razorpay, Paytm, UPI provider) before launch
 - Webhook handler for async payment confirmations
 - Idempotency keys on all payment operations
-- Amounts stored as integer cents (1 EUR = 100 cents) — never floating point
+- Amounts stored as integer paise (1 INR = 100 paise) — never floating point
 
 ## Docker Setup
 
@@ -168,8 +169,11 @@ beep/
 
 ## Key Conventions
 
-- All dates/times stored in UTC, converted to user timezone on display
-- Currency is EUR (Euro), subdivided to cents (1 EUR = 100 cents), stored as integers
+- All dates/times stored in UTC, converted to client-detected timezone on display (fallback: Asia/Kolkata)
+- Currency is INR (Indian Rupee), subdivided to paise (1 INR = 100 paise), stored as integers
+- Expert payouts via Indian IFSC + Account Number or UPI ID
+- Phone numbers stored as +91 followed by 10 digits (Indian mobile format)
+- Locales: English (en, default) and Hindi (hi)
 - Expert slugs are unique, lowercase, alphanumeric + hyphens only
 - API versioning via URL prefix (`/api/v1/`)
 - All endpoints return consistent envelope: `{ data, meta, errors }`

@@ -11,7 +11,7 @@ export class ExpertProfileResponseDto {
   headline?: string;
   category: ExpertCategory;
   tags?: string[];
-  sessionPriceCents: number | null;
+  sessionPricePaise: number | null;
   sessionDurationMinutes: number;
   timezone: string;
   averageRating: number;
@@ -28,7 +28,7 @@ export class ExpertProfileResponseDto {
     this.headline = partial.headline;
     this.category = partial.category;
     this.tags = partial.tags;
-    this.sessionPriceCents = partial.sessionPriceCents;
+    this.sessionPricePaise = partial.sessionPricePaise;
     this.sessionDurationMinutes = partial.sessionDurationMinutes;
     this.timezone = partial.timezone;
     this.averageRating = partial.averageRating;

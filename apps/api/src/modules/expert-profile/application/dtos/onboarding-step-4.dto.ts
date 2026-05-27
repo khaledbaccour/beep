@@ -1,6 +1,7 @@
 import {
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -10,11 +11,13 @@ import {
 import { Type } from 'class-transformer';
 import {
   PayoutMethod,
-  FRENCH_IBAN_REGEX,
+  INDIAN_IFSC_REGEX,
+  INDIAN_ACCOUNT_REGEX,
+  UPI_REGEX,
   ACCOUNT_HOLDER_NAME_REGEX,
 } from '@beep/shared';
 
-class BankTransferDetailsDto {
+class IndiaBankTransferDetailsDto {
   @IsString()
   @IsNotEmpty({ message: 'Account holder name is required' })
   @MinLength(3, { message: 'Account holder name must be at least 3 characters' })
@@ -25,11 +28,27 @@ class BankTransferDetailsDto {
   accountHolderName!: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'IBAN is required' })
-  @Matches(FRENCH_IBAN_REGEX, {
-    message: 'IBAN must be in French format: FR followed by 25 characters (27 total, e.g. FR7630006000011234567890189)',
+  @IsNotEmpty({ message: 'IFSC code is required' })
+  @Matches(INDIAN_IFSC_REGEX, {
+    message: 'IFSC code must be 4 letters + 0 + 6 alphanumeric (11 chars, e.g. SBIN0001234)',
   })
-  iban!: string;
+  ifscCode!: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Account number is required' })
+  @Matches(INDIAN_ACCOUNT_REGEX, {
+    message: 'Account number must be 9 to 18 digits',
+  })
+  accountNumber!: string;
+}
+
+class UpiDetailsDto {
+  @IsString()
+  @IsNotEmpty({ message: 'UPI ID is required' })
+  @Matches(UPI_REGEX, {
+    message: 'UPI ID must be in format handle@provider (e.g. priya@okaxis)',
+  })
+  upiId!: string;
 }
 
 export class OnboardingStep4Dto {
@@ -37,7 +56,12 @@ export class OnboardingStep4Dto {
   payoutMethod!: PayoutMethod;
 
   @ValidateNested()
-  @Type(() => BankTransferDetailsDto)
-  @IsNotEmpty({ message: 'Bank transfer details are required' })
-  bankTransferDetails!: BankTransferDetailsDto;
+  @Type(() => IndiaBankTransferDetailsDto)
+  @IsOptional()
+  bankTransferDetails?: IndiaBankTransferDetailsDto;
+
+  @ValidateNested()
+  @Type(() => UpiDetailsDto)
+  @IsOptional()
+  upiDetails?: UpiDetailsDto;
 }

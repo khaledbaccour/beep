@@ -117,7 +117,7 @@ export function SessionAccessGuard({ roomId, lang }: SessionAccessGuardProps) {
       : `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
     const sessionDate = state.data.scheduledStartTime
-      ? new Date(state.data.scheduledStartTime).toLocaleDateString('en-US', {
+      ? new Date(state.data.scheduledStartTime).toLocaleDateString('en-IN', {
           weekday: 'long',
           year: 'numeric',
           month: 'long',
@@ -125,7 +125,7 @@ export function SessionAccessGuard({ roomId, lang }: SessionAccessGuardProps) {
         })
       : '';
     const sessionTime = state.data.scheduledStartTime
-      ? new Date(state.data.scheduledStartTime).toLocaleTimeString('en-US', {
+      ? new Date(state.data.scheduledStartTime).toLocaleTimeString('en-IN', {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,

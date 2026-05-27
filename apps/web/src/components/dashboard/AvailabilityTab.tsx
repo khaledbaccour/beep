@@ -39,7 +39,7 @@ function addDays(date: Date, days: number): Date {
 
 function formatWeekRange(monday: Date): string {
   const sunday = addDays(monday, 6);
-  const monthStart = monday.toLocaleDateString('fr-FR', { month: 'long', timeZone: 'UTC' });
+  const monthStart = monday.toLocaleDateString('en-IN', { month: 'long', timeZone: 'UTC' });
   const year = monday.getUTCFullYear();
   const dayStart = monday.getUTCDate();
   const dayEnd = sunday.getUTCDate();
@@ -47,7 +47,7 @@ function formatWeekRange(monday: Date): string {
   if (monday.getUTCMonth() === sunday.getUTCMonth()) {
     return `${dayStart} - ${dayEnd} ${monthStart} ${year}`;
   }
-  const monthEnd = sunday.toLocaleDateString('fr-FR', { month: 'long', timeZone: 'UTC' });
+  const monthEnd = sunday.toLocaleDateString('en-IN', { month: 'long', timeZone: 'UTC' });
   return `${dayStart} ${monthStart} - ${dayEnd} ${monthEnd} ${year}`;
 }
 

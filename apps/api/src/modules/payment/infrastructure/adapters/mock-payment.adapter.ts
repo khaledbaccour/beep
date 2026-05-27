@@ -12,9 +12,14 @@ import {
 import { PaymentTransaction } from '../../domain/entities/payment-transaction.entity';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Mock payment adapter — simulates a successful capture and queues refunds for
+ * manual processing. Replace with a real gateway (Razorpay, Paytm, etc.) when
+ * launching in production.
+ */
 @Injectable()
-export class GammalTechPaymentAdapter implements IPaymentGateway {
-  private readonly logger = new Logger(GammalTechPaymentAdapter.name);
+export class MockPaymentAdapter implements IPaymentGateway {
+  private readonly logger = new Logger(MockPaymentAdapter.name);
 
   constructor(
     @InjectRepository(PaymentTransaction)
@@ -28,7 +33,7 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
 
     if (existing) {
       this.logger.warn(
-        `Duplicate payment recording attempt: ${request.idempotencyKey}`,
+        `[Mock] Duplicate payment recording attempt: ${request.idempotencyKey}`,
       );
       return { success: true };
     }
@@ -36,7 +41,7 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     const txn = this.txnRepo.create({
       bookingId: request.bookingId,
       externalTransactionId: request.transactionId,
-      amountCents: request.amountCents,
+      amountPaise: request.amountPaise,
       currency: request.currency,
       status: PaymentStatus.CAPTURED,
       idempotencyKey: request.idempotencyKey,
@@ -45,7 +50,7 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     await this.txnRepo.save(txn);
 
     this.logger.log(
-      `Payment recorded: booking=${request.bookingId} txn=${request.transactionId} amount=${request.amountCents}`,
+      `[Mock] Payment recorded: booking=${request.bookingId} txn=${request.transactionId} amount=${request.amountPaise}`,
     );
 
     return { success: true };
@@ -66,25 +71,20 @@ export class GammalTechPaymentAdapter implements IPaymentGateway {
     }
 
     const refundId = uuidv4();
-    txn.refundedAmountCents += request.amountCents;
-
-    if (txn.refundedAmountCents >= txn.amountCents) {
-      txn.status = PaymentStatus.PENDING_REFUND;
-    } else {
-      txn.status = PaymentStatus.PENDING_REFUND;
-    }
+    txn.refundedAmountPaise += request.amountPaise;
+    txn.status = PaymentStatus.PENDING_REFUND;
 
     txn.gatewayResponse = JSON.stringify({
       refundId,
       reason: request.reason,
       requestedAt: new Date().toISOString(),
-      note: 'Gammal Tech has no refund API. Process manually via dashboard or contact support@gammal.tech.',
+      note: 'Mock payment adapter — process refund manually until a real gateway is integrated.',
     });
 
     await this.txnRepo.save(txn);
 
     this.logger.warn(
-      `Manual refund required: txn=${request.transactionId} amount=${request.amountCents} refundId=${refundId}`,
+      `[Mock] Manual refund flagged: txn=${request.transactionId} amount=${request.amountPaise} refundId=${refundId}`,
     );
 
     return {

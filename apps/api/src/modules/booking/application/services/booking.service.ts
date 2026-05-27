@@ -54,7 +54,7 @@ export class BookingService {
 
   /**
    * Step 1: Create a booking in PENDING_PAYMENT status.
-   * The frontend then opens the Gammal Tech payment popup.
+   * The frontend then runs the mock payment flow.
    */
   async createBooking(
     currentUser: AuthenticatedUser,
@@ -75,7 +75,7 @@ export class BookingService {
     }
 
     let durationMinutes: number;
-    let priceCents: number;
+    let pricePaise: number;
     let sessionOptionId: string | undefined;
 
     if (dto.sessionOptionId) {
@@ -86,11 +86,11 @@ export class BookingService {
         throw new BadRequestException('Invalid or inactive session option');
       }
       durationMinutes = sessionOption.durationMinutes;
-      priceCents = sessionOption.priceCents;
+      pricePaise = sessionOption.pricePaise;
       sessionOptionId = sessionOption.id;
     } else {
       durationMinutes = profile.sessionDurationMinutes;
-      priceCents = profile.sessionPriceCents ?? 0;
+      pricePaise = profile.sessionPricePaise ?? 0;
     }
 
     const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
@@ -109,7 +109,7 @@ export class BookingService {
     booking.expertProfileId = profile.id;
     booking.scheduledStartTime = startTime;
     booking.scheduledEndTime = endTime;
-    booking.amountCents = priceCents;
+    booking.amountPaise = pricePaise;
     booking.durationMinutes = durationMinutes;
     booking.sessionOptionId = sessionOptionId;
     booking.status = BookingStatus.PENDING_PAYMENT;
@@ -120,7 +120,7 @@ export class BookingService {
   }
 
   /**
-   * Step 2: Frontend calls this after Gammal Tech SDK payment popup completes.
+   * Step 2: Frontend calls this after the mock payment flow completes.
    * Records the payment and transitions booking to CONFIRMED.
    */
   async confirmPayment(
@@ -144,8 +144,8 @@ export class BookingService {
     const result = await this.paymentGateway.recordPayment({
       bookingId: booking.id,
       transactionId: dto.transactionId,
-      amountCents: booking.amountCents,
-      currency: 'EUR',
+      amountPaise: booking.amountPaise,
+      currency: 'INR',
       idempotencyKey: `booking-${booking.id}`,
     });
 
@@ -243,10 +243,10 @@ export class BookingService {
       booking.cancelByExpert(dto.reason);
     }
 
-    if (booking.refundAmountCents > 0 && booking.paymentId) {
+    if (booking.refundAmountPaise > 0 && booking.paymentId) {
       await this.paymentGateway.requestRefund({
         transactionId: booking.paymentId,
-        amountCents: booking.refundAmountCents,
+        amountPaise: booking.refundAmountPaise,
         reason: dto.reason,
         idempotencyKey: `refund-${booking.id}-${Date.now()}`,
       });
@@ -302,8 +302,8 @@ export class BookingService {
       scheduledStartTime: booking.scheduledStartTime,
       scheduledEndTime: booking.scheduledEndTime,
       status: booking.status,
-      amountCents: booking.amountCents,
-      refundAmountCents: booking.refundAmountCents,
+      amountPaise: booking.amountPaise,
+      refundAmountPaise: booking.refundAmountPaise,
       refundEligibility: booking.getRefundEligibility(),
       sessionRoomId: booking.sessionRoomId,
       durationMinutes: booking.durationMinutes,

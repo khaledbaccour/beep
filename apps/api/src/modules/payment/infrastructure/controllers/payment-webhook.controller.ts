@@ -6,7 +6,7 @@ export class WebhookPayloadDto {
   event!: string;
   transactionId!: string;
   status!: string;
-  amountCents!: number;
+  amountPaise!: number;
   metadata?: Record<string, string>;
 }
 

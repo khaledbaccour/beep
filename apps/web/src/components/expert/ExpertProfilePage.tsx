@@ -23,7 +23,7 @@ import {
   setPendingBookingId,
   getPendingBookingId,
   clearPendingBookingId,
-} from '@/lib/gammal-tech';
+} from '@/lib/mock-payment';
 import { translateError } from '@/lib/i18n-utils';
 import { formatPrice, formatTime, formatDate, toDateString } from './utils';
 import { DurationPicker } from './DurationPicker';
@@ -73,7 +73,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [booking, setBooking] = useState<BookingResponse | null>(null);
 
-  // Settle any pending/undelivered Gammal Tech payments on page load.
+  // Settle any pending/undelivered mock payments on page load.
   // If a payment was interrupted (browser crash, tab closed), recover it
   // and confirm with our backend.
   useEffect(() => {
@@ -186,7 +186,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   /**
    * Two-step payment flow:
    * 1. Create booking on our backend (PENDING_PAYMENT)
-   * 2. Open Gammal Tech payment popup (client-side SDK)
+   * 2. Run mock payment flow (simulated success)
    * 3. On success, confirm payment with our backend (CONFIRMED)
    */
   const handlePayAndBook = async () => {
@@ -215,10 +215,10 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       // Persist booking ID so settlePending can recover if browser crashes
       setPendingBookingId(pendingBooking.id);
 
-      // Step 2: Open Gammal Tech payment popup
-      const amountEUR = (selectedOption?.priceCents ?? expert.sessionPriceCents) / 100;
+      // Step 2: Run mock payment flow
+      const amountINR = (selectedOption?.pricePaise ?? expert.sessionPricePaise) / 100;
       const payment = await payWithCard(
-        amountEUR,
+        amountINR,
         `Beep: Session with ${expert.firstName} ${expert.lastName}`,
       );
 
@@ -292,10 +292,10 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
   const options = expert.sessionOptions ?? [];
   const hasMultipleOptions = options.length > 1;
   const displayPrice = selectedOption
-    ? formatPrice(selectedOption.priceCents)
+    ? formatPrice(selectedOption.pricePaise)
     : hasMultipleOptions
-      ? formatPrice(Math.min(...options.map((o) => o.priceCents)))
-      : formatPrice(expert.sessionPriceCents);
+      ? formatPrice(Math.min(...options.map((o) => o.pricePaise)))
+      : formatPrice(expert.sessionPricePaise);
   const displayDuration = selectedOption
     ? selectedOption.durationMinutes
     : expert.sessionDurationMinutes;
@@ -412,7 +412,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
                   <span className="text-sm text-ink-400 mr-1">{t.from}</span>
                 )}
                 <span className="text-3xl font-display font-bold text-ink-900">{displayPrice}</span>
-                <span className="text-sm text-ink-400">{dict.common.eur}</span>
+                <span className="text-sm text-ink-400">{dict.common.inr}</span>
               </div>
               <p className="text-xs text-ink-400 mb-5">
                 {displayDuration} min &middot; {t.perSession}

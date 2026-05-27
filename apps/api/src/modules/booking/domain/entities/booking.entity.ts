@@ -39,9 +39,9 @@ export class Booking extends BaseEntity {
   })
   status!: BookingStatus;
 
-  /** Amount in cents */
+  /** Amount in paise */
   @Column({ type: 'int' })
-  amountCents!: number;
+  amountPaise!: number;
 
   @Column({ nullable: true })
   paymentId?: string;
@@ -53,7 +53,7 @@ export class Booking extends BaseEntity {
   cancelledAt?: Date;
 
   @Column({ type: 'int', default: 0 })
-  refundAmountCents!: number;
+  refundAmountPaise!: number;
 
   @Column({ nullable: true })
   sessionRoomId?: string;
@@ -96,15 +96,15 @@ export class Booking extends BaseEntity {
     const eligibility = this.getRefundEligibility();
     switch (eligibility) {
       case RefundEligibility.FULL:
-        this.refundAmountCents = this.amountCents;
+        this.refundAmountPaise = this.amountPaise;
         break;
       case RefundEligibility.PARTIAL:
-        this.refundAmountCents = Math.round(
-          (this.amountCents * PARTIAL_REFUND_PERCENTAGE) / 100,
+        this.refundAmountPaise = Math.round(
+          (this.amountPaise * PARTIAL_REFUND_PERCENTAGE) / 100,
         );
         break;
       case RefundEligibility.NONE:
-        this.refundAmountCents = 0;
+        this.refundAmountPaise = 0;
         break;
     }
   }
@@ -114,16 +114,16 @@ export class Booking extends BaseEntity {
     this.status = BookingStatus.CANCELLED_BY_EXPERT;
     this.cancellationReason = reason;
     this.cancelledAt = new Date();
-    this.refundAmountCents = this.amountCents;
+    this.refundAmountPaise = this.amountPaise;
   }
 
   markNoShow(isExpertNoShow: boolean): void {
     this.assertStatus(BookingStatus.CONFIRMED);
     this.status = BookingStatus.NO_SHOW;
     if (isExpertNoShow) {
-      this.refundAmountCents = this.amountCents;
+      this.refundAmountPaise = this.amountPaise;
     } else {
-      this.refundAmountCents = 0;
+      this.refundAmountPaise = 0;
     }
   }
 

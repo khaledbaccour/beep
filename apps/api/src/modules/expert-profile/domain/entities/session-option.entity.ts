@@ -17,9 +17,9 @@ export class SessionOption extends BaseEntity {
   @Column({ type: 'int' })
   durationMinutes!: number;
 
-  /** Price in cents (EUR) */
+  /** Price in paise (INR) */
   @Column({ type: 'int' })
-  priceCents!: number;
+  pricePaise!: number;
 
   /** Optional label (e.g. "Quick Chat", "Deep Dive") */
   @Column({ type: 'varchar', length: 100, nullable: true })

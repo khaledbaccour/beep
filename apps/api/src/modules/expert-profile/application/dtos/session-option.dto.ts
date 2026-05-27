@@ -7,7 +7,7 @@ export class CreateSessionOptionDto {
 
   @IsInt()
   @Min(1000)
-  priceCents!: number;
+  pricePaise!: number;
 
   @IsString()
   @MaxLength(100)
@@ -22,7 +22,7 @@ export class CreateSessionOptionDto {
 export class SessionOptionResponseDto {
   id: string;
   durationMinutes: number;
-  priceCents: number;
+  pricePaise: number;
   label?: string;
   isActive: boolean;
   sortOrder: number;
@@ -30,7 +30,7 @@ export class SessionOptionResponseDto {
   constructor(partial: SessionOptionResponseDto) {
     this.id = partial.id;
     this.durationMinutes = partial.durationMinutes;
-    this.priceCents = partial.priceCents;
+    this.pricePaise = partial.pricePaise;
     this.label = partial.label;
     this.isActive = partial.isActive;
     this.sortOrder = partial.sortOrder;

@@ -95,10 +95,10 @@ export function Navbar({ dict, lang }: Props) {
         <div className="hidden md:flex items-center gap-2 shrink-0">
           {/* Language Switcher */}
           <div className="flex items-center border-2 border-ink-900 rounded-full overflow-hidden mr-1">
-            {(['fr', 'en'] as const).map((locale) => (
+            {(['en', 'hi'] as const).map((locale) => (
               <a
                 key={locale}
-                href={locale === 'fr' ? pathWithoutLang : `/${locale}${pathWithoutLang}`}
+                href={locale === 'en' ? pathWithoutLang : `/${locale}${pathWithoutLang}`}
                 className={`px-2.5 py-1 text-[11px] font-medium transition-colors ${
                   lang === locale
                     ? 'bg-ink-900 text-white'
@@ -173,10 +173,10 @@ export function Navbar({ dict, lang }: Props) {
 
             {/* Mobile Language Switcher */}
             <div className="flex items-center gap-1 px-3 py-2">
-              {(['fr', 'en'] as const).map((locale) => (
+              {(['en', 'hi'] as const).map((locale) => (
                 <a
                   key={locale}
-                  href={locale === 'fr' ? pathWithoutLang : `/${locale}${pathWithoutLang}`}
+                  href={locale === 'en' ? pathWithoutLang : `/${locale}${pathWithoutLang}`}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
                     lang === locale
                       ? 'bg-ink-900 text-white border-ink-900'

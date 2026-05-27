@@ -51,7 +51,8 @@ export class AvailabilityReminderService {
           expertFirstName: user.firstName,
           weekStartDate: nextMonday,
           appUrl,
-          lang: 'fr',
+          lang: 'en',
+          timezone: profile.timezone,
         });
 
         await this.emailSender.sendEmail({
