@@ -583,6 +583,20 @@ export async function searchExperts(
   return res.json();
 }
 
+/** Featured (best-rated) experts for the home page. Returns [] on failure. */
+export async function getFeaturedExperts(): Promise<ExpertProfile[]> {
+  try {
+    const res = await fetch(`${API_BASE}/marketplace/featured`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const json: PaginatedResponse<ExpertProfile> = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 // --- Session Access ---
 
 export interface SessionAccessResponse {

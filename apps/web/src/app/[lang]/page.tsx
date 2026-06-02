@@ -1,4 +1,5 @@
 import { getDictionary, type Locale } from '@/i18n';
+import { getFeaturedExperts } from '@/lib/api';
 import { Navbar } from '@/components/layout/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { CategoriesSection } from '@/components/landing/CategoriesSection';
@@ -16,13 +17,14 @@ interface PageProps {
 export default async function HomePage({ params }: PageProps) {
   const dict = await getDictionary(params.lang);
   const lang = params.lang;
+  const featured = await getFeaturedExperts();
 
   return (
     <main className="relative overflow-hidden">
       <Navbar dict={dict} lang={lang} />
       <HeroSection dict={dict} lang={lang} />
       <CategoriesSection dict={dict} lang={lang} />
-      <FeaturedExpertsSection dict={dict} lang={lang} />
+      <FeaturedExpertsSection dict={dict} lang={lang} experts={featured} />
       <HowItWorksSection dict={dict} lang={lang} />
       <StatsSection dict={dict} lang={lang} />
       <TestimonialsSection dict={dict} lang={lang} />
