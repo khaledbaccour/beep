@@ -23,6 +23,7 @@ import {
   DayOfWeek,
   BOOKING_MAX_DAYS_AHEAD,
 } from '@beep/shared';
+import { MEN_AVATARS, WOMEN_AVATARS } from './seed-avatars';
 import { User } from '../modules/identity/domain/entities/user.entity';
 import { ExpertProfile } from '../modules/expert-profile/domain/entities/expert-profile.entity';
 import { SessionOption } from '../modules/expert-profile/domain/entities/session-option.entity';
@@ -87,21 +88,6 @@ function dateStr(d: Date): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
-/**
- * Deterministic illustrated avatar (DiceBear) biased to South-Asian skin/hair
- * tones. Illustrated rather than a real photo is deliberate for seeded
- * profiles — avoids both the "wrong ethnicity stock photo" problem and reusing
- * a real person's face on a fabricated profile.
- */
-export function avatarFor(seed: string): string {
-  return (
-    `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}` +
-    `&skinColor=ae5d29,d08b5b,edb98a` +
-    `&hairColor=2c1b18,4a312c,724133` +
-    `&backgroundColor=ffd5dc,c0aede,d1d4f9,ffdfbf,ffd5a8`
-  );
-}
-
 function buildConnectionOptions() {
   const databaseUrl = process.env.DATABASE_URL;
   const isProduction = process.env.NODE_ENV === 'production';
@@ -158,6 +144,10 @@ async function main() {
   const usedSlugs = new Set<string>();
   const usedPhones = new Set<string>();
 
+  // Gender-matched real headshots, assigned in order so faces don't repeat.
+  let maleAvatarIdx = 0;
+  let femaleAvatarIdx = 0;
+
   let created = 0;
   for (let i = 0; i < COUNT; i++) {
     const isFemale = Math.random() < 0.5;
@@ -175,6 +165,9 @@ async function main() {
     usedPhones.add(phone);
 
     const cat = pick(CATEGORIES);
+    const avatarUrl = isFemale
+      ? WOMEN_AVATARS[femaleAvatarIdx++ % WOMEN_AVATARS.length]
+      : MEN_AVATARS[maleAvatarIdx++ % MEN_AVATARS.length];
 
     // ── User ──
     const user = userRepo.create({
@@ -184,7 +177,7 @@ async function main() {
       lastName,
       role: UserRole.EXPERT,
       phone,
-      avatarUrl: avatarFor(slug),
+      avatarUrl,
       onboardingCompleted: true,
       isActive: true,
     });
