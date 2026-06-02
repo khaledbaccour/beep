@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Beep** (beep.fr — Indian domain pending) is an Indian marketplace platform where experts (fitness coaches, teachers, lawyers, etc.) get a personal link (beep.fr/priya) with a booking calendar. Clients pay to reserve online video meetings with experts. A public marketplace lets users browse and discover experts.
+**kliik** (kliik.click) is an Indian marketplace platform where experts (fitness coaches, teachers, lawyers, etc.) get a personal link (kliik.click/priya) with a booking calendar. Clients pay to reserve online video meetings with experts. A public marketplace lets users browse and discover experts. (The legacy Tunisian domain beep.tn still resolves but serves an "under construction" page; the live product is on kliik.click.)
 
 ## Tech Stack
 
@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Video Calls:** WebRTC peer-to-peer via PeerJS (free, no third-party subscription)
 - **Real-time Chat:** Socket.IO over WebSockets (free, self-hosted)
 - **Payments:** Mock payment adapter (simulated success) — replace with Razorpay/Paytm/UPI gateway before production
-- **Domain/Hosting:** OVH (beep.fr currently — Indian domain pending), deployment target is AWS (ECS/Fargate)
+- **Domain/Hosting:** kliik.click (live, served from VPS 51.77.148.106 behind Caddy); legacy beep.tn kept as an "under construction" placeholder
 - **Containerization:** Docker + docker-compose for all services
 
 ## Build & Run Commands
@@ -76,7 +76,7 @@ apps/api/src/modules/<domain>/
 ### Core Domains
 
 - **Identity** — User accounts, authentication (JWT), roles (Expert, Client, Admin)
-- **Expert Profile** — Public profiles, slugs (beep.fr/joel), categories, bio, pricing
+- **Expert Profile** — Public profiles, slugs (kliik.click/joel), categories, bio, pricing
 - **Availability** — Recurring schedules, time slots, timezone handling, blackout dates
 - **Booking** — Reservation lifecycle, conflict detection, status machine
 - **Payment** — Payment processing, escrow-like hold, refund engine

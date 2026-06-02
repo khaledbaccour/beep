@@ -1,5 +1,7 @@
 import { i18n, type Locale } from '@/i18n';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
+import { UnderConstructionPage } from '@/components/UnderConstructionPage';
 import {
   Space_Grotesk,
   DM_Sans,
@@ -52,6 +54,10 @@ export default function LangLayout({
     notFound();
   }
 
+  // On the legacy Tunisian domain (beep.tn) the middleware sets this header so
+  // we render a beep-branded "under construction" placeholder instead of the app.
+  const isConstruction = headers().get('x-site-mode') === 'construction';
+
   return (
     <html
       lang={params.lang}
@@ -59,7 +65,7 @@ export default function LangLayout({
       className={`scroll-smooth ${display.variable} ${body.variable} ${accent.variable} ${mono.variable}`}
     >
       <body className="min-h-screen bg-white">
-        {children}
+        {isConstruction ? <UnderConstructionPage lang={params.lang} /> : children}
       </body>
     </html>
   );

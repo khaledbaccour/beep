@@ -33,9 +33,9 @@ export function ContactPageContent({ dict, lang }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(`[Beep] ${formState.subject}`);
+    const subject = encodeURIComponent(`[kliik] ${formState.subject}`);
     const body = encodeURIComponent(`Name: ${formState.name}\nEmail: ${formState.email}\n\n${formState.message}`);
-    window.open(`mailto:contact@beep.fr?subject=${subject}&body=${body}`, '_self');
+    window.open(`mailto:contact@kliik.click?subject=${subject}&body=${body}`, '_self');
     setSubmitted(true);
   };
 
@@ -53,7 +53,7 @@ export function ContactPageContent({ dict, lang }: Props) {
     {
       title: d.socialTitle,
       desc: d.socialDesc,
-      detail: '@beep.fr',
+      detail: '@kliik.click',
       icon: MessageCircle,
       bg: 'bg-[#FFF5F2]',
       iconBg: 'bg-[#FDE8E4]',
@@ -255,7 +255,7 @@ export function ContactPageContent({ dict, lang }: Props) {
 
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 select-none pointer-events-none">
           <span className="text-[100px] sm:text-[160px] md:text-[200px] font-bold text-white/[0.03] leading-none tracking-tighter uppercase">
-            BEEP.FR
+            KLIIK.CLICK
           </span>
         </div>
 

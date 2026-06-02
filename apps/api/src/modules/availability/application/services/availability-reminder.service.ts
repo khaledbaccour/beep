@@ -46,7 +46,7 @@ export class AvailabilityReminderService {
         const user = profile.user;
         if (!user?.email) continue;
 
-        const appUrl = this.configService.get<string>('APP_URL') || 'https://beep.fr';
+        const appUrl = this.configService.get<string>('APP_URL') || 'https://kliik.click';
         const content = this.emailTemplates.availabilityReminder({
           expertFirstName: user.firstName,
           weekStartDate: nextMonday,

@@ -429,7 +429,7 @@ export class EmailTemplatesService {
         <!-- Header -->
         <tr><td style="padding:0 0 32px;text-align:center;">
           <h2 style="margin:0;font-size:28px;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.5px;">
-            <span style="color:#FF6B35;">beep</span><span style="color:#f1f5f9;">.fr</span>
+            <span style="color:#FF6B35;">kliik</span><span style="color:#f1f5f9;">.click</span>
           </h2>
         </td></tr>
         <!-- Content -->
@@ -439,10 +439,10 @@ export class EmailTemplatesService {
         <!-- Footer -->
         <tr><td style="padding:24px 0 0;text-align:center;">
           <p style="color:#475569;font-size:11px;margin:0;">
-            Questions? Reply to this email or contact us at bookings@beep.fr
+            Questions? Reply to this email or contact us at bookings@kliik.click
           </p>
           <p style="color:#334155;font-size:11px;margin:8px 0 0;">
-            &copy; 2026 Beep. All rights reserved.
+            &copy; 2026 kliik. All rights reserved.
           </p>
         </td></tr>
       </table>

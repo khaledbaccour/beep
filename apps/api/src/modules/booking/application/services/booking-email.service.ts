@@ -18,7 +18,7 @@ export class BookingEmailService {
     private readonly templates: EmailTemplatesService,
     private readonly configService: ConfigService,
   ) {
-    this.appUrl = this.configService.get<string>('APP_URL') || 'https://beep.fr';
+    this.appUrl = this.configService.get<string>('APP_URL') || 'https://kliik.click';
   }
 
   async sendBookingConfirmedToClient(booking: Booking): Promise<void> {

@@ -8,6 +8,8 @@ interface DatePickerProps {
   selectedDate: Date | null;
   availableDates: Set<string>;
   availableDatesLoading: boolean;
+  /** Latest bookable day (inclusive). Days after this are disabled. */
+  maxDate?: Date;
   lang: string;
   labels: {
     selectDate: string;
@@ -21,6 +23,7 @@ export function DatePicker({
   selectedDate,
   availableDates,
   availableDatesLoading,
+  maxDate,
   lang,
   labels,
   onDateSelect,
@@ -28,6 +31,11 @@ export function DatePicker({
 }: DatePickerProps) {
   const calendarDays = getDaysArray(calendarStart, VISIBLE_DAYS);
   const locale = getLocaleString(lang);
+  const maxDateStr = maxDate ? toDateString(maxDate) : null;
+  // Disable the "next" arrow once the visible window already reaches the horizon.
+  const atHorizon = maxDateStr
+    ? calendarDays.some((day) => toDateString(day) >= maxDateStr)
+    : false;
 
   return (
     <div>
@@ -46,7 +54,8 @@ export function DatePicker({
           </button>
           <button
             onClick={() => onNavigate('next')}
-            className="p-1.5 rounded-md border border-ink-200 hover:bg-ink-50 transition-colors"
+            className="p-1.5 rounded-md border border-ink-200 hover:bg-ink-50 transition-colors disabled:opacity-30"
+            disabled={atHorizon}
           >
             <ChevronRight size={16} />
           </button>
@@ -57,7 +66,9 @@ export function DatePicker({
         {calendarDays.map((day) => {
           const dateStr = toDateString(day);
           const isSelected = selectedDate?.toDateString() === day.toDateString();
-          const isAvailable = availableDatesLoading || availableDates.has(dateStr);
+          const beyondHorizon = maxDateStr ? dateStr > maxDateStr : false;
+          const isAvailable =
+            !beyondHorizon && (availableDatesLoading || availableDates.has(dateStr));
           const isDisabled = !isAvailable;
 
           return (

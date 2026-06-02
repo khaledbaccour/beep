@@ -49,9 +49,9 @@ export function Footer({ dict, lang }: Props) {
           <div className="col-span-2">
             <div className="flex items-center gap-1.5 mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.svg" alt="Beep" className="w-9 h-9" />
+              <img src="/logo.svg" alt="kliik" className="w-9 h-9" />
               <span className="text-lg font-body font-bold text-white">
-                beep<span className="text-brand-400">.tn</span>
+                kliik<span className="text-brand-400">.click</span>
               </span>
             </div>
             <p className="text-sm text-ink-400 leading-relaxed max-w-[280px] mb-6">

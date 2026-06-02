@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { BookingStatus, UserRole, ErrorCode } from '@beep/shared';
+import { BookingStatus, UserRole, ErrorCode, BOOKING_MAX_DAYS_AHEAD } from '@beep/shared';
 import { Booking } from '../../domain/entities/booking.entity';
 import {
   IBookingRepository,
@@ -72,6 +72,13 @@ export class BookingService {
     const startTime = new Date(dto.scheduledStartTime);
     if (startTime <= new Date()) {
       throw new BadRequestException(ErrorCode.CANNOT_BOOK_IN_PAST);
+    }
+
+    // Bookings are limited to a short rolling window (see BOOKING_MAX_DAYS_AHEAD).
+    const horizon = new Date();
+    horizon.setDate(horizon.getDate() + BOOKING_MAX_DAYS_AHEAD);
+    if (startTime > horizon) {
+      throw new BadRequestException(ErrorCode.CANNOT_BOOK_TOO_FAR_AHEAD);
     }
 
     let durationMinutes: number;

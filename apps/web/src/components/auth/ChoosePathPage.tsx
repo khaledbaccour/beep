@@ -107,9 +107,9 @@ export function ChoosePathPage({ dict, lang }: Props) {
         <div className="animate-fade-up opacity-0">
           <a href={localePath(lang, '/')} className="flex items-center justify-center gap-1.5 mb-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
+            <img src="/logo.svg" alt="kliik" className="w-8 h-8" />
             <span className="text-[17px] font-body font-bold text-ink-900">
-              beep<span className="text-brand-500">.tn</span>
+              kliik<span className="text-brand-500">.click</span>
             </span>
           </a>
         </div>

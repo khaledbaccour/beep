@@ -239,7 +239,7 @@ export function PrivacyPageContent({ dict, lang }: Props) {
 
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 select-none pointer-events-none">
           <span className="text-[100px] sm:text-[160px] md:text-[200px] font-bold text-white/[0.03] leading-none tracking-tighter uppercase">
-            BEEP.TN
+            KLIIK.CLICK
           </span>
         </div>
 

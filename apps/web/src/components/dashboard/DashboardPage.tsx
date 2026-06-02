@@ -100,7 +100,7 @@ export function DashboardPage({ dict, lang }: Props) {
   ];
 
   const greeting = getGreeting(d);
-  const profileUrl = expertProfile ? `beep.fr/${expertProfile.slug}` : null;
+  const profileUrl = expertProfile ? `kliik.click/${expertProfile.slug}` : null;
 
   function copySlug() {
     if (!profileUrl) return;

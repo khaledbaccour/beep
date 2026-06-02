@@ -21,7 +21,7 @@ export function CTASection({ dict, lang }: Props) {
       {/* Watermark */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 select-none pointer-events-none">
         <span className="text-[120px] sm:text-[180px] md:text-[220px] font-bold text-white/[0.03] leading-none tracking-tighter uppercase">
-          BEEP.TN
+          KLIIK.CLICK
         </span>
       </div>
 

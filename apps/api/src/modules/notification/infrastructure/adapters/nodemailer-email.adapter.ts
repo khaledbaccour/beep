@@ -24,7 +24,7 @@ export class NodemailerEmailAdapter implements IEmailSender {
 
   async sendEmail(payload: EmailPayload): Promise<void> {
     const info = await this.transporter.sendMail({
-      from: `"Beep" <${this.fromAddress}>`,
+      from: `"kliik" <${this.fromAddress}>`,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,

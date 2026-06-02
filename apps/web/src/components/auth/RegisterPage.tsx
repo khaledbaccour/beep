@@ -49,9 +49,9 @@ export function RegisterPage({ dict, lang }: Props) {
       <div className="w-full max-w-sm mx-auto px-4">
         <a href={localePath(lang, '/')} className="flex items-center justify-center gap-1.5 mb-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Beep" className="w-8 h-8" />
+          <img src="/logo.svg" alt="kliik" className="w-8 h-8" />
           <span className="text-[17px] font-body font-bold text-ink-900">
-            beep<span className="text-brand-500">.tn</span>
+            kliik<span className="text-brand-500">.click</span>
           </span>
         </a>
 

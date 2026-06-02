@@ -31,6 +31,15 @@ import { DatePicker } from './DatePicker';
 import { TimeSlotPicker } from './TimeSlotPicker';
 import { BookingConfirmation } from './BookingConfirmation';
 import { BookingSuccess } from './BookingSuccess';
+import { BOOKING_MAX_DAYS_AHEAD } from '@beep/shared';
+
+/** Latest bookable day: today + BOOKING_MAX_DAYS_AHEAD (local midnight). */
+function getBookingHorizon(): Date {
+  const horizon = new Date();
+  horizon.setHours(0, 0, 0, 0);
+  horizon.setDate(horizon.getDate() + BOOKING_MAX_DAYS_AHEAD);
+  return horizon;
+}
 
 interface ExpertProfilePageProps {
   slug: string;
@@ -219,7 +228,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       const amountINR = (selectedOption?.pricePaise ?? expert.sessionPricePaise) / 100;
       const payment = await payWithCard(
         amountINR,
-        `Beep: Session with ${expert.firstName} ${expert.lastName}`,
+        `kliik: Session with ${expert.firstName} ${expert.lastName}`,
       );
 
       // Step 3: Confirm payment with our backend
@@ -250,7 +259,10 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
       next.setDate(next.getDate() + (direction === 'next' ? VISIBLE_DAYS : -VISIBLE_DAYS));
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      return next < today ? today : next;
+      if (next < today) return today;
+      // Don't page past the booking horizon (today + BOOKING_MAX_DAYS_AHEAD).
+      const horizon = getBookingHorizon();
+      return next > horizon ? prev : next;
     });
   };
 
@@ -363,6 +375,7 @@ export function ExpertProfilePage({ slug, dict, lang }: ExpertProfilePageProps) 
                     selectedDate={selectedDate}
                     availableDates={availableDates}
                     availableDatesLoading={availableDatesLoading}
+                    maxDate={getBookingHorizon()}
                     lang={lang}
                     labels={{ selectDate: t.selectDate }}
                     onDateSelect={handleDateSelect}

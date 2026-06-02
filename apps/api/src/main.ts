@@ -22,8 +22,8 @@ async function bootstrap(): Promise<void> {
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Beep API')
-    .setDescription('Beep - Expert booking marketplace')
+    .setTitle('kliik API')
+    .setDescription('kliik - Expert booking marketplace')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
